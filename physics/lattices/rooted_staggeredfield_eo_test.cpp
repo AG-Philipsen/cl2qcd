@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "rooted_staggeredfield_eo.hpp"
@@ -101,9 +101,9 @@ BOOST_AUTO_TEST_CASE(rescale)
 {
 	using namespace physics::algorithms;
 	using namespace physics::lattices;
-	
+
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
-	
+
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
 	meta::Inputparameters params(6, _params);
 	hardware::HardwareParametersImplementation hP(&params);
@@ -112,14 +112,14 @@ BOOST_AUTO_TEST_CASE(rescale)
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
-	
+
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	const GaugefieldParametersImplementation gaugefieldParameters{ &params };
 	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
-	
+
 	//Min and max eigenvalues for conservative and not conservative case
 	hmc_float minEigenvalue = 0.3485318319429664;
 	hmc_float maxEigenvalue = 5.2827906935473500;
@@ -162,19 +162,19 @@ BOOST_AUTO_TEST_CASE(rescale)
 				    0.32091499816392937694, 0.84199021010590602287,
 				    2.3690543226274733968, 8.1633847494467222106,
 				    62.215004455600926292};
-	
+
 	int ord = sf.getOrder();
 
 	sf.Rescale_Coefficients(approx, minEigenvalue, maxEigenvalue);
 	BOOST_CHECK_CLOSE(sf.get_a0(), a0_ref, 5.e-5);
 	std::vector<hmc_float> a = sf.get_a();
 	std::vector<hmc_float> b = sf.get_b();
-	
+
 	sf.Rescale_Coefficients(approx, minEigenvalueCons, maxEigenvalueCons);
 	BOOST_CHECK_CLOSE(sf.get_a0(), a0_ref_cons, 5.e-5);
 	std::vector<hmc_float> a_cons = sf.get_a();
 	std::vector<hmc_float> b_cons = sf.get_b();
-	
+
 	//Test result: note that the precision is not so high since
 	//the reference code uses a slightly different method to calculate
 	//maximum and minimum eigenvalues (I tuned a bit the ref.code adapting the number
@@ -185,6 +185,6 @@ BOOST_AUTO_TEST_CASE(rescale)
 		BOOST_CHECK_CLOSE(a_cons[i], a_ref_cons[i], 2.e-4);
 		BOOST_CHECK_CLOSE(b_cons[i], b_ref_cons[i], 2.e-4);
 	}
-	
+
 	logger.info() << "Test done!";
 }

@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef GAUGEOBSERVABLES_H_
@@ -35,11 +35,11 @@ namespace physics{
       hmc_float plaquette;
       hmc_float temporalPlaquette;
       hmc_float spatialPlaquette;
-      
+
     Plaquettes(hmc_float plaquetteIn, hmc_float temporalPlaquetteIn, hmc_float spatialPlaquetteIn):
       plaquette(plaquetteIn), temporalPlaquette(temporalPlaquetteIn), spatialPlaquette(spatialPlaquetteIn) {}
     };
-    
+
     void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration, const physics::observables::GaugeObservablesParametersInterface&);
     hmc_float measurePlaquette(const physics::lattices::Gaugefield * gf, const physics::observables::GaugeObservablesParametersInterface&);
     hmc_float measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf, const physics::observables::GaugeObservablesParametersInterface&);
@@ -50,4 +50,3 @@ namespace physics{
 }
 
 #endif
-

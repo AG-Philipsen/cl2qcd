@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -25,25 +25,25 @@
  *       Here eoprec means that we calculate either the force on even sites or on odd ones.
  *       This kernel must then be called twice with different evenodd value to obtain the force
  *       on all sites.
- * 
+ *
  * Here, two cases are possible: @n
  *  @arg evenodd = EVEN means that the force will be calculated on even sites  @n
  *  @arg evenodd =  ODD means that the force will be calculated on  odd sites  @n
- * 
+ *
  * To make the code understandable, let us summarize the notation here. The force term here calculated
  * is not exactly the total fermion force (this explains the partial adjective), because of the rational
  * approximation. This kernel will be then used to reconstruct the whole force term (see fermion_force.cpp
  * file documentation in physics/algorithms to further informations).
  * In the RHMC the time derivative of the momenta conjugated to links is
  * @code
- *  i*Hdot_\mu(n)=[U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA 
+ *  i*Hdot_\mu(n)=[U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA
  * @endcode
- * where 
+ * where
  * @code
- *               | +eta_\mu(n) (D_oe X_e^i)_{n+\mu} (X_e^i^\dag)_n     if evenodd = EVEN 
- *  Q^i_\mu(n) = | 
- *               | -eta_\mu(n) (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
- * 
+ *               | +eta_\mu(n) (D_oe X_e^i)_{n+\mu} (X_e^i^\dag)_n     if evenodd = EVEN
+ *  Q^i_\mu(n) = |
+ *               | -eta_\mu(n) (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD
+ *
  * => this kernel will return -i*[U_\mu(n)*Q^i_\mu(n)]_TA
  * @endcode
  *
@@ -56,22 +56,22 @@
  *               | +eta_\mu(n) (A)_{n+\mu} (B^\dag)_n     if evenodd = EVEN
  *  Q^i_\mu(n) = |
  *               | -eta_\mu(n) (A)_{n+\mu} (B^\dag)_n     if evenodd = ODD
- * 
+ *
  * => return -i*[U_\mu(n)*Q^i_\mu(n)]_TA
  * @endcode
- * 
+ *
  * If an imaginary chemical potential is introduced, the time derivative of the momenta conjugated to links
  * modifies due to a prefactor of the sum:
  * @code
- *  i*Hdot_\mu(n)=[U_\mu(n)* (1+\delta_{\mu,4}*(exp(\imath \mu_I)-1)) *\sum_{i=1}^k c_i Q^i_\mu(n)]_TA 
+ *  i*Hdot_\mu(n)=[U_\mu(n)* (1+\delta_{\mu,4}*(exp(\imath \mu_I)-1)) *\sum_{i=1}^k c_i Q^i_\mu(n)]_TA
  * @endcode
- * that basically means that we have to multiply Q^i_\mu(n) by exp(\imath \mu_I) if dir==TDIR before 
+ * that basically means that we have to multiply Q^i_\mu(n) by exp(\imath \mu_I) if dir==TDIR before
  * taking the traceless_antihermitian_part. This is important because the factor is in general
  * not real. Then this kernel, if the imaginary chemical potential is used, returns
  * @code
  *  -i*[U_\mu(n)* (1+\delta_{\mu,4}*(exp(\imath \mu_I)-1)) *Q^i_\mu(n)]_TA
  * @endcode
- * 
+ *
  * @note Without imaginary chemical potential, Q^i_\mu(n) is evaluated, then the product
  *       U_\mu(n)*Q^i_\mu(n) is calculated and in the end the traceless_antihermitian_part
  *       is taken. If chem_pot_im is different from zero, the multiplication by the factor
@@ -89,16 +89,16 @@ ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType 
 	st_index nn;
 	//this is used to take into account the staggered phase and the BC-conditions
 	hmc_complex eta_mod;
-	
+
 	////////////////////////////////////////////////
 	nn = get_neighbor_from_st_idx(pos, dir);
 	nn_eo = get_eo_site_idx_from_st_idx(nn); //transform normal indices to eoprec index
 	U = get_matrixsu3(field, n, t, dir);
 	a = get_su3vec_from_field_eo(A, nn_eo);
-	
+
 	eta_mod = get_modified_stagg_phase(n, dir);
 	a = su3vec_times_complex(a, eta_mod);
-	
+
 	b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
 	tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
 #ifdef _CP_IMAG_
@@ -114,8 +114,8 @@ ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType 
 	tmp = traceless_antihermitian_part(tmp);
 	aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
 	////////////////////////////////////////////////
-	
-	return build_ae_from_su3(aux);  
+
+	return build_ae_from_su3(aux);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
 		//caculate (pos,time) out of id_local depending on evenodd
 		st_index pos = (evenodd == EVEN) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
-		
+
 		ae tmp;
 		for(dir_idx dir = 0; dir < 4; ++dir) {
 			tmp = fermion_staggered_partial_force_eo_local(field, A, B, pos, dir);
@@ -141,6 +141,3 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 		}
 	}
 }
-
-
-

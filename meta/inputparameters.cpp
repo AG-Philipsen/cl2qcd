@@ -14,11 +14,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "inputparameters.hpp"
@@ -83,7 +83,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 	po::options_description desc;
 	desc.add(cmd_opts)
 		.add(ParametersConfig::getOptions());
-		
+
 	if(parameterSet == "su3heatbath")
 	{
 		desc.add(ParametersIo::getOptions())
@@ -143,14 +143,14 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		.add(ParametersRhmc::getOptions())
 		.add(ParametersTest::getOptions());
 	}
-	
+
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
 	if(vm.count("help")) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
 		std::cout << desc << '\n';
 		throw Inputparameters::parse_aborted();
 	}
-	
+
 	if(vm.count("input-file")) {
 		std::string config_file = vm["input-file"].as<std::string>();
 		ConfigFileNormalizer normalizer;
@@ -167,7 +167,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		//todo: do not pass the "help" option...
 		po::store(po::parse_config_file(normalized_file_stream, desc, false), vm);
 	}
-	
+
 	po::notify(vm); // checks whether all required arguments are set
 
 	// handle the enumeration types

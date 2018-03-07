@@ -11,20 +11,20 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
  * Kernel for the standard Wilson-action gauge force calculation.
- * 
+ *
  * According to the Gattringer book (page 198) the gauge part of the force should be
  * @code
- * F_G = - \beta/6 * \sum_{k=1}^8 T_k Tr[i * T_k * (U*V - V^\dag*U^\dag)] 
- * 
+ * F_G = - \beta/6 * \sum_{k=1}^8 T_k Tr[i * T_k * (U*V - V^\dag*U^\dag)]
+ *
  *     = - \beta/12 * i * (U*V - V^\dag*U^\dag)
  * @endcode
  * where V are the well known staples. Nevertheless this expression is not in
@@ -32,13 +32,13 @@
  * algorithm for numerical simulation of QCD), where we found
  * @code
  * F_G = - \beta/6 * i * (U*V - V^\dag*U^\dag)
- * 
+ *
  *     = - \beta/3 * \sum_{k=1}^8 T_k Tr[i * T_k * (U*V - V^\dag*U^\dag)]  .
  * @endcode
  * Then there is a factor 1/2 of discrepancy. Actually, this is only apparent:
  * Gattringer and Gottlieb use different factors in the gaugemomenta part of the action
  * (compare eq.(8.35) of the first with eq.(4) of the second).
- * 
+ *
  * @note It is worth recalling that an overall factor in the force calculation does
  *       not affect the correctness of the (R)HMC algorithm. In fact (thinking to
  *       leapfrog, see page 197 Gattringer), this factor would mean to have a different
@@ -47,7 +47,7 @@
  *       he will deduce a certain time step. A missing overall factor in the force
  *       calculation would affect the time step and therefore all the fields would
  *       evolve for less or more time!
- * 
+ *
  * @attention Now, here, as one can see reading the code, the matrix U*V is calculated
  *            and then the function tr_lambda_u is called on it. This function returns
  *            Tr[i * T_k * (U*V - V^\dag*U^\dag)] that is multiplied ONLY by @f$ -\beta/3 @f$.
@@ -67,7 +67,7 @@
  *            code is exactly "the right one", namely that which can be analitically derived
  *            from the action. If the eq. of motion should be integrated for a time interval Dt,
  *            then tau must be Dt.
- *            
+ *
  */
 
 inline void gauge_force_per_link(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out, const st_index pos, const dir_idx dir) {

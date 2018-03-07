@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -25,12 +25,12 @@
 hmc_float calculate_vz_correlator(const spinor in1, const spinor in2, const spinor in3, const spinor in4)
 {
 	hmc_float correlator = 0.0f;
-	
+
 	correlator += su3vec_squarenorm(in1.e0) - su3vec_squarenorm(in1.e1) + su3vec_squarenorm(in1.e2) - su3vec_squarenorm(in1.e3);
 	correlator += -su3vec_squarenorm(in2.e0) + su3vec_squarenorm(in2.e1) - su3vec_squarenorm(in2.e2) + su3vec_squarenorm(in2.e3);
 	correlator += su3vec_squarenorm(in3.e0) - su3vec_squarenorm(in3.e1) + su3vec_squarenorm(in3.e2) - su3vec_squarenorm(in3.e3);
 	correlator += -su3vec_squarenorm(in4.e0) + su3vec_squarenorm(in4.e1) - su3vec_squarenorm(in4.e2) + su3vec_squarenorm(in4.e3);
-	
+
 	return correlator;
 }
 
@@ -57,7 +57,7 @@ __kernel void correlator_vz_z(__global hmc_float * const restrict out, __global 
 					spinor tmp2 = phi2[get_pos(nspace, t)];
 					spinor tmp3 = phi3[get_pos(nspace, t)];
 					spinor tmp4 = phi4[get_pos(nspace, t)];
-					
+
 					correlator += calculate_vz_correlator(tmp1, tmp2, tmp3, tmp4);
 				}
 			}
@@ -100,7 +100,7 @@ __kernel void correlator_vz_t(__global hmc_float * const restrict out, __global 
 					spinor tmp2 = phi2[get_pos(nspace, t)];
 					spinor tmp3 = phi3[get_pos(nspace, t)];
 					spinor tmp4 = phi4[get_pos(nspace, t)];
-					
+
 					correlator += calculate_vz_correlator(tmp1, tmp2, tmp3, tmp4);
 				}
 			}

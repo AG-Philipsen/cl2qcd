@@ -1,6 +1,6 @@
 /** @file
  * Tests of the multi-shifted inverter algorithm
- * 
+ *
  * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "solver_shifted.hpp"
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 {
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
-	
+
 	meta::Inputparameters* params;
 	for(int i=0; i<2; i++){
 	    if(i==0){
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
-	
+
 	meta::Inputparameters* params;
 	for(int i=0; i<2; i++){
 	    if(i==0){
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
-	
+
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01", "--num_dev=1"};
 	meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
@@ -172,13 +172,13 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
-	
+
 	//These are some possible values of sigma
 	Rational_Approximation approx(16, 1,2, 1.e-5,1);
-	
+
 	std::vector<hmc_float> sigma = approx.Get_b();
 	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-	
+
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	Staggeredfield_eo b(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
         out.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
 	//This field is that of the test explicit_stagg, part 2 (D_KS_eo) (ref_vec_odd because the seed is 123)
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
-	
+
 	//These are the sqnorms of the output of the CG-M algorithm from the reference code
 	std::vector<hmc_float> sqnorms_ref;
 	sqnorms_ref.push_back(3790.2414703421331978);
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	sqnorms_ref.push_back(6.2407847688851161294);
 	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
-	
+
 	std::vector<hmc_float> sqnorm_out;
 	for(uint i=0; i<sigma.size(); i++){
 		sqnorm_out.push_back(squarenorm(*out[i]));
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
-	
+
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01", "--num_dev=1"};
 	meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
@@ -240,14 +240,14 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 
 	std::vector<hmc_float> sigma(1, 0.0);
 	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-	
+
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	Staggeredfield_eo b(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
     std::vector<std::shared_ptr<Staggeredfield_eo> > out;
     for(uint i=0; i<sigma.size(); i++)
         out.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-	
+
 	{
 	//Cold b
 	b.set_cold();
@@ -255,12 +255,12 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	hmc_float sqnorms_ref = 9.0597433493689383255;
 	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
-	
+
 	hmc_float sqnorm_out = squarenorm(*out[0]);
 	logger.info() << "sqnorm(out)=" << std::setprecision(16) << sqnorm_out;
 	BOOST_CHECK_CLOSE(sqnorms_ref, sqnorm_out, 1.e-8);
 	}
-	
+
 	{
 	//This field is that of the test explicit_stagg, part 2 (D_KS_eo) (ref_vec_odd because the seed is 123)
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
@@ -268,10 +268,9 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	hmc_float sqnorms_ref = 3790.3193634090343949;
 	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
-	
+
 	hmc_float sqnorm_out = squarenorm(*out[0]);
 	logger.info() << "sqnorm(out)=" << std::setprecision(16) << sqnorm_out;
 	BOOST_CHECK_CLOSE(sqnorms_ref, sqnorm_out, 1.e-8);
 	}
 }
-

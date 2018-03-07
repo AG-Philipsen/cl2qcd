@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // use the boost test framework
@@ -56,7 +56,7 @@ Sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 	srcFileParams.ly = 3;
 	srcFileParams.lz = 3;
 	srcFileParams.lt = 5;
-	
+
 	srcFileParams.prec = getPrecisionOfDoubleInBits();
 	srcFileParams.num_entries = getElementsOfGaugefield(
 		srcFileParams.lx, srcFileParams.ly, srcFileParams.lz, srcFileParams.lt);
@@ -67,14 +67,14 @@ Sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 	srcFileParams.beta = -12.345678;
 	srcFileParams.kappa = -56.7890;
 	srcFileParams.mu = -56.7890;
-	
+
 	srcFileParams.field = getFieldType_gaugefield();
 	srcFileParams.date = "someDate";
 	srcFileParams.hmcversion = "0.0";
 	srcFileParams.solvertype = "someSolver";
 	srcFileParams.hmcversion_solver = "notImplemented";
 	srcFileParams.date_solver = "someDate";
-	
+
 	return srcFileParams;
 }
 
@@ -105,7 +105,7 @@ void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefilepar
   BOOST_REQUIRE_EQUAL(toCheck1.c2_rec, toCheck2.c2_rec);
   BOOST_REQUIRE_EQUAL(toCheck1.mubar, toCheck2.mubar);
   BOOST_REQUIRE_EQUAL(toCheck1.epsilonbar, toCheck2.epsilonbar);
-	
+
 	BOOST_REQUIRE_EQUAL(toCheck1.field, toCheck2.field);
 	BOOST_CHECK_EQUAL(toCheck1.date, toCheck2.date);
 	BOOST_CHECK_EQUAL(toCheck1.hmcversion, toCheck2.hmcversion);
@@ -118,7 +118,7 @@ void writeEmptyGaugefieldFromSourcefileParameters(const meta::Inputparameters * 
 {
 	const n_uint64_t numberElements = getNumberOfElements_gaugefield(parameters);
 	std::vector<Matrixsu3> gaugefield(numberElements);
-	
+
 	const physics::lattices::GaugefieldParametersImplementation tmp (parameters);
 	Inputparameters test2( &tmp );
 	IldgIoParameters_gaugefield test(&test2);
@@ -133,16 +133,16 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 	const meta::Inputparameters parameters(7, tmp);
 	//TODO: test with single?
 	std::string configurationName = "conf.test";
-	
+
 	writeEmptyGaugefieldFromSourcefileParameters(&parameters, configurationName);
-	
+
 	Matrixsu3 * readBinaryData = nullptr;
 	const physics::lattices::GaugefieldParametersImplementation tmp2 (&parameters);
 	Inputparameters test2( &tmp2 );
 	IldgIoParameters_gaugefield test(&test2);
 	IldgIoReader_gaugefield readGaugefield(configurationName, &test, &readBinaryData);
 	delete readBinaryData;
-	
+
 	compareTwoSourcefileParameters(srcFileParams_1, readGaugefield.parameters);
 }
 
@@ -159,7 +159,7 @@ void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
 	BOOST_REQUIRE_EQUAL(0., in.e20.re);
 	BOOST_REQUIRE_EQUAL(0., in.e21.re);
 	BOOST_REQUIRE_EQUAL(1., in.e22.re);
-	
+
 	BOOST_REQUIRE_EQUAL(0., in.e00.im);
 	BOOST_REQUIRE_EQUAL(0., in.e01.im);
 	BOOST_REQUIRE_EQUAL(0., in.e02.im);
@@ -168,7 +168,7 @@ void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
 	BOOST_REQUIRE_EQUAL(0., in.e12.im);
 	BOOST_REQUIRE_EQUAL(0., in.e20.im);
 	BOOST_REQUIRE_EQUAL(0., in.e21.im);
-	BOOST_REQUIRE_EQUAL(0., in.e22.im);	
+	BOOST_REQUIRE_EQUAL(0., in.e22.im);
 }
 
 void checkMatrixSu3ForFilledType(Matrixsu3 in)
@@ -182,7 +182,7 @@ void checkMatrixSu3ForFilledType(Matrixsu3 in)
 	BOOST_REQUIRE_EQUAL(7., in.e20.re);
 	BOOST_REQUIRE_EQUAL(8., in.e21.re);
 	BOOST_REQUIRE_EQUAL(9., in.e22.re);
-	
+
 	BOOST_REQUIRE_EQUAL(1., in.e00.im);
 	BOOST_REQUIRE_EQUAL(2., in.e01.im);
 	BOOST_REQUIRE_EQUAL(3., in.e02.im);
@@ -191,7 +191,7 @@ void checkMatrixSu3ForFilledType(Matrixsu3 in)
 	BOOST_REQUIRE_EQUAL(6., in.e12.im);
 	BOOST_REQUIRE_EQUAL(7., in.e20.im);
 	BOOST_REQUIRE_EQUAL(8., in.e21.im);
-	BOOST_REQUIRE_EQUAL(9., in.e22.im);	
+	BOOST_REQUIRE_EQUAL(9., in.e22.im);
 }
 
 void checkSumForOneDiagonalMatrix(hmc_complex sum)
@@ -219,7 +219,7 @@ public:
 		gaugefield = std::vector<Matrixsu3>(numberOfElements);
 		Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, Matrixsu3_utilities::FillType::ZERO);
 	}
-	
+
 	n_uint64_t getNumberOfElements() { return numberOfElements; }
 	void setSpecificEntry(Matrixsu3 in, int positionToSet)
 	{
@@ -230,14 +230,14 @@ public:
 			}
 			gaugefield[positionToSet] = in;
 	}
-	
+
 	const std::vector<Matrixsu3> &getField() {return gaugefield; }
 	const meta::Inputparameters * getParameters() {return parameters;}
 	Matrixsu3 getEntry(int position) { return gaugefield[position];}
 	Matrixsu3 * getPointerToField() { return &gaugefield[0]; }
 	void setField(Matrixsu3 * in) { gaugefield.assign(in, in + getNumberOfElements()); }
-	void fillField(Matrixsu3_utilities::FillType fillType) 
-	{ 
+	void fillField(Matrixsu3_utilities::FillType fillType)
+	{
 		if (fillType == Matrixsu3_utilities::RANDOM)
 		{
 			Matrixsu3_utilities::fillMatrixSu3Array_randomMatrix(gaugefield);

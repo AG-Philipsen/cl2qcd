@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "gaugefield.hpp"
@@ -105,7 +105,7 @@ void test_save(bool hot) {
 
 	//NOTE: the conversion to std::string is necessary, otherwise the compiler creates a boolean!
 	Gaugefield reread(system, &parametersTmp, prng, (std::string) "conf.test");
-	
+
 	reread_plaq =  physics::observables::measurePlaquette(&reread, gaugeobservablesParameters);
 	reread_pol = physics::observables::measurePolyakovloop(&reread, gaugeobservablesParameters);
 

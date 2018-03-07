@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -26,8 +26,8 @@ __kernel void update_beta_cgm(__global const hmc_float * sbeta_pres, __global co
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	
-	for(int id_mem = id; id_mem < numeq; id_mem += global_size) 
+
+	for(int id_mem = id; id_mem < numeq; id_mem += global_size)
 	   out[id_mem] = update_beta_cgm_alg(*sbeta_pres, zeta_pres[id_mem], zeta_prev[id_mem]);
-	
+
 }

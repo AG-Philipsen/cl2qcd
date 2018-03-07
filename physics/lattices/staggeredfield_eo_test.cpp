@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "staggeredfield_eo.hpp"
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(sax)
 	physics::lattices::Scalar<hmc_complex> cplx(system);
 	physics::lattices::Scalar<hmc_float> real(system);
 	physics::lattices::Vector<hmc_float> real_vec(5, system);
-	
+
 	//Complex
 	orig_sf.set_gaussian(prng);
 	physics::lattices::sax(&sf, {0.5, 0.}, orig_sf);
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 	zeros.store(zeros_host);
 	ones.store(ones_host);
 	alpha.store(alpha_host);
-	
+
 	Staggeredfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	cold.set_cold();
 	Staggeredfield_eo rnd(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 	std::vector<hmc_float> result_host = result.get();
 	for(uint i=0; i<result_host.size(); i++)
 	  BOOST_CHECK_EQUAL(result_host[i], 0);
-	
+
  	physics::lattices::sax_vec_and_squarenorm(&result, ones, cold);
  	result_host = result.get();
  	for(uint i=0; i<result_host.size(); i++)
@@ -437,13 +437,13 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 	physics::lattices::sax_vec_and_squarenorm(&result, alpha, cold);
 	result_host = result.get();
 	for(uint i=0; i<result_host.size(); i++)
-	  BOOST_CHECK_CLOSE(result_host[i], reference[i], 1.e-8);	
+	  BOOST_CHECK_CLOSE(result_host[i], reference[i], 1.e-8);
 }
 
 BOOST_AUTO_TEST_CASE(pseudorandomize)
 {
 	using physics::lattices::Staggeredfield_eo;
-	
+
 	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
 	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
@@ -452,11 +452,10 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
-	
+
 	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	sf.set_zero();
 	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
 	physics::lattices::pseudo_randomize<Staggeredfield_eo, su3vec>(&sf, 123);
 	logger.info() << "The squarenorm of the pseudorandomized field is " << physics::lattices::squarenorm(sf);
 }
-

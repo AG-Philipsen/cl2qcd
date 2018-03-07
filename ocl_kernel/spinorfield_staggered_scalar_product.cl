@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // complex (!!!) scalarproduct, return in result
@@ -27,7 +27,7 @@
 //  - y: The second staggered field (an su3vec per each site => vector of VOL4D
 //       components that are su3vec varibles)
 //  - result: Vector of hmc_complex that will contain the sums of the components
-//            of the result_local vectors. In other words, each component of 
+//            of the result_local vectors. In other words, each component of
 //            this vector will contain the sum of all scalarproduct that have
 //            been mapped to the threads within a group. Therefore result is a
 //            vector with num_groups components.
@@ -69,7 +69,7 @@ __kernel void scalar_product_staggered( __global const su3vec * const restrict x
 	   (result_local[idx]).im = sum.im;
 	   //sync threads
 	   barrier(CLK_LOCAL_MEM_FENCE);
-	   
+
 	   //reduction until threads 0-7 hold all partial sums
 	   int cut1;
 	   int cut2 = local_size;
@@ -95,4 +95,3 @@ __kernel void scalar_product_staggered( __global const su3vec * const restrict x
 	}
 	return;
 }
-

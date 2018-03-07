@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "staggeredChiralCondensate.hpp"
@@ -40,7 +40,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	 * calculate directly the inverse staggered Dirac matrix M^{-1} is too costly,
 	 * noise estimators are used. This means that
 	 * @code
-	 * Tr(M^{-1}) = < eta^dag * M^{-1} * eta > 
+	 * Tr(M^{-1}) = < eta^dag * M^{-1} * eta >
 	 * @endcode
 	 * where eta is the noise estimator whose each number (each component per each site)
 	 * is drawn independently from the others. The last equation above is only true if
@@ -58,7 +58,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	 * be shown that
 	 * @code
 	 * (M^dag * eta) = (m*eta_e - Deo*eta_o, m*eta_o - Doe*eta_e)
-	 * 
+	 *
 	 * (M^dag*M)^{-1} M^dag * eta_i = ( [(M^dag*M)^{-1}]ee * (m*eta_e - Deo*eta_o),
 	 *                                  [(M^dag*M)^{-1}]oo * (m*eta_o - Doe*eta_e) ) \equiv (chi_e, chi_o)
 	 * @endcode
@@ -74,17 +74,17 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	 * @endcode
 	 * where L in the following is obtained from the parameterInterface.
 	 */
-	
+
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
-	
+
 	const physics::observables::StaggeredChiralCondensateParametersInterface& parametersInterface = interfacesHandler.getStaggeredChiralCondensateParametersInterface();
 	const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Staggeredfield_eo>();
 	const int number_sources = parametersInterface.getNumberOfSources();
 	const hmc_float mass = additionalParameters.getMass();
 	//Result
-	hmc_complex pbp = {0.0, 0.0}; 
-	
+	hmc_complex pbp = {0.0, 0.0};
+
 	for(int i=0; i<number_sources; i++){
 	  //Noise sources
 	  Staggeredfield_eo eta_e(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -97,22 +97,22 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  physics::fermionmatrix::D_KS_eo Deo(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
 	  physics::fermionmatrix::D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
 	  physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-	  
+
 	  /***********************************************************************************************/
 	  set_volume_source(&eta_e, prng);
 	  set_volume_source(&eta_o, prng);
-	  
+
 	  //Calculate chi_e = [(M^dag*M)^{-1}]ee * (m*eta_e - Deo*eta_o)   using chi_o as temporary field
 	  Deo(&chi_o, gf, eta_o);
 	  saxpby(&chi_o, mass, eta_e, -1.0, chi_o);
 	  //Here the CGM as standard CG is used
 	  std::vector<hmc_float> sigma(1, 0.0); //only one shift set to 0.0
 	  cg_m(chi_e, MdagM, gf, sigma, chi_o, system, interfacesHandler, parametersInterface.getSolverPrecision(), additionalParameters);
-	  
+
 	  //Calculate chi_o = 1/m * (eta_o - Doe * chi_e)
 	  Doe(&chi_o, gf, *(chi_e[0]));
 	  saxpby(&chi_o, 1.0/mass, eta_o, -1.0/mass, chi_o);
-	  
+
 	  //Build up the trace of M^{-1}, namely pbp += (eta_e^dag_i * chi_e + eta_o^dag_i * chi_o)
 	  Scalar<hmc_complex> tmp1(system);
 	  Scalar<hmc_complex> tmp2(system);
@@ -121,13 +121,13 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  add(&tmp1, tmp1, tmp2);
 	  pbp += tmp1.get();
 	}
-	
+
 	//Multiply by the overall factor, namely pbp = 1/VOL4D*N_flavour/4 * <Tr(M^{-1})>
 	//Here we also divide by number_sources that has not yet been done.
 	hmc_float factor = 1.0/parametersInterface.get4dVolume() * parametersInterface.getNumberOfTastes() * 0.25 / number_sources;
 	pbp.re *= factor;
 	pbp.im *= factor;
-	
+
 	return pbp;
 }
 
@@ -158,7 +158,6 @@ void physics::observables::staggered::measureChiralCondensateAndWriteToFile(cons
         outputToFile << pbp[i].re << "   ";
     }
     outputToFile << std::endl;
-    outputToFile.close();  
+    outputToFile.close();
     logger.info () << "  ...done!";
 }
-

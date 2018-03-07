@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // Description of variables of saxpby:
@@ -58,7 +58,7 @@ __kernel void saxpby_cplx_arg_staggered_eoprec(__global const spinorStorageType 
 		x_tmp = su3vec_times_complex(x_tmp, alpha);
 		su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
 		y_tmp = su3vec_times_complex(y_tmp, beta);
-		
+
 		su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
 		put_su3vec_to_field_eo(out, id_mem, out_tmp);
 	}

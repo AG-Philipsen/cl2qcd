@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "wilsonTwoFlavourChiralCondensate.hpp"
@@ -32,11 +32,11 @@ public:
                              std::string configurationName = "conf.default", int iteration = 0);
   TwoFlavourChiralCondensate() = delete;
   ~TwoFlavourChiralCondensate();
-  
+
   std::vector<double> getChiralCondensate();
   void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, physics::InterfacesHandler & interfacesHandler);
   void writeChiralCondensateToFile();
-  
+
 private:
   const physics::lattices::Gaugefield * gaugefield;
   const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface;
@@ -47,7 +47,7 @@ private:
   std::ofstream outputToFile;
   std::string filenameForChiralCondensateData;
   std::string configurationName;
-  
+
   void checkInputparameters();
   double norm_std() const ;
   double norm_tm() const;
@@ -87,7 +87,7 @@ void TwoFlavourChiralCondensate::checkInputparameters()
 	{
 		throw std::logic_error("Chiral condensate calculation disabled in parameter setting. Aborting...");
 	}
-	
+
 	checkFermionAction(parametersInterface);
 	checkChiralCondensateVersion(parametersInterface);
 }
@@ -101,7 +101,7 @@ std::vector<double> TwoFlavourChiralCondensate::getChiralCondensate()
 {
 	return chiralCondensate;
 }
-				
+
 void TwoFlavourChiralCondensate::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, physics::InterfacesHandler & interfacesHandler)
 {
 	logger.info() << "chiral condensate:" ;
@@ -133,7 +133,7 @@ void TwoFlavourChiralCondensate::writeChiralCondensateToFile()
     outputToFile << std::endl;
 }
 
-double TwoFlavourChiralCondensate::norm_std() const 
+double TwoFlavourChiralCondensate::norm_std() const
 {
 	/**
 	 * Normalize for VOL4D, NF and spinor entries (NC * ND = 12)
@@ -156,7 +156,7 @@ double TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::la
 {
 	/**
 	* In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
-	* <pbp> = <ubu + dbd> = 2<ubu>  
+	* <pbp> = <ubu + dbd> = 2<ubu>
 	*       = 2 Tr_(space, colour, dirac) ( D^-1 )
 	*       = lim_r->inf 2/r (Xi_r, Phi_r)
 	* where the estimators satisfy
@@ -211,7 +211,7 @@ void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics
     if( parametersInterface.getPbpVersion() == common::pbp_version::tm_one_end_trick )
 	{
 	  result = flavour_doublet_chiral_condensate_tm(inverted);
-	} 
+	}
 	else
 	{
 	  result = flavourChiralCondensate_std(inverted, sources);
@@ -238,7 +238,7 @@ std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondens
 	return condensate.getChiralCondensate();
 }
 
-double TwoFlavourChiralCondensate::norm_tm() const 
+double TwoFlavourChiralCondensate::norm_tm() const
 {
 	/*
 	 * Normalize for VOL4D, Nf and spinor entries (NC * ND = 12)
@@ -255,10 +255,10 @@ double TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate_tm(const ph
 	 * For twisted-mass fermions one can also employ the one-end trick, which origins from
 	 * D_d - D_u = - 4 i kappa amu gamma_5 <-> D^-1_u - D^-1_d = - 4 i kappa amu gamma_5 (D^-1_u)^dagger D^-1_u
 	 * With this, the chiral condensate is:
-	 * <pbp> = ... 
+	 * <pbp> = ...
 	 *       = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
 	 *       = - 4 i kappa amu Tr ( i gamma_5 gamma_5 (D^-1_u)^dagger D^-1_u )
-	 *       = 4 kappa amu Tr ((D^-1_u)^dagger D^-1_u) 
+	 *       = 4 kappa amu Tr ((D^-1_u)^dagger D^-1_u)
 	 *       = 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
 	 *       = 4 kappa amu lim_r->inf 1/R |Phi_r|^2
 	 * NOTE: Here one only needs Phi...

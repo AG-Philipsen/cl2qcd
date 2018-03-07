@@ -12,11 +12,11 @@
 #
 # CL2QCD is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+# along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Collect all code in this part of the source tree
@@ -152,10 +152,3 @@ add_executable(hardware_code_complex_test complex_test.cpp)
 target_link_libraries(hardware_code_complex_test kernelTestUtilities )
 add_test(hardware_code_complex_CPU       hardware_code_complex_test --use_gpu=false --use_rec12=false)
 add_test(hardware_code_complex_GPU       hardware_code_complex_test --use_gpu=true --use_rec12=false)
-
-
-
-
-
-
-

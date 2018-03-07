@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "staggeredfield_eo.hpp"
@@ -353,7 +353,7 @@ void physics::lattices::saxpby(const Staggeredfield_eo* out, const hmc_complex a
 	auto out_bufs = out->get_buffers();
 	auto x_bufs = x.get_buffers();
 	auto y_bufs = y.get_buffers();
-	
+
 	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}
@@ -372,7 +372,7 @@ void physics::lattices::saxpby(const Staggeredfield_eo* out, const Scalar<hmc_co
 	auto x_bufs = x.get_buffers();
 	auto beta_bufs = beta.get_buffers();
 	auto y_bufs = y.get_buffers();
-	
+
 	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != beta_bufs.size() || out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}
@@ -389,7 +389,7 @@ void physics::lattices::saxpby(const Staggeredfield_eo* out, const hmc_float alp
 	auto out_bufs = out->get_buffers();
 	auto x_bufs = x.get_buffers();
 	auto y_bufs = y.get_buffers();
-	
+
 	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}
@@ -408,7 +408,7 @@ void physics::lattices::saxpby(const Staggeredfield_eo* out, const Scalar<hmc_fl
 	auto x_bufs = x.get_buffers();
 	auto beta_bufs = beta.get_buffers();
 	auto y_bufs = y.get_buffers();
-	
+
 	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != beta_bufs.size() || out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}
@@ -427,7 +427,7 @@ void physics::lattices::saxpby(const Staggeredfield_eo* out, const Vector<hmc_fl
 	auto x_bufs = x.get_buffers();
 	auto beta_bufs = beta.get_buffers();
 	auto y_bufs = y.get_buffers();
-	
+
 	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != beta_bufs.size() || out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}

@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 __kernel void create_timeslice_source(__global spinor * const restrict b, __global rngStateStorageType * const restrict rngStates, int const timeslice)
@@ -52,7 +52,7 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 			  case 1:  //"one"
 			    out_tmp = set_spinor_cold();
 			    break;
-			   
+
 			  case 2: //"z4"
 			    tmp = Z4_complex_number(&rnd);
 			    out_tmp.e0.e0.re = tmp.re;
@@ -91,7 +91,7 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 			    out_tmp.e3.e2.re = tmp.re;
 			    out_tmp.e3.e2.im = tmp.im;
 			    break;
-		
+
 			  case 3: //"gaussian"
 			    /** @todo what is the norm here? */
 			    sigma = 0.5;
@@ -132,9 +132,9 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 			    out_tmp.e3.e2.re = tmp.re;
 			    out_tmp.e3.e2.im = tmp.im;
 			    //multiply by sigma
-			    out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));	  
+			    out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 			    break;
-			    
+
 			  default:
 			    if(id == 0) printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
 			    out_tmp = set_spinor_zero();

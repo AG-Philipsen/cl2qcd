@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "fermionmatrix_stagg.hpp"
@@ -74,18 +74,18 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
-		
+
 		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
 		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
 		logger.info() << "The mass of the fermion is " << params.get_mass();
-		
+
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
-		//Using these seeds I can use for the reference code the fermionic 
+		//Using these seeds I can use for the reference code the fermionic
 		//fields of the explicit_stagg_test file, but pay attention to the fact
 		//that in explicit_stagg_test sf1 is an odd field: you must be coherent!
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 13);
@@ -110,7 +110,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
-		
+
 		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
 		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
@@ -120,7 +120,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
-		//Using these seeds I can use for the reference code the fermionic 
+		//Using these seeds I can use for the reference code the fermionic
 		//fields of the explicit_stagg_test file, but pay attention to the fact
 		//that in explicit_stagg_test sf1 is an odd field: you must be coherent!
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123);
@@ -149,7 +149,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
-		
+
 		physics::fermionmatrix::D_KS_eo matrix1(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
 		physics::fermionmatrix::D_KS_eo matrix2(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
 
@@ -158,7 +158,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
-		//Using these seeds I can use for the reference code the fermionic 
+		//Using these seeds I can use for the reference code the fermionic
 		//fields of the explicit_stagg_test file, but pay attention to the fact
 		//that in explicit_stagg_test sf1 is an odd field: you must be coherent!
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 13);
@@ -183,7 +183,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
-		
+
 		physics::fermionmatrix::D_KS_eo matrix1(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
 		physics::fermionmatrix::D_KS_eo matrix2(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
 
@@ -193,7 +193,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
-		//Using these seeds I can use for the reference code the fermionic 
+		//Using these seeds I can use for the reference code the fermionic
 		//fields of the explicit_stagg_test file, but pay attention to the fact
 		//that in explicit_stagg_test sf1 is an odd field: you must be coherent!
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123);
@@ -205,5 +205,3 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[3], 1.e-8);
 	}
 }
-
-

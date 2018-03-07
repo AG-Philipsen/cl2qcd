@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "staggeredChiralCondensate.hpp"
@@ -59,7 +59,7 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
  	options.push_back("--sourcetype=volume");
 	std::string tmp = "--sourcecontent=" + content;
 	options.push_back(tmp.c_str());
-	
+
 	meta::Inputparameters params(11, &(options[0]));
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -72,9 +72,9 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
 	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 	else //This configuration for the Ref.Code is the same as for example dks_input_5
 	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
-	
+
 	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system, interfacesHandler);
-	
+
 	logger.info() << "Chiral condensate pbp = (" << std::setprecision(12) << pbp.re << ", " << pbp.im << ")";
 	if(content == "one"){
 	  BOOST_CHECK_CLOSE(pbp.re, pbp_ref_re, 1.e-8);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(volume_source_one)
 {
 	test_chiral_condensate_stagg("one", 15.0, {0.0, 0.0}, true, 0);
 	test_chiral_condensate_stagg("one", 0.29411764705882464943, {0.0, 0.0}, true, 1);
-	test_chiral_condensate_stagg("one", 0.20344039707296779351, 
+	test_chiral_condensate_stagg("one", 0.20344039707296779351,
 				     {-0.0065506178486867301658, -0.0065506178486867301658}, false, 0);
 	test_chiral_condensate_stagg("one", 0.25968115501530797395,
 				     {-0.021963576512093983817, -0.021963576512093983817}, false, 1);
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(volume_source_z2)
 	test_chiral_condensate_stagg("z2", 1.0215954074131750051, {0.0, 0.0}, true, 0);
 	test_chiral_condensate_stagg("z2", 0.10167935377929424035,
 				     {-0.023941038345876981125, 0.024737496665225969239}, true, 1);
-	test_chiral_condensate_stagg("z2", 0.21903384850763127356, 
+	test_chiral_condensate_stagg("z2", 0.21903384850763127356,
 				     {-0.051079063817292484628, 0.051362451897559530112}, false, 0);
 	test_chiral_condensate_stagg("z2", 0.25440057886149292088,
 				     {-0.045645403465476366844, 0.051219156998163921368}, false, 1);

@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -59,15 +59,14 @@ struct KernelTester
 	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
 			const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
 	virtual ~KernelTester();
-	
+
 protected:
 	const TestParameters testParameters;
 	std::vector<double> kernelResult;
 	ReferenceValues refValues;
-	
+
 	const hardware::System * system;
 	hardware::Device * device;
 	const hardware::HardwareParametersInterface * hardwareParameters;
 	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 };
-

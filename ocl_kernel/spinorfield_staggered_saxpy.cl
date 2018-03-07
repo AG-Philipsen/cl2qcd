@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // Description of variables of saxpy:
@@ -41,7 +41,7 @@ __kernel void saxpy_staggered(__global su3vec * x, __global su3vec * y, __global
 	}
 }
 
-//For the moment this kernel is not needed. 
+//For the moment this kernel is not needed.
 //Uncomment out the region and adapt to staggered fermions (i.e. spinors <---> su3vec) if needed.
 /*
 // the arguments have been hacked to work on apple

@@ -11,18 +11,18 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 __kernel void create_point_source(__global spinor * const restrict b, int i, int spacepos, int timepos)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
-	
+
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 	  for(int y = 0; y<NSPACE; y++) {
 	  	for(int z = 0; z<NSPACE; z++) {
@@ -32,20 +32,20 @@ __kernel void create_point_source(__global spinor * const restrict b, int i, int
 	      	coord.y = y;
 	      	coord.z = z;
 	      	int posSpace = get_nspace(coord);
-	      
-			put_spinor_to_field(set_spinor_zero(), b, posSpace, t);  
+
+			put_spinor_to_field(set_spinor_zero(), b, posSpace, t);
 	      }
 	    }
 	  }
 	}
 
 	if(id == 0) {
-		if (SOURCE_CONTENT != 1) //"1" is "one" 
+		if (SOURCE_CONTENT != 1) //"1" is "one"
 		{
 			printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
 			return;
 		}
-	
+
 		//LZ: note that the conversion from m to kappa works as
 		//   M(m) * phi = eta <=> 1/(2kappa) * M(k) * phi = eta
 		//thus we can keep everything as in the orginal basis and only have

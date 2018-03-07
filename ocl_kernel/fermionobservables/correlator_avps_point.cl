@@ -10,11 +10,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -27,7 +27,7 @@ hmc_complex calculate_avps_correlator(const spinor in)
 	hmc_complex correlator;
 	correlator.re = 0.0f;
 	correlator.im = 0.0f;
-	
+
 	restmp = su3vec_scalarproduct(in.e0, in.e2);
 	correlator.re -= restmp.re;
 	correlator.im -= restmp.im;
@@ -35,21 +35,21 @@ hmc_complex calculate_avps_correlator(const spinor in)
 	restmp = su3vec_scalarproduct(in.e1, in.e3);
 	correlator.re -= restmp.re;
 	correlator.im -= restmp.im;
-		
+
 	return correlator;
 }
 
-/*	this is the axial vector 4th component with pseudoscalar (AVPS) correlator in t-direction 
+/*	this is the axial vector 4th component with pseudoscalar (AVPS) correlator in t-direction
 
 	C = tr((D^(-1)(n|m))^dagger * gamma4 * D^(-1)(n|m)), where m is the source position and n is the sink position
-	
+
                   |0   0  -1   0|
 	gamma4 =  |0   0   0  -1|
                   |-1  0   0   0|
                   |0  -1   0   0|
 
 	D^(-1)(n|m) = (phi) with summation over second spin-color index elsewhere.
-*/ 
+*/
 __kernel void correlator_avps_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi)
 {
 	int local_size = get_local_size(0);
@@ -72,7 +72,7 @@ __kernel void correlator_avps_t(__global hmc_float * const restrict out, __globa
 					int nspace = get_nspace(coord);
 					hmc_complex cortmp;
 					spinor tmp = phi[get_pos(nspace, t)];
-					
+
 					cortmp = calculate_avps_correlator(tmp);
 					correlator.re += cortmp.re;
 					correlator.im += cortmp.im;

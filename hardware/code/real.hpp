@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _HARDWARE_CODE_REAL_
@@ -42,31 +42,31 @@ public:
 	friend hardware::Device;
 
 	virtual ~Real();
-	
+
 	/**
 	 * Function to get one element of a buffer
 	 */
 	void set_real_to_vector_element_device(const hardware::buffers::Plain<hmc_float> * in, const int index, const hardware::buffers::Plain<hmc_float> * out) const;
-	
+
 	/**
 	 * Function to set one element of a buffer
 	 */
 	void set_vector_element_to_real_device(const hardware::buffers::Plain<hmc_float> * in, const int index, const hardware::buffers::Plain<hmc_float> * out) const;
-	
+
 	/**
 	 * @param a The numerator of the fraction
 	 * @param b The denominator of the fraction
 	 * @param out A real number containing a/b
 	 */
 	void set_real_to_ratio_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const;
-	
+
 	/**
 	 * @param a The first term of the multiplication
 	 * @param b The second term of the multiplication
 	 * @param out A real number containing a * b
 	 */
 	void set_real_to_product_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const;
-	
+
 	/**
 	 * @param a The first term of the addition
 	 * @param b The second term of the addition
@@ -90,40 +90,40 @@ public:
 	 * @param salpha_prev scalar alpha at the previous iteration (real number)
 	 * @param sigma shifts of the cgm (vector of real numbers)
 	 * @param numeq number of masses of the cgm (unsigned integer)
-	 * @param out (zeta_prev_prev[k] * zeta_prev[k] * sbeta_prev) / 
+	 * @param out (zeta_prev_prev[k] * zeta_prev[k] * sbeta_prev) /
 	 *            / (sbeta_pres * salpha_prev * (zeta_prev_prev[k] - zeta_prev[k]) +
 	 *               + zeta_prev_prev[k] * sbeta_prev * (1 - sigma[k] * beta_pres))
-	 *            
+	 *
 	 *            vector of real numbers.
 	 * @note pres means updated in the iteration in progress
 	 *       prev means updated in the previous iteration
 	 *       prev_prev means updated in the previous but one iteration
 	 */
 	void update_zeta_cgm_device(const hardware::buffers::Plain<hmc_float> * zeta_prev, const hardware::buffers::Plain<hmc_float> * zeta_prev_prev, const hardware::buffers::Plain<hmc_float> * sbeta_prev, const hardware::buffers::Plain<hmc_float> * sbeta_pres, const hardware::buffers::Plain<hmc_float> * salpha_prev, const hardware::buffers::Plain<hmc_float> * sigma, const int numeq, const hardware::buffers::Plain<hmc_float> * out) const;
-	
+
 	/**
 	 * Tool for the multimass conjugate gradient algorithm.
 	 * @param sbeta_pres scalar beta at the present iteration (real number)
-	 * @param zeta_pres zeta at the present iteration (vector of real numbers) 
+	 * @param zeta_pres zeta at the present iteration (vector of real numbers)
 	 * @param zeta_prev zeta at the previous iteration (vector of real numbers)
 	 * @param numeq number of masses of the cgm (unsigned integer)
 	 * @param out sbeta_prev * zeta_pres[k] / zeta_prev[k]   (vector of real numbers)
 	 */
 	void update_beta_cgm_device(const hardware::buffers::Plain<hmc_float> * sbeta_pres, const hardware::buffers::Plain<hmc_float> * zeta_pres, const hardware::buffers::Plain<hmc_float> * zeta_prev, const int numeq, const hardware::buffers::Plain<hmc_float> * out) const;
-	
+
 	/**
 	 * Tool for the multimass conjugate gradient algorithm.
 	 * @param salpha_pres scalar alpha at the present iteration (real number)
-	 * @param zeta_pres zeta at the present iteration (vector of real numbers) 
+	 * @param zeta_pres zeta at the present iteration (vector of real numbers)
 	 * @param beta_pres beta at the present iteration (vector of real numbers)
-	 * @param zeta_prev zeta at the previous iteration (vector of real numbers) 
+	 * @param zeta_prev zeta at the previous iteration (vector of real numbers)
 	 * @param sbeta_pres scalar beta at the present iteration (real number)
 	 * @param numeq number of masses of the cgm (unsigned integer)
 	 * @param out salpha_pres * zeta_pres[k] * beta_pres[k] / (zeta_prev[k] * sbeta_pres)  (vector of real numbers)
 	 */
 	void update_alpha_cgm_device(const hardware::buffers::Plain<hmc_float> * salpha_pres, const hardware::buffers::Plain<hmc_float> * zeta_pres, const hardware::buffers::Plain<hmc_float> * beta_pres, const hardware::buffers::Plain<hmc_float> * zeta_prev, const hardware::buffers::Plain<hmc_float> * sbeta_pres, const int numeq, const hardware::buffers::Plain<hmc_float> * out) const;
-	
-	  
+
+
 	/**
 	 * Print the profiling information to a file.
 	 *
@@ -182,13 +182,13 @@ private:
 	//Setting operations
 	cl_kernel get_elem_vec;
 	cl_kernel set_elem_vec;
-	
+
 	//Single operations
 	cl_kernel ratio;
 	cl_kernel product;
 	cl_kernel sum;
 	cl_kernel difference;
-	
+
 	//Update cgm kernels
 	cl_kernel update_alpha_cgm;
 	cl_kernel update_beta_cgm;

@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "wilsonTwoFlavourChiralCondensate.hpp"
@@ -43,10 +43,10 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
 
-		
+
 		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0, interfacesHandler) , std::logic_error);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_1 )
 	{
 		const char * _params[] = {"foo", "--measure_pbp=false"};
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		logger.info() << "Testing fermion action \"" + actionName + "\" and chiral condensate version \"" + version + "\" for logic error";
 		const char * standardParameters[] = {"foo", "--measure_pbp=true"};
 		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() , version.c_str()};
-		
+
 		meta::Inputparameters params(4, commandLineParameters);
 	    hardware::HardwareParametersImplementation hP(&params);
 	    hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -67,12 +67,12 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
-		
+
 		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0, interfacesHandler) , std::logic_error);
 	}
-	
+
 	std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};
-	
+
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_FERMION_ACTION )
 	{
 		for (int i = 0; i < (int) actionNames.size(); i++)
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 			testInvalidFermionActionAndVersion("--fermact=" + actionNames[i]);
 		}
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_CHIRAL_CONDENSATE_VERSION )
 	{
 		actionNames.push_back("wilson");
@@ -135,10 +135,10 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 
 		std::vector<double> results;
 		results = physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, "conf.test", interfacesHandler);
-		
+
 		BOOST_REQUIRE_EQUAL(numberOfSources, (int) results.size() );
 
-		double testPrecision = 1e-8;		
+		double testPrecision = 1e-8;
 		for (int i = 0; i < (int) referenceValues.size(); i++)
 		{
 			BOOST_REQUIRE_CLOSE(results[i], referenceValues[i], testPrecision);
@@ -149,7 +149,7 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 	{
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
-	
+
 		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "std", (std::string) "false");
 	}
 
@@ -157,7 +157,7 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 	{
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
-	
+
 		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "std", (std::string) "true");
 	}
 
@@ -165,7 +165,7 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 	{
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
-	
+
 		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "tm_one_end_trick");
 	}
 
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE( MEASURE_Z_SLICE )
 	{
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 1.16971963846964e-01);
-	
+
 		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "zslice", (std::string) "std");
 	}
 
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( MEASURE_CONFIGURATION_1 )
 	{
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 6.86307941352032e-02);
-	
+
 		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "zslice", (std::string) "std", (std::string) "false", (std::string) "continue");
 	}
 
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( MEASURE_CONFIGURATION_2 )
 	{
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 1.35706953188924e-01);
-	
+
 		testMeasurement(referenceValues, numberOfSources, (std::string) "wilson", (std::string) "zslice", (std::string) "std", (std::string) "false", (std::string) "continue");
 	}
 

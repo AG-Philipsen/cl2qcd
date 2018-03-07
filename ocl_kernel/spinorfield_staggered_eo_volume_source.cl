@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * const restrict inout, __global rngStateStorageType * const restrict rngStates)
@@ -32,7 +32,7 @@ __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * 
 	prng_loadState(&rnd, rngStates);
 	su3vec out_tmp;
 	hmc_complex tmp;
-	
+
 	for(int id_local = id; id_local < EOPREC_SPINORFIELDSIZE_LOCAL; id_local += global_size) {
 	  site_idx id_mem = get_eo_site_idx_from_st_idx(get_even_st_idx_local(id_local));
 	  switch(SOURCE_CONTENT){
@@ -83,6 +83,3 @@ __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * 
 	}
 	prng_storeState(rngStates, &rnd);
 }
-
-
-

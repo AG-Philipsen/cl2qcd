@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -41,7 +41,7 @@
   *  @param field The links configuration
   *  @param idx_arg The superindex of the site where the output field is returned
   *  @param dir The direction in which D_KS works
-  * 
+  *
   * @note The staggered phases are included in this function with the help of the function
   *       get_modified_stagg_phase @internal(see operations_staggered.cl)@endinternal.
   * \par
@@ -51,7 +51,7 @@
   *       it a complex number. Then we have to multiply each link separately by the staggered
   *       phase, in order to take correctly the complex conjugated. This makes the code more
   *       symmetric and raises the performance.
-  * 
+  *
   * @todo If a chemical potential is introduced, this kernel has to be modified!
   */
 su3vec D_KS_local(__global const su3vec * const restrict in, __global const Matrixsu3StorageType * const restrict field, const st_idx idx_arg, const dir_idx dir)
@@ -64,9 +64,9 @@ su3vec D_KS_local(__global const su3vec * const restrict in, __global const Matr
 
 	//this is used to take into account the staggered phase and the BC-conditions
 	hmc_complex eta_mod;
-	
+
 	out_tmp = set_su3vec_zero();
-	
+
 	//go through the different directions
 	///////////////////////////////////
 	// mu = +dir
@@ -77,12 +77,12 @@ su3vec D_KS_local(__global const su3vec * const restrict in, __global const Matr
 	//chi=U*plus
 	chi = su3matrix_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
-	eta_mod.re *= 0.5; //the factors 0.5 is to take into 
+	eta_mod.re *= 0.5; //the factors 0.5 is to take into
 	eta_mod.im *= 0.5; //account the factor in front of D_KS
 	chi = su3vec_times_complex(chi, eta_mod);
-	
+
 	out_tmp = su3vec_acc(out_tmp, chi);
-	
+
 	///////////////////////////////////
 	// mu = -dir
 	///////////////////////////////////
@@ -92,12 +92,12 @@ su3vec D_KS_local(__global const su3vec * const restrict in, __global const Matr
 	//chi=U^dagger * plus
 	chi = su3matrix_dagger_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
-	eta_mod.re *= 0.5; //the factors 0.5 is to take into 
+	eta_mod.re *= 0.5; //the factors 0.5 is to take into
 	eta_mod.im *= 0.5; //account the factor in front of D_KS
 	chi = su3vec_times_complex_conj(chi, eta_mod); //here conj is crucial for BC that are next to a U^dagger
-	
+
 	out_tmp = su3vec_dim(out_tmp, chi);
-	
+
 	return out_tmp;
 }
 
@@ -113,10 +113,10 @@ su3vec D_KS_local(__global const su3vec * const restrict in, __global const Matr
  *  for a specific (couple of) site(s) and a specific direction see D_KS_local kernel documentation.
  *  This function returns the value of the field (D_KS*in) at the site (n,t) [so in the
  *  function only values of the field "in" in the nextneighbour of (n,t) will be needed].
- * 
+ *
  * @note Again, the staggered phases are included in this function with the help of the function
  *       get_staggered_phase.
- * 
+ *
  * @todo Here there are some #ifdef about the chemical potential: they have been copied from the
  *       Wilson code. Therefore they MUST be checked when a chemical potential will be introduced.
  */
@@ -131,7 +131,7 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	out_tmp = set_su3vec_zero();
 	//this is used to take into account the staggered phase
 	hmc_float eta;
-	
+
 	//go through the different directions
 	///////////////////////////////////
 	// mu = 0
@@ -160,7 +160,7 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	//chi=su3vec_times_real(chi,0.5*get_staggered_phase(n,t,dir));
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_acc(out_tmp,chi);
-	
+
 	/////////////////////////////////////
 	//mu = -0
 	//////////////
@@ -189,12 +189,12 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	//chi=su3vec_times_real(chi,0.5*get_staggered_phase(n,nn,dir));
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_dim(out_tmp,chi);
-	
+
 	///////////////////////////////////
 	//multiply by the factor 1/2*eta_t that appears at the beginning of D_KS
 	///////////////////////////////////
 	eta=0.5*get_staggered_phase(n,t,dir);
-	out_tmp = su3vec_times_real(out_tmp, eta); 
+	out_tmp = su3vec_times_real(out_tmp, eta);
 
 	return out_tmp;
 }
@@ -207,7 +207,7 @@ su3vec dslash_local_1(__global const spinor * const restrict in, __global const 
 	//this is used to save the BC-conditions...
 	hmc_complex bc_tmp;
 	out_tmp = set_su3vec_zero();
-	
+
 	//CP: all actions correspond to the mu = 0 ones
 	///////////////////////////////////
 	// mu = 1
@@ -227,7 +227,7 @@ su3vec dslash_local_1(__global const spinor * const restrict in, __global const 
 	chi=su3matrix_times_su3vec(U,plus);
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_acc(out_tmp,chi);
-	
+
 	///////////////////////////////////
 	//mu = -1
 	/////////////
@@ -243,13 +243,13 @@ su3vec dslash_local_1(__global const spinor * const restrict in, __global const 
 	chi=su3matrix_dagger_times_su3vec(U,plus);
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_dim(out_tmp,chi);
-	
+
 	///////////////////////////////////
 	//multiply by the factor 1/2 that appears at the beginning of D_KS
 	//Observe that in the x direction ALL staggered phases are +1 => no need to multiply
 	///////////////////////////////////
 	out_tmp = su3vec_times_real(out_tmp, F_1_2); //AS: I'm not sure that here F_1_2 is an hmc_float
-		
+
 	return out_tmp;
 }
 
@@ -298,13 +298,13 @@ su3vec dslash_local_2(__global const spinor * const restrict in, __global const 
 	chi=su3matrix_dagger_times_su3vec(U,plus);
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_dim(out_tmp,chi);
-	
+
 	///////////////////////////////////
 	//multiply by the factor 1/2*eta_y that appears at the beginning of D_KS
 	///////////////////////////////////
 	eta=0.5*get_staggered_phase(n,t,dir);
 	out_tmp = su3vec_times_real(out_tmp, eta);
-	
+
 	return out_tmp;
 }
 
@@ -353,13 +353,13 @@ su3vec dslash_local_3(__global const spinor * const restrict in, __global const 
 	chi=su3matrix_dagger_times_su3vec(U,plus);
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_dim(out_tmp,chi);
-	
+
 	///////////////////////////////////
 	//multiply by the factor 1/2*eta_z that appears at the beginning of D_KS
 	///////////////////////////////////
 	eta=0.5*get_staggered_phase(n,t,dir);
-	out_tmp = su3vec_times_real(out_tmp, eta); 
-	
+	out_tmp = su3vec_times_real(out_tmp, eta);
+
 	return out_tmp;
 }
 

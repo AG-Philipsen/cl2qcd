@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "matrixSu3_utilities.hpp"
@@ -46,7 +46,7 @@ Matrixsu3 Matrixsu3_utilities::getFilledMatrix()
 Matrixsu3 getRandomMatrix(boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > > generateRandomNumbers)
 {
 	Matrixsu3 tmp = getZeroMatrix();
-	
+
 	tmp.e00.re = generateRandomNumbers();
 	tmp.e01.re = generateRandomNumbers();
 	tmp.e02.re = generateRandomNumbers();
@@ -56,7 +56,7 @@ Matrixsu3 getRandomMatrix(boost::variate_generator< boost::mt19937&, boost::rand
 	tmp.e20.re = generateRandomNumbers();
 	tmp.e21.re = generateRandomNumbers();
 	tmp.e22.re = generateRandomNumbers();
-	
+
 	tmp.e00.im = generateRandomNumbers();
 	tmp.e01.im = generateRandomNumbers();
 	tmp.e02.im = generateRandomNumbers();
@@ -66,7 +66,7 @@ Matrixsu3 getRandomMatrix(boost::variate_generator< boost::mt19937&, boost::rand
 	tmp.e20.im = generateRandomNumbers();
 	tmp.e21.im = generateRandomNumbers();
 	tmp.e22.im = generateRandomNumbers();
-	
+
 	return tmp;
 }
 
@@ -106,9 +106,9 @@ void Matrixsu3_utilities::fillMatrixSu3Array_randomMatrix(std::vector<Matrixsu3>
 {
 	boost::mt19937 randomNumbergenerator( time( 0 ) );
 	boost::random::uniform_real_distribution< double > uniformDistribution( 0.0, 1.0 );
-	boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > > 
+	boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > >
 	generateRandomNumbers( randomNumbergenerator, uniformDistribution );
-	
+
 	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
 	{
 		in[iteration] = getRandomMatrix(generateRandomNumbers);
@@ -130,10 +130,10 @@ hmc_complex Matrixsu3_utilities::sumUpAllMatrixElements(const std::vector<Matrix
 		local_sum = complexadd(local_sum, in[iteration].e20);
 		local_sum = complexadd(local_sum, in[iteration].e21);
 		local_sum = complexadd(local_sum, in[iteration].e22);
-		
+
 		sum = complexadd(sum, local_sum);
 	}
-	
+
 	return sum;
 }
 
@@ -146,10 +146,10 @@ hmc_complex Matrixsu3_utilities::sumUpDiagonalMatrixElements(const std::vector<M
 		local_sum = complexadd(local_sum, in[iteration].e00);
 		local_sum = complexadd(local_sum, in[iteration].e11);
 		local_sum = complexadd(local_sum, in[iteration].e22);
-		
+
 		sum = complexadd(sum, local_sum);
 	}
-	
+
 	return sum;
 }
 
@@ -165,10 +165,9 @@ hmc_complex Matrixsu3_utilities::sumUpOffDiagonalMatrixElements(const std::vecto
 		local_sum = complexadd(local_sum, in[iteration].e12);
 		local_sum = complexadd(local_sum, in[iteration].e20);
 		local_sum = complexadd(local_sum, in[iteration].e21);
-		
+
 		sum = complexadd(sum, local_sum);
 	}
-	
+
 	return sum;
 }
-

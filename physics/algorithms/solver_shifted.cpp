@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "solvers/solvers.hpp"
@@ -423,18 +423,3 @@ const std::vector<std::shared_ptr<FERMIONFIELD> > physics::algorithms::solvers::
     logger.fatal() << createLogPrefix() << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << residuumValue;
     throw SolverDidNotSolve(iterationNumber, __FILE__, __LINE__);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

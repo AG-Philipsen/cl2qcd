@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "algebra_real.hpp"
@@ -44,7 +44,7 @@ void test_cgm_update(int switcher)
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
-	
+
 	const int numeq = 16;
 	Vector<hmc_float> out(numeq, system);
 	Vector<hmc_float> v1(numeq, system);
@@ -53,7 +53,7 @@ void test_cgm_update(int switcher)
 	Scalar<hmc_float> s1(system);
 	Scalar<hmc_float> s2(system);
 	Scalar<hmc_float> s3(system);
-	
+
 	std::vector<hmc_float> ref_v1(16, 1.);
 	std::vector<hmc_float> ref_v2(16, 2.);
 	std::vector<hmc_float> ref_v3(16, 3.);
@@ -65,7 +65,7 @@ void test_cgm_update(int switcher)
 	s1.store(scalar);
 	s2.store(scalar);
 	s3.store(scalar);
-	
+
 	if(switcher == 0){ //zeta
 	  update_zeta_cgm(&out, v1, v2, s1, s2, s3, v3, numeq);
 	  out_got = out.get();
@@ -84,7 +84,7 @@ void test_cgm_update(int switcher)
 	  for(int i=0; i<numeq; i++)
 	    BOOST_REQUIRE_CLOSE(out_got[i], -0.666666666667, 1.e-8);
 	}
-	
+
 }
 
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(base_operations)
 
 	left.store(1.13);
 	right.store(3.14);
-	
+
 	hmc_float ref_sum = {4.27};
 	hmc_float ref_difference = {-2.01};
 	hmc_float ref_product = {3.5482};
@@ -128,13 +128,13 @@ BOOST_AUTO_TEST_CASE(base_operations)
 
 	add(&res, left, right);
 	BOOST_REQUIRE_CLOSE(ref_sum, res.get(), 1.e-8);
-	
+
 	subtract(&res, left, right);
 	BOOST_REQUIRE_CLOSE(ref_difference, res.get(), 1.e-8);
-	
+
 	multiply(&res, left, right);
 	BOOST_REQUIRE_CLOSE(ref_product, res.get(), 1.e-8);
-	
+
 	divide(&res, left, right);
 	BOOST_REQUIRE_CLOSE(ref_ratio, res.get(), 1.e-8);
 }
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(access_element)
 	  access_real_vector_element(&res, vec, i);
 	  BOOST_REQUIRE_EQUAL(res.get(), 1.13);
 	}
-	
+
 	res.store(3.1415);
 	for(int i=0; i<6; i++){
 	  access_real_vector_element(&vec, res, i);

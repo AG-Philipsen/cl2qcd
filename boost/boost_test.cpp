@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <iostream>
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_SUITE ( BOOST_ARGUMENTS )
 		int expectedNumberOfParameters = 1;
 		checkArgc(expectedNumberOfParameters);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( BOOST_ARGC_2 )
 	{
 		int expectedNumberOfParameters = 2;
@@ -56,15 +56,15 @@ BOOST_AUTO_TEST_SUITE ( BOOST_ARGUMENTS )
 		std::string argument = boost::unit_test::framework::master_test_suite().argv[position];
 		BOOST_REQUIRE_EQUAL(argument, expectedContent);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( BOOST_ARGV )
 	{
 		int expectedNumberOfParameters = 4;
 		checkArgc(expectedNumberOfParameters);
-		
+
 		checkArgv(1, "firstArgument");
 		checkArgv(2, "secondArgument");
 		checkArgv(3, "thirdArgument");
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()

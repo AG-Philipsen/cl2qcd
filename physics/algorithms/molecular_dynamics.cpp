@@ -15,11 +15,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "molecular_dynamics.hpp"
@@ -79,11 +79,11 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
  * In fact, this function makes the operator (Mdag*M) to some rational power act on the
  * Staggeredfield_eo "orig". To be clearer, here the following operation is implemented:
  * @code
- *   out = (a_0 + \sum_{i=1}^k a_i * (Mdag*M + b_i)^{-1} ) * orig 
+ *   out = (a_0 + \sum_{i=1}^k a_i * (Mdag*M + b_i)^{-1} ) * orig
  *       = a_0 * orig + \sum_{i=1}^k a_i * [(Mdag*M + b_i)^{-1} * orig]
  * @endcode
  * where k is the order of the rational approximation, a_0, a_i and b_i are the coefficients.
- * 
+ *
  * @note The coefficients of the approximation are stored in out, since this is the field that
  *       appears in the perform_RHMC_step function.
  */

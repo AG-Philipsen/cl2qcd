@@ -12,11 +12,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _LIMEFILEREADER_HPP_
@@ -32,7 +32,7 @@ public:
 	LimeFileReader(std::string sourceFilenameIn, int precision);
 	//todo: make this private or remove/find better solution?
 	Sourcefileparameters parameters;
-	
+
 	int getReadTrajectoryNumber() noexcept;
 	double getReadPlaquetteValue() noexcept;
 protected:
@@ -44,13 +44,13 @@ protected:
 	void extractInformationFromLimeEntry(char ** destination, size_t expectedNumberOfBytes);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData);
 	void extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char ** destination, size_t expectedNumberOfBytes);
-	
+
 	void handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type);
 	void handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes);
 	void handleLimeEntry_scidacChecksum(char * buffer, std::string lime_type, size_t numberOfBytes);
 	void handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error);
 	void handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error);
-	
+
 	int desiredPrecision;
 };
 

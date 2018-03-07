@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -28,7 +28,7 @@ hmc_complex calculate_ay_correlator(const spinor in1, const spinor in2, const sp
 	hmc_complex correlator;
 	correlator.re = 0.0f;
 	correlator.im = 0.0f;
-	
+
 	restmp = su3vec_scalarproduct(in1.e0, in2.e1);
 	correlator.re += restmp.re;
 	correlator.im += restmp.im;
@@ -60,7 +60,7 @@ hmc_complex calculate_ay_correlator(const spinor in1, const spinor in2, const sp
 	restmp = su3vec_scalarproduct(in3.e3, in4.e2);
 	correlator.re -= restmp.re;
 	correlator.im -= restmp.im;
-	
+
 	return correlator;
 }
 
@@ -90,7 +90,7 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 					spinor tmp2 = phi2[get_pos(nspace, t)];
 					spinor tmp3 = phi3[get_pos(nspace, t)];
 					spinor tmp4 = phi4[get_pos(nspace, t)];
-					
+
 					cortmp = calculate_ay_correlator(tmp1, tmp2, tmp3, tmp4);
 					correlator.re += cortmp.re;
 					correlator.im += cortmp.im;
@@ -138,7 +138,7 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 					spinor tmp2 = phi2[get_pos(nspace, t)];
 					spinor tmp3 = phi3[get_pos(nspace, t)];
 					spinor tmp4 = phi4[get_pos(nspace, t)];
-					
+
 					cortmp = calculate_ay_correlator(tmp1, tmp2, tmp3, tmp4);
 					correlator.re += cortmp.re;
 					correlator.im += cortmp.im;

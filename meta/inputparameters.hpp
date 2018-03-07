@@ -14,11 +14,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _META_INPUTPARAMETERS_HPP_
@@ -52,15 +52,15 @@ namespace meta {
  * This class is copyable and assignable, but should
  * be used as a const value after initialization.
  */
-	class Inputparameters : 
+	class Inputparameters :
 		public ParametersConfig,
 		public ParametersIo,
-		public ParametersObs, 
+		public ParametersObs,
 		public ParametersGauge,
 		public ParametersFermion,
 		public ParametersSources,
 		public ParametersSolver,
-		public ParametersHmc, 
+		public ParametersHmc,
 		public ParametersHeatbath,
 		public ParametersRhmc,
 		public ParametersTest

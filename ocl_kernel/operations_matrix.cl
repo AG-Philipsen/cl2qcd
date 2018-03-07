@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -609,27 +609,27 @@ inline Matrix3x3 traceless_antihermitian_part(Matrix3x3 in)
 {
 	Matrix3x3 out;
 	hmc_float trace = (in.e00.im + in.e11.im + in.e22.im) / 3.0;
-	
+
 	out.e00.re = 0.0;
 	out.e11.re = 0.0;
 	out.e22.re = 0.0;
 	out.e00.im = in.e00.im - trace;
 	out.e11.im = in.e11.im - trace;
 	out.e22.im = in.e22.im - trace;
-	
+
 	out.e01.re = 0.5 * (in.e01.re - in.e10.re);
 	out.e01.im = 0.5 * (in.e01.im + in.e10.im);
 	out.e02.re = 0.5 * (in.e02.re - in.e20.re);
 	out.e02.im = 0.5 * (in.e02.im + in.e20.im);
 	out.e12.re = 0.5 * (in.e12.re - in.e21.re);
 	out.e12.im = 0.5 * (in.e12.im + in.e21.im);
-	
+
 	out.e10.re = -out.e01.re;
 	out.e10.im =  out.e01.im;
 	out.e20.re = -out.e02.re;
 	out.e20.im =  out.e02.im;
 	out.e21.re = -out.e12.re;
 	out.e21.im =  out.e12.im;
-	
+
 	return out;
 }

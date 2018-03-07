@@ -15,11 +15,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "metropolis.hpp"
@@ -209,11 +209,11 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 /**
  * This function returns the value of the fermionic part of the action for the RHMC, i.e.
  * \f$ \phi_j^*\,(M^\dag\,M)^{-\frac{N_f}{4}}\,\phi_j \f$.
- * 
- * Here, we use the coefficients of the rational expansion of \f$ x^{-\frac{N_f}{4}} \f$ 
+ *
+ * Here, we use the coefficients of the rational expansion of \f$ x^{-\frac{N_f}{4}} \f$
  * included in the Rooted_Staggeredfield_eo object to calculate \f$ (M^\dag\,M)^{-\frac{N_f}{4}}\,\phi_j \f$
  * (using the multi-shifted inverter). Then a scalar product give the returning value.
- * 
+ *
  */
 hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi,
                                               const hardware::System& system, physics::InterfacesHandler& interfacesHandler,

@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // real part of complex (!!!) scalarproduct, return in result
@@ -28,7 +28,7 @@
 //  - y: The second staggered field (an su3vec per each site => vector of VOL4D/2
 //       components that are su3vec varibles)
 //  - result: Vector of hmc_float that will contain the sums of the components
-//            of the result_local vectors. In other words, each component of 
+//            of the result_local vectors. In other words, each component of
 //            this vector will contain the sum of all scalarproduct that have
 //            been mapped to the threads within a group. Therefore result is a
 //            vector with num_groups components.
@@ -47,7 +47,7 @@ __kernel void scalar_product_real_part_staggered_eoprec( __global const staggere
 	int idx = get_local_id(0);
 
 	hmc_float sum = 0.0;
-	
+
 	for(int id_local = id; id_local < EOPREC_SPINORFIELDSIZE_LOCAL; id_local += global_size) {
 		site_idx id_mem = get_eo_site_idx_from_st_idx(get_even_st_idx_local(id_local));
 		su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);

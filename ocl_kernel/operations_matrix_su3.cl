@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -448,7 +448,7 @@ inline ae build_ae_from_su3(Matrixsu3 in)
 	v.e5 =  2 * in.e12.re;
 	v.e6 = -2 * in.e12.im;
 	v.e7 = (in.e00.re + in.e11.re) / F_1_S3;
-	
+
 	return v;
 }
 
@@ -489,11 +489,11 @@ inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	//Here, the stepsize factor is multiplied in right away!!
 	//Also, a factor of 0.5 is taken out to fit the different trace-definition from tmqlcd
 	hmc_float halfeps = epsilon;// *F_1_2;
-	
+
 	#ifdef _RHMC_
 	halfeps/=2.;
 	#endif //_RHMC_
-	
+
 	//CP: this performs 25 flops
 	const Matrixsu3 v = build_su3_from_ae_times_i_times_real(inn, halfeps);
 
@@ -565,7 +565,7 @@ inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	vr.e21.im =         a1.re * v.e21.im + a1.im * v.e21.re + a2.re * v2.e21.im + a2.im * v2.e21.re;
 	vr.e22.re = a0.re + a1.re * v.e22.re - a1.im * v.e22.im + a2.re * v2.e22.re - a2.im * v2.e22.im;
 	vr.e22.im = a0.im + a1.re * v.e22.im + a1.im * v.e22.re + a2.re * v2.e22.im + a2.im * v2.e22.re;
-	
+
 	return vr;
 
 }
@@ -610,4 +610,3 @@ inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor
 	out.e22 = complexmult(in.e22, factor);
 	return out;
 }
-

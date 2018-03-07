@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -27,17 +27,17 @@
  * of opposite parity (i.e. D_KS). The latter can be splitted in the two operators Doe and
  * Deo that connects respectively even sites to odd sites and odd sites to even sites.
  * For instance Doe acting on an even field returns an odd one and vice-versa.
- * 
+ *
  * Here in this kernel we make the Dxy operator act on the field "in" getting the result in the
  * field "out". I wrote on purpose Dxy meaning that this kernel can be both Doe and Deo. To switch
  * between the two one must use the variable evenodd that ALWAYS corresponds to the parity of the
- * OUTPUT field. 
- * 
+ * OUTPUT field.
+ *
  * @param in The even/odd input staggered field
  * @param out The odd/even output staggered field
  * @param field The gauge configuration
  * @param evenodd Parameter to switch between Doe (evenodd==ODD) and Deo (evenodd==EVEN)
- * 
+ *
  * @note This kernel takes into account the staggered phases eta_mu(n), since they
  *       will be NOT included in links (as in the phi-algorithm from Gottlieb and Toussaint).
  *       The reason why we make such a choice is that we can preserve gauge configurations

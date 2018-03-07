@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "algebra_real.hpp"
@@ -39,7 +39,7 @@ void physics::lattices::access_real_vector_element(const Scalar<hmc_float>* out,
 		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->set_real_to_vector_element_device(in_bufs[i], index, out_bufs[i]);
 	}
-}  
+}
 
 void physics::lattices::access_real_vector_element(const Vector<hmc_float>* out, const Scalar<hmc_float>& in, const int index)
 {
@@ -54,7 +54,7 @@ void physics::lattices::access_real_vector_element(const Vector<hmc_float>* out,
 		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->set_vector_element_to_real_device(in_bufs[i], index, out_bufs[i]);
 	}
-}  
+}
 
 void physics::lattices::add(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& left, const Scalar<hmc_float>& right)
 {
@@ -137,7 +137,7 @@ void physics::lattices::update_zeta_cgm(const Vector<hmc_float>* out, const Vect
 	   num_bufs != salpha_prev_bufs.size() || num_bufs != sigma_bufs.size()) {
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
-	
+
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->update_zeta_cgm_device(zeta_prev_bufs[i], zeta_prev_prev_bufs[i], sbeta_prev_bufs[i], sbeta_pres_bufs[i], salpha_prev_bufs[i], sigma_bufs[i], numeq, out_bufs[i]);
@@ -157,7 +157,7 @@ void physics::lattices::update_beta_cgm(const Vector<hmc_float>* out, const Scal
 	   num_bufs != sbeta_pres_bufs.size()) {
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
-	
+
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->update_beta_cgm_device(sbeta_pres_bufs[i], zeta_pres_bufs[i], zeta_prev_bufs[i], numeq, out_bufs[i]);
@@ -174,13 +174,13 @@ void physics::lattices::update_alpha_cgm(const Vector<hmc_float>* out, const Sca
 	auto beta_pres_bufs = beta_pres.get_buffers();
 	auto zeta_prev_bufs = zeta_prev.get_buffers();
 	auto sbeta_pres_bufs = sbeta_pres.get_buffers();
-	
+
 	if(num_bufs != salpha_pres_bufs.size() || num_bufs != zeta_pres_bufs.size() ||
 	   num_bufs != beta_pres_bufs.size() || num_bufs != zeta_prev_bufs.size() ||
 	   num_bufs != sbeta_pres_bufs.size()) {
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
-	
+
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->update_alpha_cgm_device(salpha_pres_bufs[i], zeta_pres_bufs[i], beta_pres_bufs[i], zeta_prev_bufs[i], sbeta_pres_bufs[i], numeq, out_bufs[i]);
@@ -201,6 +201,3 @@ size_t physics::lattices::get_flops_update_cgm(const std::string quantity, const
 	else
 	  throw Invalid_Parameters("Quantity unknown in get_flops_update_cgm", "alpha, beta or zeta", quantity);
 }
-
-
-

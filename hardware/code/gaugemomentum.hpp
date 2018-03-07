@@ -16,11 +16,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -65,7 +65,7 @@ public:
 	 * @param out The output gaugemomentum field alpha*x + y (one ae per site)
 	 */
 	void saxpy_device(const hardware::buffers::Gaugemomentum * x, const hardware::buffers::Gaugemomentum * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::Gaugemomentum * out) const;
-	
+
 	/**
 	 * Import data from the gaugemomenta array into the given buffer.
 	 *
@@ -120,7 +120,7 @@ protected:
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
-	
+
 	/**
 	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
 	 * 	It may be made private again in the future!

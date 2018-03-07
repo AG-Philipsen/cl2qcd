@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_
@@ -29,8 +29,8 @@
 
 namespace physics {
   namespace observables {
-    namespace staggered { 
-  
+    namespace staggered {
+
       /**
        * Calculate chiral condesate with noise estimators (only volume source is accepted so far)
        * with the content and the number of the sources as specified in Inputparameters
@@ -40,12 +40,12 @@ namespace physics {
        */
       hmc_complex measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system,
                                           physics::InterfacesHandler& interfacesHandler);
-      
+
        /**
        * Calculate chiral condesate as above and write the result to file according to the Inputparameters options
        */
       void measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration, physics::InterfacesHandler& interfacesHandler);
-      
+
     }
   }
 }

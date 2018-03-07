@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _HARDWARE_CODE_COMPLEX_
@@ -49,21 +49,21 @@ public:
 	 * @param out A complex number containing "in"
 	 */
 	void set_complex_to_float_device(const hardware::buffers::Plain<hmc_float> * in, const hardware::buffers::Plain<hmc_complex> * out) const;
-	
+
 	/**
 	 * @param a The numerator of the fraction
 	 * @param b The denominator of the fraction
 	 * @param out A complex number containing a/b
 	 */
 	void set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
-	
+
 	/**
 	 * @param a The first term of the multiplication
 	 * @param b The second term of the multiplication
 	 * @param out A complex number containing a * b
 	 */
 	void set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
-	
+
 	/**
 	 * @param a The first term of the addition
 	 * @param b The second term of the addition
@@ -77,7 +77,7 @@ public:
 	 * @param out A complex number containing a - b
 	 */
 	void set_complex_to_difference_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
-	
+
 	/**
 	 * Print the profiling information to a file.
 	 *

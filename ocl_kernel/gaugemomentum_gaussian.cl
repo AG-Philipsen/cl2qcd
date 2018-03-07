@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @todo rewrite gaussianComplexVector to handle structs??*/
@@ -53,7 +53,7 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 			tmp = gaussianNormalPair(&rnd);
 			new_ae.e6 =  tmp.re;
 			new_ae.e7 =  tmp.im;
-			
+
 #ifdef _RHMC_
 		// multiply by sigma because gaussianNormalPair generates a couple
 		// of real gaussian number distributed with variance 1. In the RHMC
@@ -64,7 +64,7 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 		// that means sigma^2=2 and hence sigma=sqrt(2).
 			new_ae = ae_times_factor(new_ae, sqrt(2.));
 #endif
-			
+
 			putAe(out, id_mem, new_ae);
 		}
 	}

@@ -11,16 +11,16 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
  * General utilities for staggered code (e.g. calculation of staggered phases)
- * 
+ *
  * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  */
 
@@ -44,12 +44,12 @@
                \mu=1 &\quad\mbox{means}\quad x=n_1 \\
                \mu=2 &\quad\mbox{means}\quad y=n_2 \\
                \mu=3 &\quad\mbox{means}\quad z=n_3 \\
-               \mu=4 &\quad\mbox{means}\quad t=n_4 
+               \mu=4 &\quad\mbox{means}\quad t=n_4
              \end{aligned}
          \f]
  *
  * \internal
- * 
+ *
  * Strictly speaking we have:
  *
  *  In x direction --> eta_x=1
@@ -62,7 +62,7 @@
  * @param n this is the spatial superindex of the site (see st_idx.space in operation_geometry.cl)
  * @param dir this is the direction of the staggered phase. To be automatically coherent with
  *             the choice of labels made in operation_geometry.cl, it can be YDIR, ZDIR or TDIR.
- *      
+ *
  */
 int get_staggered_phase(const int n, const int dir)
 {
@@ -103,24 +103,24 @@ hmc_complex get_modified_stagg_phase(const int n, const int dir)
 		 (dir==YDIR)*((1-2.*((coord.x)%2))*SPATIAL_IM) +
 		 (dir==ZDIR)*((1-2.*((coord.x+coord.y)%2))*SPATIAL_IM) +
 		 (dir==TDIR)*((1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM);
-	
+
 	/*
 	if(dir==XDIR){
 	  out.re = 1.*SPATIAL_RE;
 	  out.im = 1.*SPATIAL_IM;
 	  return out;
 	}
-	if(dir==YDIR){  
+	if(dir==YDIR){
 	  out.re = (1-2.*((coord.x)%2))*SPATIAL_RE;
 	  out.im = (1-2.*((coord.x)%2))*SPATIAL_IM;
 	  return out;
 	}
-	if(dir==ZDIR){  
+	if(dir==ZDIR){
 	  out.re = (1-2.*((coord.x+coord.y)%2))*SPATIAL_RE;
 	  out.im = (1-2.*((coord.x+coord.y)%2))*SPATIAL_IM;
 	  return out;
 	}
-	if(dir==TDIR){  
+	if(dir==TDIR){
 	  out.re = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE;
 	  out.im = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM;
 	  return out;
@@ -217,7 +217,3 @@ hmc_complex get_mod_stagg_phase(const int n, const int t, const int dir)
 	return out;
 }
 */
-
-
-
-

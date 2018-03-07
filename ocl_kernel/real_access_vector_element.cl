@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -24,12 +24,12 @@
 
 __kernel void get_elem_vector(__global hmc_float * in, const int index, __global hmc_float * out)
 {
-	if(get_global_id(0) == 0) 
+	if(get_global_id(0) == 0)
 	  (*out) =  in[index];
 }
 
 __kernel void set_elem_vector(__global hmc_float * in, const int index, __global hmc_float * out)
 {
-	if(get_global_id(0) == 0) 
+	if(get_global_id(0) == 0)
 	  out[index] =  (*in);
 }

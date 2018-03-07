@@ -11,11 +11,11 @@
 #
 # CL2QCD is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+# along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 from subprocess import *
 import re
@@ -43,7 +43,7 @@ def main():
 	# open tmp file to save the output of the rhmc
 	# NOTE: stdout=PIPE does not work here, apparently no output file is created then
 	subject = Popen(['../../rhmc'] + sys.argv[2:], stdout = PIPE)
-	
+
 
 	for line in subject.stdout:
 		# Echo line to allow checking what's going on

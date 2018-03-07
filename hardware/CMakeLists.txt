@@ -12,11 +12,11 @@
 #
 # CL2QCD is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+# along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Collect all code in this part of the source tree
@@ -59,4 +59,3 @@ add_unit_test_withLibraries(hardware::SynchronizationEvent synchronization_event
 add_executable(openclCompiler_test opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
 target_link_libraries(openclCompiler_test ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(openclCompiler openclCompiler_test)
-

@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _PHYSICS_LATTICES_GAUGEFIELD_
@@ -35,12 +35,12 @@
  */
 namespace physics {
 	namespace lattices {
-		
+
 		/**
 		 * Representation of a gaugefield.
 		 */
 		class Gaugefield {
-			
+
 		public:
 			/**
 			 * Construct a gaugefield based on the input-files of the system
@@ -116,7 +116,7 @@ namespace physics {
 			const physics::PRNG * getPrng() const;
 			const hardware::System * getSystem() const;
 			const GaugefieldParametersInterface * getParameters() const;
-			
+
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;

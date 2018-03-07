@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -24,12 +24,12 @@
 */
 
 /**
-  * This kernel is nothing but the local D_KS working on a particular link in a specific direction, 
+  * This kernel is nothing but the local D_KS working on a particular link in a specific direction,
   * taking into account even-odd preconditioning. Indeed, here there are no conceptual aspects to
   * be implemented to take into account eo-prec. The difference between this kernel and D_KS_local
   * is that here the coordinates of the neighbors have to be transformed into an eoprec index and then
   * the functions get_su3vec_from_field_eo must be used.
-  * \internal (see spinorfield_staggered_eo.cl for these 2 functions) \endinternal  
+  * \internal (see spinorfield_staggered_eo.cl for these 2 functions) \endinternal
   * The expression of D_KS for a specific (couple of) site(s) and a specific direction is
   *  \f[
      (D_{KS})_{n,m,\mu}=\frac{1}{2} \eta_\mu(n)\Bigl[U_\mu(n)\,\delta_{n+\hat\mu,m} - U^\dag_\mu(n-\hat\mu)\,\delta_{n-\hat\mu,m}\Bigr]
@@ -47,7 +47,7 @@
   *  @param dir The direction in which D_KS works
   * @return The field in the idx_arg site is returned. Remark that if the "in" staggered
   *         field is on even sites then idx_arg will be an odd site and vice-versa.
-  * 
+  *
   * @note The staggered phases are included in this function with the help of the function
   *       get_modified_stagg_phase @internal(see operations_staggered.cl)@endinternal.
   * \par
@@ -57,7 +57,7 @@
   *       it a complex number. Then we have to multiply each link separately by the staggered
   *       phase, in order to take correctly the complex conjugated. This makes the code more
   *       symmetric and raises the performance.
-  * \par 
+  * \par
   * @note If an imaginary chemical potential is used, then the links in time direction have to
   *       be multiplied by the phases exp(i\mu) and exp(-i\mu). Actually we multiply temporal
   *       links only by exp(i\mu) because then, backward in time, we use U dagger.
@@ -75,9 +75,9 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 
 	//this is used to take into account the staggered phase and the BC-conditions
 	hmc_complex eta_mod;
-	
+
 	out_tmp = set_su3vec_zero();
-	
+
 	//go through the different directions
 	///////////////////////////////////
 	// mu = +dir
@@ -91,7 +91,7 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	//Actually one could also think to include the imaginary chemical potential
 	//in the staggered phases as done for the boundary conditions. In this case one
 	//should move cpi_tmp to the file operations_staggered.cl
-	if(dir == TDIR){ 
+	if(dir == TDIR){
 	  hmc_complex cpi_tmp = {COSCPI, SINCPI};
 	  U = multiply_matrixsu3_by_complex(U, cpi_tmp);
 	}
@@ -99,12 +99,12 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	//chi=U*plus
 	chi = su3matrix_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
-	eta_mod.re *= 0.5; //the factors 0.5 is to take into 
+	eta_mod.re *= 0.5; //the factors 0.5 is to take into
 	eta_mod.im *= 0.5; //account the factor in front of D_KS
 	chi = su3vec_times_complex(chi, eta_mod);
-	
+
 	out_tmp = su3vec_acc(out_tmp, chi);
-	
+
 	///////////////////////////////////
 	// mu = -dir
 	///////////////////////////////////
@@ -125,11 +125,11 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	//chi=U^dagger * plus
 	chi = su3matrix_dagger_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
-	eta_mod.re *= 0.5; //the factors 0.5 is to take into 
+	eta_mod.re *= 0.5; //the factors 0.5 is to take into
 	eta_mod.im *= 0.5; //account the factor in front of D_KS
 	chi = su3vec_times_complex_conj(chi, eta_mod); //here conj is crucial for BC that are next to a U^dagger
-	
+
 	out_tmp=su3vec_dim(out_tmp,chi);
-	
+
 	return out_tmp;
 }

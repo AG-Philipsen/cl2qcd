@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "ildgIo_gaugefield.hpp"
@@ -45,24 +45,24 @@ IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, c
 	if ( limeFileProp.numberOfBinaryDataEntries >= 1 )
 	{
 		*destination = new Matrixsu3[parametersIn->getNumberOfElements()];
-	
+
 		char * gf_ildg;
-		
+
 		checkLimeFileForFieldType(parameters.field);
 		size_t numberOfBytes = sizeOfGaugefieldBuffer(parameters.num_entries);
-		
+
 		extractDataFromLimeFile(&gf_ildg, numberOfBytes);
-		
+
 		Checksum checksum = ildgIo::calculate_ildg_checksum(gf_ildg, parameters.getSizeInBytes(), parametersIn->getNt(), parametersIn->getNs() );
-	
+
 		copy_gaugefield_from_ildg_format(*destination, gf_ildg, parameters.num_entries, *parametersIn);
-		
+
 		delete[] gf_ildg;
-		
+
 		parameters.checkAgainstChecksum(checksum, parametersIn->ignoreChecksumErrors(), sourceFilenameIn);
 		parameters.checkAgainstInputparameters(parametersIn);
 	}
-	else 
+	else
 	{
 		throw std::logic_error("LIME file does not seem to include binary data. Aborting...");
 	}
@@ -80,17 +80,17 @@ IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & 
 	n_uint64_t num_bytes = getSizeInBytes_gaugefield(parameters->getNumberOfElements());
 	std::vector<char> binary_data(num_bytes);
 	char * binary_data_ptr = &binary_data[0];
-	
+
 	copy_gaugefield_to_ildg_format(binary_data, data, *parameters);
-	
+
 	const Checksum checksum = calculate_ildg_checksum(binary_data_ptr, num_bytes, parameters->getNt(), parameters->getNs() );
 
 	Sourcefileparameters srcFileParameters(parameters, trajectoryNumber, plaquetteValue, checksum, version);
-	
+
 	std::string xlfInfo = srcFileParameters.getInfo_xlfInfo();
 	std::string scidac_checksum = srcFileParameters.getInfo_scidacChecksum();
 	std::string ildgFormat = srcFileParameters.getInfo_ildgFormat_gaugefield();
-	
+
 	writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), limeEntryTypes["xlf"]);
 	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), limeEntryTypes["ildg"]);
 	writeMemoryToLimeFile( binary_data_ptr, num_bytes, limeEntryTypes["ildg binary data"]);

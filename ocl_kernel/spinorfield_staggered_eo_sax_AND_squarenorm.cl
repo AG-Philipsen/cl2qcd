@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // This kernels performs the sax operation with a set of alpha constants and then
@@ -45,7 +45,7 @@ __kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStora
 // 	}
 // 	//sync threads
 // 	barrier(CLK_LOCAL_MEM_FENCE);
-	
+
 	/* Here we have to give up having a completely general kernel, since we cannot allocate an array in
 	 * the private memory with num_fields components (num_fields is not known at compilation time,
 	 * but only at run time). Then we give this number as option to the kernel, but then we must
@@ -54,10 +54,10 @@ __kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStora
 	 * namely the highest rational approximation order used in the RHMC.
 	 * >> TODO Maybe it is worth renaming this kernel that is not so general any more.
 	 */
-	hmc_float sum[RA_MAX_ORDER]; 
+	hmc_float sum[RA_MAX_ORDER];
 	for(uint i=0; i<num_fields; i++)
 	  sum[i]=0.0;
-	
+
 	/* Here I play with indeces: let alpha_idx and site_idx be the indices to cover the set of
 	 * staggered fields. Then we have a superindex s = site_idx + EOPREC_SPINORFIELDSIZE_LOCAL * alpha_idx.
 	 * It ranges between 0 and EOPREC_SPINORFIELDSIZE_LOCAL*num_fields. Then, we can use this superindex
@@ -74,7 +74,7 @@ __kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStora
 		//sqnorms[alpha_idx] += su3vec_squarenorm(x_tmp);
 		sum[alpha_idx] += su3vec_squarenorm(x_tmp);
 	}
-	
+
 	/* At this point each thread has the sum vector with inside some numbers. I must now
 	 * collect these numbers in the right way. The procedure is quite similar to the reduction
 	 * used in the squarenorm kernel, but here result has num_fields components per each working
@@ -82,12 +82,12 @@ __kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStora
 	 * It is s = alpha_idx + num_fields * group_idx and we have
 	 *  - group_idx = s / num_fields
 	 *  - alpha_idx = s - (s / num_fields) * num_fields
-	 * 
+	 *
 	 * The same is valid for result_local that will be a vector with local_size*num_fields components.
 	 * Its superindex will be s = alpha_idx + num_fields * local_idx and we have
 	 *  - local_idx = s / num_fields
 	 *  - alpha_idx = s - (s / num_fields) * num_fields
-	 * 
+	 *
 	 * Here below, the group_idx is group_id and the local_idx is idx.
 	 */
 	if(local_size == 1) {
@@ -114,7 +114,7 @@ __kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStora
 		//thread 0 sums up the last 8 results and stores them in the global buffer
 		if (idx == 0) {
 		  for(uint i=0; i<num_fields; i++){
-		    result[ i + num_fields * group_id ] =  result_local[i + num_fields * 0] + 
+		    result[ i + num_fields * group_id ] =  result_local[i + num_fields * 0] +
 		                                           result_local[i + num_fields * 1] +
 		                                           result_local[i + num_fields * 2] +
 		                                           result_local[i + num_fields * 3] +
@@ -140,7 +140,7 @@ __kernel void sax_vectorized_and_squarenorm_reduction(__global hmc_float* out, _
 	const uint id = get_global_id(0);
 	for(uint i=0; i<num_fields; i++)
 		out[i]=0.0;
-	  
+
 	if(id == 0) {
 		for (uint s = 0; s < elems; s++) {
 		  /* We have s = field_idx + num_fields * group_idx and we have
@@ -151,10 +151,3 @@ __kernel void sax_vectorized_and_squarenorm_reduction(__global hmc_float* out, _
 		}
 	}
 }
-
-
-
-
-
-
-

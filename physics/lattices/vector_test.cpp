@@ -13,11 +13,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "vector.hpp"
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(vector_float)
 	std::vector<hmc_float> ref(3, 13.);
 	foo.store(ref);
 	std::vector<hmc_float> got = foo.get();
-	
+
 	BOOST_REQUIRE_EQUAL(foo.get_vector_size(), 3);
 	BOOST_REQUIRE_EQUAL(ref.size(), got.size());
 	for(uint i=0; i<got.size(); i++)
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(vector_complex)
 	std::vector<hmc_complex> ref(3, {13., 3.1415});
 	foo.store(ref);
 	std::vector<hmc_complex> got = foo.get();
-	
+
 	BOOST_REQUIRE_EQUAL(foo.get_vector_size(), 3);
 	BOOST_REQUIRE_EQUAL(ref.size(), got.size());
 	for(uint i=0; i<got.size(); i++){
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(vector_char)
 	std::vector<char> ref(3, 'a');
 	foo.store(ref);
 	std::vector<char> got = foo.get();
-	
+
 	BOOST_REQUIRE_EQUAL(foo.get_vector_size(), 3);
 	BOOST_REQUIRE_EQUAL(ref.size(), got.size());
 	for(uint i=0; i<got.size(); i++){

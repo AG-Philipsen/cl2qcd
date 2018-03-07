@@ -11,11 +11,11 @@
  *
  * CL2QCD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /** @file
@@ -97,7 +97,7 @@ __kernel void polyakov(__global Matrixsu3StorageType * field, __global hmc_compl
 		if(idx == 0) {
 			out[group_id].re = out_loc[0].re + out_loc[1].re + out_loc[2].re + out_loc[3].re +
 			  out_loc[4].re + out_loc[5].re + out_loc[6].re + out_loc[7].re;
-			out[group_id].im = out_loc[0].im + out_loc[1].im + out_loc[2].im + out_loc[3].im + 
+			out[group_id].im = out_loc[0].im + out_loc[1].im + out_loc[2].im + out_loc[3].im +
 			  out_loc[4].im + out_loc[5].im + out_loc[6].im + out_loc[7].im;
 		}
 	}

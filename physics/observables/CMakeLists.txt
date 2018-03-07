@@ -11,11 +11,11 @@
 #
 # CL2QCD is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+# along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Collect all code in this part of the source tree
@@ -23,7 +23,7 @@
 
 add_library(gaugeObservables
 	gaugeObservables.cpp
-)	
+)
 
 add_library(observables
 	wilsonTwoFlavourChiralCondensate.cpp
@@ -56,4 +56,3 @@ add_test(physics::observables::wilson::twoFlavourChiralCondensate_GPU wilsonTwoF
 add_unit_test_withLibraries(physics::observables::wilson::twoFlavourCorrelators wilsonTwoFlavourCorrelators_test lattices observables)
 add_unit_test_withLibraries(physics::observables::staggered::ChiralCondensate staggeredChiralCondensate_test lattices observables)
 add_unit_test_withLibraries(physics::observables::staggered::twoFlavourCorrelators staggeredTwoFlavourCorrelators_test lattices observables)
-
