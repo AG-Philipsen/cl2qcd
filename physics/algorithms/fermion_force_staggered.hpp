@@ -1,7 +1,7 @@
 /** @file
  * Declaration of the fermion_force functions
  *
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2014-2016,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

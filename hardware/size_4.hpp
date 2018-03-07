@@ -1,7 +1,8 @@
 /**
  * Declaration of a utility datatype for fourdimensional sizes
  *
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

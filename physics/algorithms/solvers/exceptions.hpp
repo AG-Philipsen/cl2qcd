@@ -1,7 +1,8 @@
 /** @file
  * Declaration of solver exceptions
  *
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2014 Christopher Pinke
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

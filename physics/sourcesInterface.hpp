@@ -1,7 +1,7 @@
 /** @file
  * sourcesInterface.hpp
  *
- * Copyright 2016 Alessandro Sciarra
+ * Copyright (c) 2016,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

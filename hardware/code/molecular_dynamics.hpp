@@ -1,8 +1,10 @@
 /** @file
  * Molecular_Dynamics OpenCL functionality
  *
- * Copyright (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2012,2014,2015 Christopher Pinke
+ * Copyright (c) 2012-2014 Matthias Bach
+ * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

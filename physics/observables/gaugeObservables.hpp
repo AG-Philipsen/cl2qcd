@@ -1,7 +1,8 @@
 /** @file
  * physics::gaugeObservables class
  *
- * Copyright 2014 Christopher Pinke
+ * Copyright (c) 2013,2014 Christopher Pinke
+ * Copyright (c) 2015,2016,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

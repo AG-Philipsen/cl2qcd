@@ -4,8 +4,12 @@
  * @todo A lot of these operations use pointers and in-place operation
  *       without need. These might prevent compiler optimizations.
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright (c) 2010 Lars Zeidlewicz
+ * Copyright (c) 2011,2012,2014 Christopher Pinke
+ * Copyright (c) 2011-2013 Matthias Bach
+ * Copyright (c) 2011 Christian Schäfer
+ * Copyright (c) 2015,2016 Francesca Cuteri
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

@@ -1,9 +1,9 @@
 /** @file
  * Generic utility functions
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
- * Copyright (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2012-2014 Matthias Bach
+ * Copyright (c) 2012-2015 Christopher Pinke
+ * Copyright (c) 2014,2015,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

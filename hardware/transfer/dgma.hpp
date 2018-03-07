@@ -1,7 +1,8 @@
 /** @file
  * Interface for the DirectGMA based transfer method
  *
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013,2014 Matthias Bach
+ * Copyright (c) 2016,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

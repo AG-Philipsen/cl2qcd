@@ -1,11 +1,10 @@
 /** @file
  * Gaugemomentum OpenCL functionality
  *
- * Copyright (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
- *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright (c) 2012,2013 Matthias Bach
+ * Copyright (c) 2012,2015 Christopher Pinke
+ * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

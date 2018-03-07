@@ -1,9 +1,9 @@
 /** @file
  * Input file handling
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
- * Copyright (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2012,2013 Matthias Bach
+ * Copyright (c) 2012,2014 Christopher Pinke
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

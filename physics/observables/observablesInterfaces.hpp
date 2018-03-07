@@ -1,7 +1,9 @@
 /** @file
  * Interfaces for physics::observables
  *
- * Copyright 2015 Alessandro Sciarra, Christopher Czaban
+ * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Czaban
+ * Copyright (c) 2016 Tim Breitenfelder
  *
  * This file is part of CL2QCD.
  *

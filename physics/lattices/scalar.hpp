@@ -1,7 +1,9 @@
 /** @file
  * Declaration and implementation of the physics::lattices::Scalar template
  *
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2016 Francesca Cuteri
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

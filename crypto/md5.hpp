@@ -1,7 +1,8 @@
 /** @file
  * Declaration of basic crypto functions
  *
- * Copyright 2013 Matthias Bach
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

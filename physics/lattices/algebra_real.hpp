@@ -2,7 +2,7 @@
  * Declaration of some algebra operations for physics::lattices::Scalar<hmc_float>
  * together with physics::lattices::Vector<hmc_float>
  *
- * Copyright (c) 2014 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2014,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

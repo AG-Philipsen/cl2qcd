@@ -1,7 +1,10 @@
 /** @file
  * Declaration of the hardware::System class
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2012,2013 Matthias Bach
+ * Copyright (c) 2015,2016 Christopher Pinke
+ * Copyright (c) 2015,2016 Francesca Cuteri
+ * Copyright (c) 2016,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

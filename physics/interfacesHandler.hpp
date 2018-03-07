@@ -1,7 +1,8 @@
 /** @file
  * interfacesHandler declaration
  *
- * Copyright 2015 Alessandro Sciarra, Christopher Czaban
+ * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Czaban
  *
  * This file is part of CL2QCD.
  *

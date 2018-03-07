@@ -1,7 +1,8 @@
 /** @file
  * Declaration of some basic operations for physics::lattices::Scalar<hmc_complex>
  *
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
  *

@@ -1,7 +1,8 @@
 /** @file
  * Declaration of the solver algorithms
  *
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.uni-frankfurt.de>
+ * Copyright (c) 2013,2015-2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
  *

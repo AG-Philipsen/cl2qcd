@@ -1,7 +1,8 @@
 /** @file
  * Declaration and implementation of the physics::lattices::Vector template
  *
- * Copyright (c) 2014 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

@@ -1,7 +1,9 @@
 /** @file
  * physics::observables::wilson::TwoFlavourChiralCondensate class
  *
- * Copyright 2014 Christopher Pinke
+ * Copyright (c) 2014 Christopher Pinke
+ * Copyright (c) 2015,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Czaban
  *
  * This file is part of CL2QCD.
  *

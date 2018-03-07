@@ -1,7 +1,9 @@
 /** @file
  * Operators und utility functions for the custom types
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2012,2013 Matthias Bach
+ * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2014 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *

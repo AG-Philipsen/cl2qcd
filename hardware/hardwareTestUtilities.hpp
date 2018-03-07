@@ -1,8 +1,8 @@
 /** @file
  * Utilities for tests for the hardware classes
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
- * 	2015 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2015,2016 Christopher Pinke
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

@@ -30,9 +30,8 @@
  * NOTE:  Performing number_of_steps integrationsteps leads to "whole" steps for the momentum
  *          ( exp(eps/2 T)exp(eps/2 T) = exp(eps T) )
  *
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
- * Copyright (c) 2012-2013 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2013,2015,2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
  *

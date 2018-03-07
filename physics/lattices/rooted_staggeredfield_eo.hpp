@@ -1,8 +1,9 @@
 /** @file
  * Declaration of the physics::lattices::Rooted_Staggeredfield_eo class
  *
- * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
- * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2013,2016-2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2016,2017 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
