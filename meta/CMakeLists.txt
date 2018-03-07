@@ -1,6 +1,8 @@
 # Build specifications for the contents of the Meta package
 #
-# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012,2013 Matthias Bach
+# Copyright (c) 2013,2014 Christopher Pinke
+# Copyright (c) 2016,2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #

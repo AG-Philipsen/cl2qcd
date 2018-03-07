@@ -1,6 +1,8 @@
 # Build specifications for the contents of the hardware package
 #
-# Copyright (c) 2016 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
+# Copyright (c) 2016 Christopher Pinke
+# Copyright (c) 2016 Francesca Cuteri
+# Copyright (c) 2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #

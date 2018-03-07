@@ -1,6 +1,7 @@
 # Boost tests
 #
-# Copyright 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+# Copyright (c) 2014 Christopher Pinke
+# Copyright (c) 2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #

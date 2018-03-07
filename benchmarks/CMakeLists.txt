@@ -1,8 +1,8 @@
 # Build configuration for OpenCL based HMC
 #
-# Copyright 2011 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
-# Copyright 2011-2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
-# Copyright 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+# Copyright (c) 2011,2014 Christopher Pinke
+# Copyright (c) 2013,2014,2018 Alessandro Sciarra
+# Copyright (c) 2013 Matthias Bach
 #
 # This file is part of CL2QCD.
 #

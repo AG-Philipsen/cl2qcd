@@ -1,6 +1,7 @@
 # Build configuration for some microbenchmarks for OpenCL based HMC
 #
-# Copyright 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2011,2013 Matthias Bach
+# Copyright (c) 2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #

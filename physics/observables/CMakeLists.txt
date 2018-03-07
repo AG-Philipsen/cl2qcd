@@ -1,6 +1,8 @@
 # Build specifications for physics::observables
 #
-# Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+# Copyright (c) 2014,2015 Christopher Pinke
+# Copyright (c) 2014,2016,2018 Alessandro Sciarra
+# Copyright (c) 2016 Tim Breitenfelder
 #
 # This file is part of CL2QCD.
 #

@@ -1,6 +1,7 @@
 # Build specifications for the contents of the hardware package
 #
-# Copyright (c) 2015 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+# Copyright (c) 2015 Christopher Pinke
+# Copyright (c) 2016,2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
