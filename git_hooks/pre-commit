@@ -202,7 +202,9 @@ if [ ${#stagedFiles[@]} -ne 0 ]; then
     errecho "Checking header of staged files..." 39
     for file in "${stagedFiles[@]}"; do
         if [[ ${file} =~ [.](bash|c|C|cl|cmake|cpp|h|hpp|m|nb|py|sh|tex|txt)$ ]]; then
-            numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | wc -l)
+            # Note that here the "| sort | uniq" avoids to count multiple times lines
+            # of the CL2QCD_headerFile which could be by accident repeated in third party code
+            numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | sort | uniq | wc -l)
             if [ $numberOfMatchingLines -ne $numberOfExpectedTextLines ]; then
                 filesWithWrongOrMissingHeader+=( "${file}" )
             fi
