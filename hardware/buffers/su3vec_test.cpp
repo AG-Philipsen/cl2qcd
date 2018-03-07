@@ -1,8 +1,10 @@
 /** @file
  * Testcases for the hardware::buffers::Spinor class
  *
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2015,2016 Christopher Pinke
+ * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

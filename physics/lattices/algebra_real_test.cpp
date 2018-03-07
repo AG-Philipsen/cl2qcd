@@ -1,8 +1,7 @@
 /** @file
  * Unit test for the real algebra operations in physics::lattices
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright (c) 2014,2016,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

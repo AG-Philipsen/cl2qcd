@@ -1,8 +1,9 @@
 /** @file
  * Tests of the fermion force algorithms
  *
- * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
- * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2014-2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Pinke
+ * Copyright (c) 2016,2017 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

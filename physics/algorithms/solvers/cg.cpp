@@ -1,8 +1,9 @@
 /** @file
  * Implementation of the cg algorithm
  *
- * Copyright (c) 2012-2013 Christopher Pinke <pinke@th.uni-frankfurt.de>
- * Copyright (c) 2012-2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2014 Christopher Pinke
+ * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016 Christopher Czaban
  *
  * This file is part of CL2QCD.
  *

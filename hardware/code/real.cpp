@@ -1,7 +1,9 @@
 /** @file
  * Implementation of the hardware::code::Real class
  *
- * Copyright (c) 2014 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Pinke
+ * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

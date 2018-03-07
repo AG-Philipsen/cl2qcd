@@ -1,7 +1,11 @@
 /** @file
  * Implementation of the shifted solver algorithms
  *
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.uni-frankfurt.de>
+ * Copyright (c) 2013-2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2014 Christopher Pinke
+ * Copyright (c) 2016 Christopher Czaban
+ * Copyright (c) 2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

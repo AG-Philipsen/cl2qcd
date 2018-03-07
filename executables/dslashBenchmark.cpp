@@ -1,6 +1,8 @@
 /*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright (c) 2014 Christopher Pinke
+ * Copyright (c) 2015,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Czaban
+ * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

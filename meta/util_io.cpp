@@ -1,9 +1,11 @@
 /** @file
  * IO utility functions
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
- * Copyright (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2012-2014 Matthias Bach
+ * Copyright (c) 2012-2015 Christopher Pinke
+ * Copyright (c) 2013,2014,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015 Paul Frederik Depta
  *
  * This file is part of CL2QCD.
  *

@@ -1,7 +1,8 @@
 /** @file
  * Implementation of the Rational_Approximation class
  *
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2013-2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
  *

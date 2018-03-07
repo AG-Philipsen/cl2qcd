@@ -1,7 +1,9 @@
 /** @file
  * ildg IO utilities
  *
- * Copyright 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2014,2015 Christopher Pinke
+ * Copyright (c) 2014 Matthias Bach
+ * Copyright (c) 2016,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

@@ -1,6 +1,7 @@
 /** @file
  *
- * Copyright 2014, Christopher Pinke
+ * Copyright (c) 2014,2015 Christopher Pinke
+ * Copyright (c) 2015,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

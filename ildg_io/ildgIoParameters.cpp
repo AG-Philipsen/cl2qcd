@@ -2,7 +2,8 @@
  *
  * Interface for IldgIoParameters
  *
- * Copyright 2015 Christopher Pinke
+ * Copyright (c) 2015,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *

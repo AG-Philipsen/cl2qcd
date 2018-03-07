@@ -1,7 +1,10 @@
 /** @file
  * Testcases for the ildg I/O class
  *
- * Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2014,2015 Christopher Pinke
+ * Copyright (c) 2014 Matthias Bach
+ * Copyright (c) 2015,2018 Alessandro Sciarra
+ * Copyright (c) 2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

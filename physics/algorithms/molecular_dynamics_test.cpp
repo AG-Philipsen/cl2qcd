@@ -1,8 +1,11 @@
 /** @file
  * Tests of the molecular dynamics algorithms
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2014,2015 Christopher Pinke
+ * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Christopher Czaban
+ * Copyright (c) 2017 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

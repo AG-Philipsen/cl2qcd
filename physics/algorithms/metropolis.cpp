@@ -1,10 +1,10 @@
 /** @file
  * Implementation of the metropolis algorithm
  *
- * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
- * Copyright (c) 2012-2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
- * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
- * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2013,2015-2018 Alessandro Sciarra
+ * Copyright (c) 2013 Matthias Bach
+ * Copyright (c) 2014 Christopher Pinke
+ * Copyright (c) 2017 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *

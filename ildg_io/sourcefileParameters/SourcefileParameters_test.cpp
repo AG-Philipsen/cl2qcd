@@ -1,7 +1,8 @@
 /** @file
  * Testcases for the sourcefileparamters_values class
  *
- * Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2014,2015 Christopher Pinke
+ * Copyright (c) 2015,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

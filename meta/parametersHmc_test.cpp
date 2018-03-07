@@ -1,7 +1,9 @@
 /** @file
  * Testcases for the Inputparameters class
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2014 Christopher Pinke
+ * Copyright (c) 2014 Matthias Bach
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

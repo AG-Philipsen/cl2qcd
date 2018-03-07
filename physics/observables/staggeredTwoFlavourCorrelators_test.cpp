@@ -3,7 +3,8 @@
  *@file
  * Implementation of the staggered two flavour correlator calculation.
  *
- * Copyright 2016 Alessandro Sciarra, Tim Breitenfelder
+ * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016 Tim Breitenfelder
  *
  * This file is part of CL2QCD.
  *

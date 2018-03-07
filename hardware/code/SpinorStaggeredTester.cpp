@@ -1,8 +1,9 @@
 /* @file
  * Implementation of the hardware::code::SpinorStaggeredTester class
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2015,2016 Francesca Cuteri
+ * Copyright (c) 2016 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
