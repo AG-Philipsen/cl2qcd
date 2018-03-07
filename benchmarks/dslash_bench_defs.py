@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding=utf8
 #
-# Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
-# Matthias Bach, Christian Schaefer, Stefano Lottini, Alessandro Sciarra
+# Copyright (c) 2011 Christopher Pinke
+# Copyright (c) 2012,2013 Matthias Bach
+# Copyright (c) 2013,2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
