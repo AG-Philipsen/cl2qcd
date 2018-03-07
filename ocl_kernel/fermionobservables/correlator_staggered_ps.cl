@@ -1,5 +1,6 @@
 /*
- * Copyright 2016, Alessandro Sciarra, Tim Breitenfelder
+ * Copyright (c) 2016 Tim Breitenfelder
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *

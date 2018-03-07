@@ -1,5 +1,6 @@
 /*
- * Copyright 2015 Paul Frederik Depta
+ * Copyright (c) 2015 Paul Frederik Depta
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
