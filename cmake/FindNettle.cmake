@@ -1,6 +1,7 @@
 # Script to locate the Nettle library
 #
-# Copyright 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2013 Matthias Bach
+# Copyright (c) 2017,2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #

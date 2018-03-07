@@ -1,8 +1,8 @@
 # Utility functions for specifying the build of OpTiMaL
 #
-# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
-# 	        2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>,
-#		     Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+# Copyright (c) 2012,2013 Matthias Bach
+# Copyright (c) 2013,2015,2018 Alessandro Sciarra
+# Copyright (c) 2014 Christopher Pinke
 #
 # This file is part of CL2QCD.
 #
