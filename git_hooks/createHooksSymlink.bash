@@ -5,7 +5,7 @@
 # This code has been taken from BaHaMAS and adapted by
 # Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
 #
-# Copyright (c) 2017 Alessandro Sciarra
+# Copyright (c) 2017,2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
