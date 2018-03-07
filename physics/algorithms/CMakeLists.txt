@@ -31,7 +31,7 @@ add_library(algorithms
 	forces.cpp
 	integrator.cpp
 	hmc.cpp
-	alg_remez.C
+	alg_remez.cpp
 	find_minmax_eigenvalue.cpp
 	rational_approximation.cpp
 	solver_shifted.cpp
@@ -42,10 +42,10 @@ add_modules(algorithms
 )
 
 target_link_libraries(algorithms
-		lattices
-		fermionmatrix
-		physics
-		observables
+	lattices
+	fermionmatrix
+	physics
+	observables
 	optimal
 )
 

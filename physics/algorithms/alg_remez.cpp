@@ -36,10 +36,10 @@
  *
  */
 
-#include<math.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include"alg_remez.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "alg_remez.hpp"
 #include "../../host_functionality/logger.hpp"
 
 // Constructor

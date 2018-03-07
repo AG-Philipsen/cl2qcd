@@ -40,7 +40,7 @@
 #ifndef _PHYSICS_ALGORITHMS_ALG_REMEZ_
 #define _PHYSICS_ALGORITHMS_ALG_REMEZ_
 
-#include "bigfloat.h"
+#include "bigfloat.hpp"
 
 #define JMAX 10000 //Maximum number of iterations of Newton's approximation
 #define SUM_MAX 10 // Maximum number of terms in exponential
