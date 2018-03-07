@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
@@ -16,6 +16,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * NOTE: The code contained in this file was developed by external developers
+ *       and the copyright and license statements above refer to the work
+ *       that was done to include the third party code into CL2QCD.
  */
 
 //If the include does not work then the contents of the ranluxcl.cl file can just be

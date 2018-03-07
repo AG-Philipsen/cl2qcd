@@ -201,7 +201,7 @@ if [ ${#stagedFiles[@]} -ne 0 ]; then
     errecho "\n"
     errecho "Checking header of staged files..." 39
     for file in "${stagedFiles[@]}"; do
-        if [ $(grep -cE "[.](bash|c|C|cl|cmake|cpp|h|hpp|m|nb|py|sh)$" <<< "$file") -eq 1 ]; then
+        if [[ ${file} =~ [.](bash|c|C|cl|cmake|cpp|h|hpp|m|nb|py|sh|tex|txt)$ ]]; then
             numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | wc -l)
             if [ $numberOfMatchingLines -ne $numberOfExpectedTextLines ]; then
                 filesWithWrongOrMissingHeader+=( "${file}" )
@@ -240,7 +240,7 @@ readonly listOfFilesToBeChecked=( $(git diff-index --cached --name-only HEAD --d
 if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
     # Check for existence of astyle, and error out if not present.
     if ! builtin type -P astyle; then
-        AbortCommit "The program \"astyle\" was not found!" GiveAdviceAboutAstyle
+        : #AbortCommit "The program \"astyle\" was not found!" GiveAdviceAboutAstyle
     else
         errecho "\n"
         errecho "Checking style of code... " 39

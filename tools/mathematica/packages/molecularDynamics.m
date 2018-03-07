@@ -1,5 +1,26 @@
 (* ::Package:: *)
 
+(*
+ * Copyright 2012,2013 Lars Zeidlewicz,Christopher Pinke,
+ * Matthias Bach,Christian Sch\[ADoubleDot]fer,Stefano Lottini,Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software:you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation,either version 3 of the License,or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.If not,see<http://www.gnu.org/licenses/>.
+*)
+
+
 SetOptions[SelectedNotebook[], PrintPrecision -> 16]
 Get["real.m",Path->{NotebookDirectory[]}]
 Get["gammaMatricesTensorColorIdentity.m",Path->{NotebookDirectory[]}]
@@ -15,37 +36,37 @@ Get["threeBythreeMatrices.m",Path->{NotebookDirectory[]}]
 
 BeginPackage["Forces`"]
 
-ForceGauge::usage = 
+ForceGauge::usage =
  	"ForceGauge performs the standard Wilson-action gauge force calculation given a gaugefield filling, a gaugemomentum filling and a value for the coupling beta"
 
-ForceGaugeTlsym::usage = 
+ForceGaugeTlsym::usage =
  	"ForceGaugeTlsym performs the tlSym improved gauge action gauge force calculation given a gaugefield filling, a gaugemomentum filling, a value for the coupling
       beta, and a value for the c1 coefficient in tlSym gauge action"
 
-LinkByDiracTrace::usage = 
+LinkByDiracTrace::usage =
  	"LinkByDiracTrace performs the product, for a given direction \mu, of the local link in that direction by the trace in Dirac space of the cartesian product in
       color space of the appropriate spinors in the Wilson hopping term (takes into account both +mu and -mu).
       g is the generic gamma matrix tensor product with the col.identity"
 
-LinkByDiracTraceEvenOrOdd::usage = 
+LinkByDiracTraceEvenOrOdd::usage =
  	"LinkByDiracTraceEvenOrOdd performs the same operation as LinkByDiracTrace, but only on the even/odd sublattice. Relevant for when the fermion_force_eo kernel is called with a boolean parameter EVEN/ODD.
-      As a result only even/odd sites are considered and the force receives contribution (the same) only by either positive or negative mu direction computation. 
+      As a result only even/odd sites are considered and the force receives contribution (the same) only by either positive or negative mu direction computation.
       The kernel must be called twice with different evenodd value to obtain the force on all sites and there is a dedicated test to check that this gives the full force of the nonEvenOdd case.
 	  g is the generic gamma matrix tensor product with the col.identity"
 
-ForceFermionWilson::usage = 
+ForceFermionWilson::usage =
  	"ForceFermionWilson computes the local fermionic force for the Wilson case given the gaugemomenta field gm, the hopping parameter k, the spinorfield s, the gaugefield u, and the boundary conditions bc.
       It then performs direction-by-direction the squarenorm of the updated gaugemomenta and sum up over the 4 directions."
 
-ForceFermionWilsonEvenOrOdd::usage = 
+ForceFermionWilsonEvenOrOdd::usage =
  	"ForceFermionWilson computes the local fermionic force for the Wilson case given the gaugemomenta field gm, the hopping parameter k, the spinorfield s, the gaugefield u, and the boundary conditions bc.
       It then performs direction-by-direction the squarenorm of the updated gaugemomenta and sum up over the 4 directions. Relevant for when the fermion_force_eo kernel is called with a boolean parameter EVEN/ODD.
       As a result only even/odd sites are considered and the force receives contribution (the same) only by either positive or negative mu direction computation."
 
-ForceFermionStaggeredEven::usage = 
+ForceFermionStaggeredEven::usage =
  	"ForceFermionStaggeredEven computes the local fermionic force for the Staggered case on even sites, given the gaugemomenta field gm, the gaugefield u, the staggered phase eta and the spinorfield s."
 
-ForceFermionStaggeredOdd::usage = 
+ForceFermionStaggeredOdd::usage =
  	"ForceFermionStaggeredOdd computes the local fermionic force for the Staggered case on odd sites, given the gaugemomenta field gm, the gaugefield u, the staggered phase eta and the spinorfield s."
 
 Begin["Private`"]
@@ -113,6 +134,3 @@ ForceFermionStaggeredOdd[gm_, u_, eta_, s_] :=
 End[]
 
 EndPackage[]
-
-
-

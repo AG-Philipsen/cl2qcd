@@ -1,5 +1,26 @@
 (* ::Package:: *)
 
+(*
+ * Copyright 2012,2013 Lars Zeidlewicz,Christopher Pinke,
+ * Matthias Bach,Christian Sch\[ADoubleDot]fer,Stefano Lottini,Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software:you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation,either version 3 of the License,or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.If not,see<http://www.gnu.org/licenses/>.
+*)
+
+
 SetOptions[SelectedNotebook[], PrintPrecision -> 16]
 Get["gammaMatricesTensorColorIdentity.m",Path->{NotebookDirectory[]}]
 Get["real.m",Path->{NotebookDirectory[]}]
@@ -14,28 +35,28 @@ spinorfield*)
 
 BeginPackage["DslashWilson`"]
 
-Dslash::usage = 
+Dslash::usage =
 	"compute the dslash taking kappa, a spinor filling and a 3x3matrix filling"
 
-DslashWithSpecificBoundaryConditions::usage = 
+DslashWithSpecificBoundaryConditions::usage =
 	"compute the dslash taking kappa, a spinor filling, a 3x3matrix filling and
 		taking into account specific boundary conditions both in temporal and spatial directions"
 
-DslashWithSpecificBoundaryConditionsAndImaginaryChemicalPotential::usage = 
+DslashWithSpecificBoundaryConditionsAndImaginaryChemicalPotential::usage =
 	"compute the dslash taking kappa, a spinor filling, a 3x3matrix filling,
 		taking into account specific boundary conditions both in temporal and spatial directions
 		and at a given imaginary value for the chemical potential"
 
-DslashWithSpecificBoundaryConditionsAndChemicalPotential::usage = 
+DslashWithSpecificBoundaryConditionsAndChemicalPotential::usage =
 	"compute the dslash taking kappa, a spinor filling, a 3x3matrix filling,
 		taking into account specific boundary conditions both in temporal and spatial directions
 		and at a given complex chemical potential"
 
-DslashWithImaginaryChemicalPotential::usage = 
+DslashWithImaginaryChemicalPotential::usage =
 	"compute the dslash taking kappa, a spinor filling, a 3x3matrix filling
 		and at a given imaginary value for the chemical potential"
 
-DslashWithRealChemicalPotential::usage = 
+DslashWithRealChemicalPotential::usage =
 	"compute the dslash taking kappa, a spinor filling, a 3x3matrix filling
 		and at a given real value for the chemical potential"
 
@@ -121,7 +142,7 @@ EndPackage[]
 
 BeginPackage["MWilson`"]
 
-MWilson::usage = 
+MWilson::usage =
 	"compute the Wilson matrix taking kappa, a spinor filling and a 3x3matrix filling"
 
 Begin["Private`"]
@@ -139,28 +160,28 @@ EndPackage[]
 
 BeginPackage["MTwistedMass`"]
 
-MTwistedMassPlus::usage = 
+MTwistedMassPlus::usage =
 	""
 
-MTwistedMassMinus::usage = 
+MTwistedMassMinus::usage =
 	""
 
-MTwistedMassSitediagonal::usage = 
+MTwistedMassSitediagonal::usage =
 	""
 
-MTwistedMassSitediagonalMinus::usage = 
+MTwistedMassSitediagonalMinus::usage =
 	""
 
-MTwistedMassInverseSitediagonal::usage = 
+MTwistedMassInverseSitediagonal::usage =
 	""
 
-MTwistedMassInverseSitediagonalMinus::usage = 
+MTwistedMassInverseSitediagonalMinus::usage =
 	""
 
-MTwistedMassSitediagonalAndGamma5EvenOdd::usage = 
+MTwistedMassSitediagonalAndGamma5EvenOdd::usage =
 	""
 
-MTwistedMassSitediagonalMinusAndGamma5EvenOdd::usage = 
+MTwistedMassSitediagonalMinusAndGamma5EvenOdd::usage =
 	""
 
 Begin["Private`"]
@@ -168,13 +189,13 @@ Needs["DslashWilson`"]
 Needs["GammaMatricesTensorColorIdentity`"]
 
 MTwistedMassPlus[k_, s_, u_, m_]:=
-	Module[ {MTwistedMassPlus = (IdentityMatrix[12] + 2. I*k*m*Gamma5[IdentityMatrix[3]]).s - 
+	Module[ {MTwistedMassPlus = (IdentityMatrix[12] + 2. I*k*m*Gamma5[IdentityMatrix[3]]).s -
  Dslash[k, s, u]},
 	MTwistedMassPlus
 	]
 
 MTwistedMassMinus[k_, s_, u_, m_]:=
-	Module[ {MTwistedMassMinus = (IdentityMatrix[12] - 2.*I*k*m*Gamma5[IdentityMatrix[3]]).s - 
+	Module[ {MTwistedMassMinus = (IdentityMatrix[12] - 2.*I*k*m*Gamma5[IdentityMatrix[3]]).s -
  Dslash[k, s, u]},
 	MTwistedMassMinus
 	]
@@ -190,13 +211,13 @@ MTwistedMassSitediagonalMinus[s_, k_, m_]:=
 	]
 
 MTwistedMassInverseSitediagonal[s_, k_, m_]:=
-	Module[ {MTwistedMassInverseSitediagonal = (1./(1. + 4*k*k*m*m))*(IdentityMatrix[12] - 
+	Module[ {MTwistedMassInverseSitediagonal = (1./(1. + 4*k*k*m*m))*(IdentityMatrix[12] -
     2.*I*m*k*Gamma5[IdentityMatrix[3]]).s},
 	MTwistedMassInverseSitediagonal
 	]
 
 MTwistedMassInverseSitediagonalMinus[s_, k_, m_]:=
-	Module[ {MTwistedMassInverseSitediagonalMinus = (1./(1. + 4*k*k*m*m))*(IdentityMatrix[12] + 
+	Module[ {MTwistedMassInverseSitediagonalMinus = (1./(1. + 4*k*k*m*m))*(IdentityMatrix[12] +
     2.*I*m*k*Gamma5[IdentityMatrix[3]]).s},
 	MTwistedMassInverseSitediagonalMinus
 	]
@@ -218,25 +239,25 @@ EndPackage[]
 
 BeginPackage["DslashTwistedMass`"]
 
-DslashEvenOddAndMTmInverseSitediagonalMinus::usage = 
+DslashEvenOddAndMTmInverseSitediagonalMinus::usage =
 	""
 
-DslashEvenOddAndMTmInverseSitediagonal::usage = 
+DslashEvenOddAndMTmInverseSitediagonal::usage =
 	""
 
-DslashEvenOddAndMTmInverseSitediagonalBC::usage = 
+DslashEvenOddAndMTmInverseSitediagonalBC::usage =
 	""
 
-DslashEvenOddAndMTmInverseSitediagonalBCAndChemPot::usage = 
+DslashEvenOddAndMTmInverseSitediagonalBCAndChemPot::usage =
 	""
 
-DslashEvenOddAndMTmInverseSitediagonalBCAndChemPotImAndRe::usage = 
+DslashEvenOddAndMTmInverseSitediagonalBCAndChemPotImAndRe::usage =
 	""
 
-DslashEvenOddAndMTmInverseSitediagonalChemPotIm::usage = 
+DslashEvenOddAndMTmInverseSitediagonalChemPotIm::usage =
 	""
 
-DslashEvenOddAndMTmInverseSitediagonalChemPotRe::usage = 
+DslashEvenOddAndMTmInverseSitediagonalChemPotRe::usage =
 	""
 
 Begin["Private`"]

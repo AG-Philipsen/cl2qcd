@@ -1,15 +1,39 @@
+/**
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * NOTE: The code contained in this file was developed by external developers
+ *       and the copyright and license statements above refer to the work
+ *       that was done to include the third party code into CL2QCD.
+ */
+
 /** @file
- * 
+ *
  * Copyright (c) Mike Clark - 25th May 2005
- * 
+ *
  * alg_remez.h
- * 
+ *
  * AlgRemez is an implementation of the Remez algorithm, which in this
  * case is used for generating the optimal nth root rational
  * approximation.
- * 
+ *
  * Note this class requires the gnu multiprecision (GNU MP) library.
- * 
+ *
  * @TODO Add documentation with doxygen (so far see code)
  */
 
@@ -35,12 +59,12 @@ class AlgRemez
 
   // The numerator and denominator degree (n=d)
   int n, d;
-  
+
   // The bounds of the approximation
   bigfloat apstrt, apwidt, apend;
 
   // the numerator and denominator of the power we are approximating
-  unsigned long power_num; 
+  unsigned long power_num;
   unsigned long power_den;
 
   // Flag to determine whether the arrays have been allocated
@@ -72,7 +96,7 @@ class AlgRemez
   void equations();
 
   // Search for error maxima and minima
-  void search(bigfloat *step); 
+  void search(bigfloat *step);
 
   // Initialise step sizes
   void stpini(bigfloat *step);
@@ -114,7 +138,7 @@ class AlgRemez
   bigfloat approx(bigfloat x);
 
  public:
-  
+
   // Constructor
   AlgRemez(double lower, double upper, long prec);
 
@@ -125,12 +149,12 @@ class AlgRemez
   void setBounds(double lower, double upper);
 
   // Generate the rational approximation x^(pnum/pden)
-  double generateApprox(int num_degree, int den_degree, 
-			unsigned long power_num, unsigned long power_den, 
+  double generateApprox(int num_degree, int den_degree,
+			unsigned long power_num, unsigned long power_den,
 			int a_len, double* a_param, int* a_pow);
-  double generateApprox(int num_degree, int den_degree, 
+  double generateApprox(int num_degree, int den_degree,
 			unsigned long power_num, unsigned long power_den);
-  double generateApprox(int degree, unsigned long power_num, 
+  double generateApprox(int degree, unsigned long power_num,
 			unsigned long power_den);
 
   // Return the partial fraction expansion of the approximation x^(pnum/pden)
@@ -158,6 +182,3 @@ class AlgRemez
 }
 }
 #endif  // _PHYSICS_ALGORITHMS_ALG_REMEZ_
-
-
-

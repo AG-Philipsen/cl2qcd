@@ -3,6 +3,8 @@
  *
  * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
  *
+ * This file is part of CL2QCD.
+ *
  * CL2QCD is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -38,4 +40,3 @@ void physics::fermionmatrix::DKS_eo(const physics::lattices::Staggeredfield_eo *
 	if(num_bufs!=1)
 	  out->update_halo();
 }
-

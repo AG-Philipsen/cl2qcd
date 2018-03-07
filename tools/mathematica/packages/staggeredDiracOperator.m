@@ -1,5 +1,26 @@
 (* ::Package:: *)
 
+(*
+ * Copyright 2012,2013 Lars Zeidlewicz,Christopher Pinke,
+ * Matthias Bach,Christian Sch\[ADoubleDot]fer,Stefano Lottini,Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software:you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation,either version 3 of the License,or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.If not,see<http://www.gnu.org/licenses/>.
+*)
+
+
 SetOptions[SelectedNotebook[], PrintPrecision -> 16]
 Get["real.m",Path->{NotebookDirectory[]}]
 Get["threeBythreeMatrices.m",Path->{NotebookDirectory[]}]
@@ -13,10 +34,10 @@ spinorfield*)
 
 BeginPackage["StaggeredDiracUtilities`"]
 
-etaBC::usage = 
+etaBC::usage =
  	"Factor modifying the staggered phases according to the used Boundary Conditions"
 
-etaCP::usage = 
+etaCP::usage =
  	"Factor multiplying lonks in temporal direction according to the used (Imaginary) Chemical Potential"
 
 Begin["Private`"]
@@ -38,22 +59,22 @@ EndPackage[]
 
 BeginPackage["MStaggered`"]
 
-chiPosPhasePosMu::usage = 
+chiPosPhasePosMu::usage =
  	"three-components vector obtained by the application of the link in +mu-direction to the
 		spinor on the local site and by multiplication with the BC factor assuming a positive
 		staggered phase for that site and direction"
 
-chiNegPhasePosMu::usage = 
+chiNegPhasePosMu::usage =
  	"three-components vector obtained by the application of the link in +mu-direction to the
 		spinor on the local site and by multiplication with the BC factor assuming a negative
 		staggered phase for that site and direction"
 
-chiPosPhaseNegMu::usage = 
+chiPosPhaseNegMu::usage =
  	"three-components vector obtained by the application of the link in -mu-direction to the
 		spinor on the local site and by multiplication with the BC factor assuming a positive
 		staggered phase for that site and direction"
 
-chiNegPhaseNegMu::usage = 
+chiNegPhaseNegMu::usage =
  	"three-components vector obtained by the application of the link in -mu-direction to the
 		spinor on the local site and by multiplication with the BC factor assuming a negative
 		staggered phase for that site and direction"
@@ -88,38 +109,38 @@ chiNegPhaseNegMu[u_, s_, th_, n_] :=
 MStaggeredBC[u_, s_, m_, tht_, ths_, nt_, ns_] :=
  	Module[ {MStaggeredBC = ns^3*nt*((1/4)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      chiPosPhasePosMu[u, s, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      chiPosPhasePosMu[u, s, tht, nt] -
       chiPosPhaseNegMu[u, s, tht, nt]] + (1/4)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      chiNegPhasePosMu[u, s, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      chiNegPhasePosMu[u, s, tht, nt] -
       chiNegPhaseNegMu[u, s, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      2*(chiNegPhasePosMu[u, s, ths, ns] - 
-         chiNegPhaseNegMu[u, s, ths, ns]) + 
-      chiPosPhasePosMu[u, s, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      2*(chiNegPhasePosMu[u, s, ths, ns] -
+         chiNegPhaseNegMu[u, s, ths, ns]) +
+      chiPosPhasePosMu[u, s, tht, nt] -
       chiPosPhaseNegMu[u, s, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] - 
-         chiPosPhaseNegMu[u, s, ths, ns]) + 
-      chiPosPhasePosMu[u, s, tht, nt] - 
+     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] -
+         chiPosPhaseNegMu[u, s, ths, ns]) +
+      chiPosPhasePosMu[u, s, tht, nt] -
       chiPosPhaseNegMu[u, s, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      2*(chiNegPhasePosMu[u, s, ths, ns] - 
-         chiNegPhaseNegMu[u, s, ths, ns]) + 
-      chiNegPhasePosMu[u, s, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      2*(chiNegPhasePosMu[u, s, ths, ns] -
+         chiNegPhaseNegMu[u, s, ths, ns]) +
+      chiNegPhasePosMu[u, s, tht, nt] -
       chiNegPhaseNegMu[u, s, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] - 
-         chiPosPhaseNegMu[u, s, ths, ns]) + 
-      chiNegPhasePosMu[u, s, tht, nt] - 
+     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] -
+         chiPosPhaseNegMu[u, s, ths, ns]) +
+      chiNegPhasePosMu[u, s, tht, nt] -
       chiNegPhaseNegMu[u, s, tht, nt]])},
   	MStaggeredBC
   	]
@@ -134,7 +155,7 @@ EndPackage[]
 
 BeginPackage["DKS`"]
 
-chiPosPhasePosT::usage = 
+chiPosPhasePosT::usage =
  	"three-components vector obtained by the application of the link in +t-direction to the
 		spinor on the local site and by multiplication with the BC factor assuming a positive
 		staggered phase for that site and direction"
@@ -144,12 +165,12 @@ chiNegPhasePosT::usage =
 		spinor on the local site and by multiplication with the BC factor assuming a negative
 		staggered phase for that site and direction"
 
-chiPosPhaseNegT::usage = 
+chiPosPhaseNegT::usage =
  	"three-components vector obtained by the application of the link in -t-direction to the
 		spinor on the local site and by multiplication with the BC factor assuming a positive
 		staggered phase for that site and direction"
 
-chiNegPhaseNegT::usage = 
+chiNegPhaseNegT::usage =
  	"three-components vector obtained by the application of the link in -t-direction to the
 		spinor on the local site and by multiplication with the BC factor assuming a negative
 		staggered phase for that site and direction"
@@ -185,38 +206,38 @@ chiNegPhaseNegT[u_, s_, cp_, th_, n_] :=
 DKStaggered[u_, s_, m_, cp_, tht_, ths_, nt_, ns_]:=
 	Module[ {DKStaggered = ns^3*nt*((1/4)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      chiPosPhasePosT[u, s, cp, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      chiPosPhasePosT[u, s, cp, tht, nt] -
       chiPosPhaseNegT[u, s, cp, tht, nt]] + (1/4)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      chiNegPhasePosT[u, s, cp, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      chiNegPhasePosT[u, s, cp, tht, nt] -
       chiNegPhaseNegT[u, s, cp, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      2*(chiNegPhasePosMu[u, s, ths, ns] - 
-         chiNegPhaseNegMu[u, s, ths, ns]) + 
-      chiPosPhasePosT[u, s, cp, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      2*(chiNegPhasePosMu[u, s, ths, ns] -
+         chiNegPhaseNegMu[u, s, ths, ns]) +
+      chiPosPhasePosT[u, s, cp, tht, nt] -
       chiPosPhaseNegT[u, s, cp, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] - 
-         chiPosPhaseNegMu[u, s, ths, ns]) + 
-      chiPosPhasePosT[u, s, cp, tht, nt] - 
+     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] -
+         chiPosPhaseNegMu[u, s, ths, ns]) +
+      chiPosPhasePosT[u, s, cp, tht, nt] -
       chiPosPhaseNegT[u, s, cp, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + chiPosPhasePosMu[u, s, ths, ns] - 
-      chiPosPhaseNegMu[u, s, ths, ns] + 
-      2*(chiNegPhasePosMu[u, s, ths, ns] - 
-         chiNegPhaseNegMu[u, s, ths, ns]) + 
-      chiNegPhasePosT[u, s, cp, tht, nt] - 
+     m*s + chiPosPhasePosMu[u, s, ths, ns] -
+      chiPosPhaseNegMu[u, s, ths, ns] +
+      2*(chiNegPhasePosMu[u, s, ths, ns] -
+         chiNegPhaseNegMu[u, s, ths, ns]) +
+      chiNegPhasePosT[u, s, cp, tht, nt] -
       chiNegPhaseNegT[u, s, cp, tht, nt]] + (1/8)*
     squareNorm[
-     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] - 
-         chiPosPhaseNegMu[u, s, ths, ns]) + 
-      chiNegPhasePosT[u, s, cp, tht, nt] - 
+     m*s + 3*(chiPosPhasePosMu[u, s, ths, ns] -
+         chiPosPhaseNegMu[u, s, ths, ns]) +
+      chiNegPhasePosT[u, s, cp, tht, nt] -
       chiNegPhaseNegT[u, s, cp, tht, nt]])},
 	DKStaggered
 	]
@@ -224,7 +245,3 @@ DKStaggered[u_, s_, m_, cp_, tht_, ths_, nt_, ns_]:=
 End[]
 
 EndPackage[]
-
-
-
-

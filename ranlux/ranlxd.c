@@ -1,3 +1,26 @@
+/**
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * NOTE: The code contained in this file was developed by external developers
+ *       and the copyright and license statements above refer to the work
+ *       that was done to include the third party code into CL2QCD.
+ */
 
 /*******************************************************************************
 *
@@ -8,7 +31,7 @@
 * This software is distributed under the terms of the GNU General Public
 * License (GPL)
 *
-* Random number generator "ranlxd". See the notes 
+* Random number generator "ranlxd". See the notes
 *
 *   "User's guide for ranlxs and ranlxd v3.2" (December 2005)
 *
@@ -16,12 +39,12 @@
 *
 * for a detailed description
 *
-* The externally accessible functions are 
+* The externally accessible functions are
 *
 *   void ranlxd(double r[],int n)
-*     Computes the next n double-precision random numbers and 
+*     Computes the next n double-precision random numbers and
 *     assigns them to the elements r[0],...,r[n-1] of the array r[]
-* 
+*
 *   void rlxd_init(int level,int seed)
 *     Initialization of the generator
 *
@@ -30,7 +53,7 @@
 *     the generator
 *
 *   void rlxd_get(int state[])
-*     Extracts the current state of the generator and stores the 
+*     Extracts the current state of the generator and stores the
 *     information in the array state[N] where N>=rlxd_size()
 *
 *   void rlxd_reset(int state[])
@@ -120,11 +143,11 @@ static void error(int no)
          printf("Error in rlxd_reset\n");
          printf("Unexpected input data\n");
          break;
-   }         
+   }
    printf("Program aborted\n");
    exit(0);
 }
-  
+
 
 static void update(void)
 {
@@ -147,22 +170,22 @@ static void update(void)
                          "m" (carry)
                          :
                          "xmm0", "xmm1", "xmm2");
-   
-   for (k=0;k<kmax;k++) 
+
+   for (k=0;k<kmax;k++)
    {
       STEP(pi,pj);
-      pi+=1; 
+      pi+=1;
       pj+=1;
       if (pi==pmax)
          pi=pmin;
       if (pj==pmax)
-         pj=pmin; 
+         pj=pmin;
    }
 
    __asm__ __volatile__ ("movaps %%xmm2, %0"
                          :
                          "=m" (carry));
-   
+
    ir+=prm;
    jr+=prm;
    if (ir>=12)
@@ -182,14 +205,14 @@ static void define_constants(void)
    one.c1=1.0f;
    one.c2=1.0f;
    one.c3=1.0f;
-   one.c4=1.0f;   
+   one.c4=1.0f;
 
    b=(float)(ldexp(1.0,-24));
    one_bit.c1=b;
    one_bit.c2=b;
    one_bit.c3=b;
    one_bit.c4=b;
-   
+
    for (k=0;k<96;k++)
    {
       next[k]=(k+1)%96;
@@ -206,7 +229,7 @@ void rlxd_init(int level,int seed)
    int ix,iy;
 
    define_constants();
-   
+
    if (level==1)
       pr=202;
    else if (level==2)
@@ -216,7 +239,7 @@ void rlxd_init(int level,int seed)
 
    i=seed;
 
-   for (k=0;k<31;k++) 
+   for (k=0;k<31;k++)
    {
       xbit[k]=i%2;
       i/=2;
@@ -234,11 +257,11 @@ void rlxd_init(int level,int seed)
       {
          ix=0;
 
-         for (l=0;l<24;l++) 
+         for (l=0;l<24;l++)
          {
             iy=xbit[ibit];
             ix=2*ix+iy;
-         
+
             xbit[ibit]=(xbit[ibit]+xbit[jbit])%2;
             ibit=(ibit+1)%31;
             jbit=(jbit+1)%31;
@@ -255,7 +278,7 @@ void rlxd_init(int level,int seed)
    carry.c2=0.0f;
    carry.c3=0.0f;
    carry.c4=0.0f;
-   
+
    ir=0;
    jr=7;
    is=91;
@@ -272,7 +295,7 @@ void ranlxd(double r[],int n)
    if (init==0)
       rlxd_init(1,1);
 
-   for (k=0;k<n;k++) 
+   for (k=0;k<n;k++)
    {
       is=next[is];
       if (is==is_old)
@@ -336,7 +359,7 @@ void rlxd_reset(int state[])
        ((state[99]!=0)&&(state[99]!=1))||
        ((state[100]!=0)&&(state[100]!=1)))
       error(5);
-   
+
    carry.c1=(float)(ldexp((double)(state[97]),-24));
    carry.c2=(float)(ldexp((double)(state[98]),-24));
    carry.c3=(float)(ldexp((double)(state[99]),-24));
@@ -349,7 +372,7 @@ void rlxd_reset(int state[])
    is_old=8*ir;
    prm=pr%12;
    init=1;
-   
+
    if (((pr!=202)&&(pr!=397))||
        (ir<0)||(ir>11)||(jr<0)||(jr>11)||(jr!=((ir+7)%12))||
        (is<0)||(is>91))
@@ -444,11 +467,11 @@ static void error(int no)
          printf("Error in rlxd_reset\n");
          printf("Unexpected input data\n");
          break;
-   }         
+   }
    printf("Program aborted\n");
    exit(0);
 }
-  
+
 
 static void update(void)
 {
@@ -460,16 +483,16 @@ static void update(void)
    pmax=pmin+12;
    pi=&x.vec[ir];
    pj=&x.vec[jr];
-      
-   for (k=0;k<kmax;k++) 
+
+   for (k=0;k<kmax;k++)
    {
       STEP(pi,pj);
       pi+=1;
       pj+=1;
       if (pi==pmax)
-         pi=pmin;      
+         pi=pmin;
       if (pj==pmax)
-         pj=pmin; 
+         pj=pmin;
    }
 
    ir+=prm;
@@ -494,7 +517,7 @@ static void define_constants(void)
       next[k]=(k+1)%96;
       if ((k%4)==3)
          next[k]=(k+5)%96;
-   }   
+   }
 }
 
 
@@ -509,17 +532,17 @@ void rlxd_init(int level,int seed)
       error(0);
 
    define_constants();
-   
+
    if (level==1)
       pr=202;
    else if (level==2)
       pr=397;
    else
       error(1);
-   
+
    i=seed;
 
-   for (k=0;k<31;k++) 
+   for (k=0;k<31;k++)
    {
       xbit[k]=i%2;
       i/=2;
@@ -537,11 +560,11 @@ void rlxd_init(int level,int seed)
       {
          ix=0;
 
-         for (l=0;l<24;l++) 
+         for (l=0;l<24;l++)
          {
             iy=xbit[ibit];
             ix=2*ix+iy;
-         
+
             xbit[ibit]=(xbit[ibit]+xbit[jbit])%2;
             ibit=(ibit+1)%31;
             jbit=(jbit+1)%31;
@@ -575,12 +598,12 @@ void ranlxd(double r[],int n)
    if (init==0)
       rlxd_init(1,1);
 
-   for (k=0;k<n;k++) 
+   for (k=0;k<n;k++)
    {
       is=next[is];
       if (is==is_old)
          update();
-      r[k]=one_bit*((double)(x.num[is+4])+one_bit*(double)(x.num[is]));      
+      r[k]=one_bit*((double)(x.num[is+4])+one_bit*(double)(x.num[is]));
    }
 }
 
@@ -641,7 +664,7 @@ void rlxd_reset(int state[])
        ((state[99]!=0)&&(state[99]!=1))||
        ((state[100]!=0)&&(state[100]!=1)))
       error(5);
-   
+
    carry.c1=state[97];
    carry.c2=state[98];
    carry.c3=state[99];
@@ -654,7 +677,7 @@ void rlxd_reset(int state[])
    is_old=8*ir;
    prm=pr%12;
    init=1;
-   
+
    if (((pr!=202)&&(pr!=397))||
        (ir<0)||(ir>11)||(jr<0)||(jr>11)||(jr!=((ir+7)%12))||
        (is<0)||(is>91))
@@ -662,4 +685,3 @@ void rlxd_reset(int state[])
 }
 
 #endif
-

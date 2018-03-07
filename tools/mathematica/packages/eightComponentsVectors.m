@@ -1,12 +1,33 @@
 (* ::Package:: *)
 
+(*
+ * Copyright 2012,2013 Lars Zeidlewicz,Christopher Pinke,
+ * Matthias Bach,Christian Sch\[ADoubleDot]fer,Stefano Lottini,Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software:you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation,either version 3 of the License,or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.If not,see<http://www.gnu.org/licenses/>.
+*)
+
+
 Get["gellMannMatrices.m", Path -> {NotebookDirectory[]}]
 BeginPackage["EightComponentsVectors`"]
 
-gaugeMomZero::usage = 
+gaugeMomZero::usage =
 	"gaugeMomZero gives a zero algebra vector (uniformly filled by {0.})."
 
-gaugeMomOne::usage = 
+gaugeMomOne::usage =
 	"gaugeMomOne gives a cold algebra vector (uniformly filled by {1.})."
 
 gaugeMomAscending::usage =
@@ -17,7 +38,7 @@ algebraElement::usage =
 	 Tr[i * T_k * (in - in^\\dag)], i.e. calculates the trace of I times a generator of the
 	 algebra su(3) times a 3x3-matrix (see tr_lambda_u in operations_gaugemomentum.cl)."
 
-aeFromSu3::usage = 
+aeFromSu3::usage =
 	"aeFromSu3 takes a 3-by-3 matrix and builds an algebra element out of it
 	(see build_ae_from_su3 in operations_matrix_su3.cl)."
 
@@ -61,4 +82,3 @@ aeFromSu3[u_]:=
 End[]
 
 EndPackage[]
-

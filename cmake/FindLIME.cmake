@@ -1,19 +1,21 @@
 # Script to locate the LIME library
 #
-# This script is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
+# Copyright 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
+#
+# This file is part of CL2QCD.
+#
+# CL2QCD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# This script is distributed in the hope that it will be useful,
+# CL2QCD is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
-# along with this script.  If not, see <http://www.gnu.org/licenses/>.
-#
-# Copyright 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# You should have received a copy of the GNU General Public License
+# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
 FIND_PACKAGE( PackageHandleStandardArgs )
 
@@ -52,4 +54,3 @@ IF ( NOT LIME_INCLUDE_DIR )
 ENDIF ( NOT LIME_INCLUDE_DIR )
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS( LIME DEFAULT_MSG LIME_LIBRARIES LIME_INCLUDE_DIR )
-

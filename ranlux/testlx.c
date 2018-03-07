@@ -1,3 +1,26 @@
+/**
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * NOTE: The code contained in this file was developed by external developers
+ *       and the copyright and license statements above refer to the work
+ *       that was done to include the third party code into CL2QCD.
+ */
 
 /*******************************************************************************
 *
@@ -34,7 +57,7 @@ int main(void)
    base=ldexp(1.0,48);
    state1=(int*) malloc(rlxs_size()*sizeof(int));
    state2=(int*) malloc(rlxd_size()*sizeof(int));
-   
+
    rlxs_init(0,32767);
    rlxd_init(1,32767);
 
@@ -196,7 +219,7 @@ int main(void)
    xdn[45]=273325640150591.0;
    xdn[46]=2768714666444.0;
    xdn[47]=173907458721736.0;
-   
+
    test1=0;
    test2=0;
 
@@ -315,4 +338,3 @@ int main(void)
 
    exit(0);
 }
-

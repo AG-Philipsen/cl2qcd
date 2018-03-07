@@ -1,3 +1,27 @@
+/**
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * NOTE: The code contained in this file was developed by external developers
+ *       and the copyright and license statements above refer to the work
+ *       that was done to include the third party code into CL2QCD.
+ */
+
 /*******************************************************************************
  * Copyright (c) 2008-2011 The Khronos Group Inc.
  *
@@ -23,11 +47,11 @@
 
 /*! \file
  *
- *   \brief C++ bindings for OpenCL 1.0 (rev 48) and OpenCL 1.1 (rev 33)    
+ *   \brief C++ bindings for OpenCL 1.0 (rev 48) and OpenCL 1.1 (rev 33)
  *   \author Benedict R. Gaster and Laurent Morichetti
- *   
+ *
  *   Additions and fixes from Brian Cole, March 3rd 2010.
- *   
+ *
  *   \version 1.1
  *   \date June 2010
  *
@@ -67,7 +91,7 @@
  *
  * \code
  * #define __CL_ENABLE_EXCEPTIONS
- * 
+ *
  * #if defined(__APPLE__) || defined(__MACOSX)
  * #include <OpenCL/cl.hpp>
  * #else
@@ -76,13 +100,13 @@
  * #include <cstdio>
  * #include <cstdlib>
  * #include <iostream>
- * 
+ *
  *  const char * helloStr  = "__kernel void "
  *                           "hello(void) "
  *                           "{ "
  *                           "  "
  *                           "} ";
- * 
+ *
  *  int
  *  main(void)
  *  {
@@ -96,33 +120,33 @@
  *           return -1;
  *       }
  *
- *       cl_context_properties properties[] = 
+ *       cl_context_properties properties[] =
  *          { CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(), 0};
- *       cl::Context context(CL_DEVICE_TYPE_CPU, properties); 
- * 
+ *       cl::Context context(CL_DEVICE_TYPE_CPU, properties);
+ *
  *       std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
- * 
+ *
  *       cl::Program::Sources source(1,
  *           std::make_pair(helloStr,strlen(helloStr)));
  *       cl::Program program_ = cl::Program(context, source);
  *       program_.build(devices);
- * 
+ *
  *       cl::Kernel kernel(program_, "hello", &err);
- * 
+ *
  *       cl::Event event;
  *       cl::CommandQueue queue(context, devices[0], 0, &err);
  *       queue.enqueueNDRangeKernel(
- *           kernel, 
- *           cl::NullRange, 
+ *           kernel,
+ *           cl::NullRange,
  *           cl::NDRange(4,4),
  *           cl::NullRange,
  *           NULL,
- *           &event); 
- * 
+ *           &event);
+ *
  *       event.wait();
  *     }
  *     catch (cl::Error err) {
- *        std::cerr 
+ *        std::cerr
  *           << "ERROR: "
  *           << err.what()
  *           << "("
@@ -130,10 +154,10 @@
  *           << ")"
  *           << std::endl;
  *     }
- * 
+ *
  *    return EXIT_SUCCESS;
  *  }
- * 
+ *
  * \endcode
  *
  */
@@ -150,7 +174,7 @@
 #endif
 #endif // _WIN32
 
-// 
+//
 #if defined(USE_CL_DEVICE_FISSION)
 #include <CL/cl_ext.h>
 #endif
@@ -177,7 +201,7 @@
 
 #if !defined(__NO_STD_STRING)
 #include <string>
-#endif 
+#endif
 
 #if defined(linux) || defined(__APPLE__) || defined(__MACOSX)
 # include <alloca.h>
@@ -388,7 +412,7 @@ public:
         if (rhs.size_ == 0 || rhs.str_ == NULL) {
             size_ = 0;
             str_  = NULL;
-        } 
+        }
         else {
             size_ = rhs.size_;
             str_ = new char[size_ + 1];
@@ -424,15 +448,15 @@ public:
 #if !defined(__USE_DEV_STRING) && !defined(__NO_STD_STRING)
 #include <string>
 typedef std::string STRING_CLASS;
-#elif !defined(__USE_DEV_STRING) 
+#elif !defined(__USE_DEV_STRING)
 typedef cl::string STRING_CLASS;
 #endif
 
 #if !defined(__USE_DEV_VECTOR) && !defined(__NO_STD_VECTOR)
 #include <vector>
 #define VECTOR_CLASS std::vector
-#elif !defined(__USE_DEV_VECTOR) 
-#define VECTOR_CLASS cl::vector 
+#elif !defined(__USE_DEV_VECTOR)
+#define VECTOR_CLASS cl::vector
 #endif
 
 #if !defined(__MAX_DEFAULT_VECTOR_SIZE)
@@ -440,7 +464,7 @@ typedef cl::string STRING_CLASS;
 #endif
 
 /*! \class vector
- * \brief Fixed sized vector implementation that mirroring 
+ * \brief Fixed sized vector implementation that mirroring
  * std::vector functionality.
  */
 template <typename T, unsigned int N = __MAX_DEFAULT_VECTOR_SIZE>
@@ -451,7 +475,7 @@ private:
     unsigned int size_;
     bool empty_;
 public:
-    vector() : 
+    vector() :
         size_(static_cast<unsigned int>(-1)),
         empty_(true)
     {}
@@ -470,9 +494,9 @@ public:
     }
 
     void push_back (const T& x)
-    { 
+    {
         if (size() < N) {
-            size_++;  
+            size_++;
             data_[size_] = x;
             empty_ = false;
         }
@@ -488,15 +512,15 @@ public:
             }
         }
     }
-  
-    vector(const vector<T, N>& vec) : 
+
+    vector(const vector<T, N>& vec) :
         size_(vec.size_),
         empty_(vec.empty_)
     {
         if (!empty_) {
             memcpy(&data_[0], &vec.data_[0], size() * sizeof(T));
         }
-    } 
+    }
 
     vector(unsigned int size, const T& val = T()) :
         size_(-1),
@@ -516,10 +540,10 @@ public:
         size_  = rhs.size_;
         empty_ = rhs.empty_;
 
-        if (!empty_) {	
+        if (!empty_) {
             memcpy(&data_[0], &rhs.data_[0], size() * sizeof(T));
         }
-    
+
         return *this;
     }
 
@@ -535,15 +559,15 @@ public:
 
         return memcmp(&data_[0], &vec.data_[0], size() * sizeof(T)) == 0 ? true : false;
     }
-  
+
     operator T* ()             { return data_; }
     operator const T* () const { return data_; }
-   
+
     bool empty (void) const
     {
         return empty_;
     }
-  
+
     unsigned int max_size (void) const
     {
         return N;
@@ -558,16 +582,16 @@ public:
     {
         return data_[index];
     }
-  
+
     T operator[](int index) const
     {
         return data_[index];
     }
-  
+
     template<class I>
     void assign(I start, I end)
     {
-        clear();   
+        clear();
         while(start < end) {
             push_back(*start);
             start++;
@@ -584,7 +608,7 @@ public:
         int index_;
         bool initialized_;
     public:
-        iterator(void) : 
+        iterator(void) :
             index_(-1),
             initialized_(false)
         {
@@ -618,11 +642,11 @@ public:
             i.initialized_ = true;
             return i;
         }
-    
+
         bool operator==(iterator i)
         {
-            return ((vec_ == i.vec_) && 
-                    (index_ == i.index_) && 
+            return ((vec_ == i.vec_) &&
+                    (index_ == i.index_) &&
                     (initialized_ == i.initialized_));
         }
 
@@ -686,7 +710,7 @@ public:
     {
         return data_[size_];
     }
-};  
+};
 
 namespace detail {
 #define __DEFAULT_NOT_INITIALIZED 1
@@ -700,21 +724,21 @@ namespace detail {
     {
 #ifdef _WIN32
         return (int)(InterlockedCompareExchange(
-           (volatile long*)dest, 
-           (long)exchange, 
+           (volatile long*)dest,
+           (long)exchange,
            (long)comparand));
 #elif defined(__APPLE__) || defined(__MACOSX)
 		return OSAtomicOr32Orig((uint32_t)exchange, (volatile uint32_t*)dest);
 #else // !_WIN32 || defined(__APPLE__) || defined(__MACOSX)
         return (__sync_val_compare_and_swap(
-            dest, 
-            comparand, 
+            dest,
+            comparand,
             exchange));
 #endif // !_WIN32
     }
 }; // namespace detail
 
-    
+
 /*!
  * \brief size_t class used to interface between C++ and
  * OpenCL C calls that require arrays of size_t values, who's
@@ -785,7 +809,7 @@ struct GetInfoHelper<Func, VECTOR_CLASS<char *> >
       for(cl_uint i = 0; i < nDevices; i++ )
       {
         if( binary_sizes[i] != 0 )
-        {     		 
+        {
             values[i]= (char *)alloca( sizeof(char)*binary_sizes[i]);
         }
         else
@@ -797,7 +821,7 @@ struct GetInfoHelper<Func, VECTOR_CLASS<char *> >
       if (err != CL_SUCCESS) {
         return err;
       }
-      
+
       param->assign(values,values+nDevices);
       return CL_SUCCESS;
     }
@@ -864,7 +888,7 @@ struct GetInfoHelper<Func, CPP_TYPE> \
       return ReferenceHandler<CPP_TYPE::cl_type>::retain((*param)()); \
     } \
 }; \
-} 
+}
 
 
 #define __PARAM_NAME_INFO_1_0(F) \
@@ -1361,7 +1385,7 @@ public:
         const cl_device_partition_property_ext * properties,
         VECTOR_CLASS<Device>* devices)
     {
-        typedef CL_API_ENTRY cl_int 
+        typedef CL_API_ENTRY cl_int
             ( CL_API_CALL * PFN_clCreateSubDevicesEXT)(
                 cl_device_id /*in_device*/,
                 const cl_device_partition_property_ext * /* properties */,
@@ -1489,8 +1513,8 @@ public:
         VECTOR_CLASS<Device>* devices) const
     {
         typedef CL_API_ENTRY cl_int (CL_API_CALL *PFN_clGetDeviceIDsFromD3D10KHR)(
-            cl_platform_id platform, 
-            cl_d3d10_device_source_khr d3d_device_source, 
+            cl_platform_id platform,
+            cl_d3d10_device_source_khr d3d_device_source,
             void * d3d_object,
             cl_d3d10_device_set_khr d3d_device_set,
             cl_uint num_entries,
@@ -1502,12 +1526,12 @@ public:
 
         cl_uint n = 0;
         cl_int err = pfn_clGetDeviceIDsFromD3D10KHR(
-            object_, 
-            d3d_device_source, 
+            object_,
+            d3d_device_source,
             d3d_object,
-            d3d_device_set, 
-            0, 
-            NULL, 
+            d3d_device_set,
+            0,
+            NULL,
             &n);
         if (err != CL_SUCCESS) {
             return detail::errHandler(err, __GET_DEVICE_IDS_ERR);
@@ -1515,12 +1539,12 @@ public:
 
         cl_device_id* ids = (cl_device_id*) alloca(n * sizeof(cl_device_id));
         err = pfn_clGetDeviceIDsFromD3D10KHR(
-            object_, 
-            d3d_device_source, 
+            object_,
+            d3d_device_source,
             d3d_object,
             d3d_device_set,
-            n, 
-            ids, 
+            n,
+            ids,
             NULL);
         if (err != CL_SUCCESS) {
             return detail::errHandler(err, __GET_DEVICE_IDS_ERR);
@@ -1595,7 +1619,7 @@ public:
         if (errResult != NULL) {
             *errResult = err;
         }
-        
+
         return ids[0];
     }
 };
@@ -1650,7 +1674,7 @@ public:
         cl_int error;
 
 #if !defined(__APPLE__) || !defined(__MACOS)
-        cl_context_properties prop[4] = {CL_CONTEXT_PLATFORM, 0, 0, 0 };	
+        cl_context_properties prop[4] = {CL_CONTEXT_PLATFORM, 0, 0, 0 };
         if (properties == NULL) {
             prop[1] = (cl_context_properties)Platform::get(&error)();
             if (error != CL_SUCCESS) {
@@ -1673,12 +1697,12 @@ public:
         }
     }
 
-    static Context getDefault(cl_int * err = NULL) 
+    static Context getDefault(cl_int * err = NULL)
     {
         int state = detail::compare_exchange(
-            &default_initialized_, 
+            &default_initialized_,
             __DEFAULT_BEING_INITIALIZED, __DEFAULT_NOT_INITIALIZED);
-        
+
         if (state & __DEFAULT_INITIALIZED) {
             if (err != NULL) {
                 *err = default_error_;
@@ -1764,11 +1788,11 @@ public:
     {
         cl_uint numEntries;
         cl_int err = ::clGetSupportedImageFormats(
-           object_, 
+           object_,
            flags,
-           type, 
-           0, 
-           NULL, 
+           type,
+           0,
+           NULL,
            &numEntries);
         if (err != CL_SUCCESS) {
             return detail::errHandler(err, __GET_SUPPORTED_IMAGE_FORMATS_ERR);
@@ -1777,11 +1801,11 @@ public:
         ImageFormat* value = (ImageFormat*)
             alloca(numEntries * sizeof(ImageFormat));
         err = ::clGetSupportedImageFormats(
-            object_, 
-            flags, 
-            type, 
+            object_,
+            flags,
+            type,
             numEntries,
-            (cl_image_format*) value, 
+            (cl_image_format*) value,
             NULL);
         if (err != CL_SUCCESS) {
             return detail::errHandler(err, __GET_SUPPORTED_IMAGE_FORMATS_ERR);
@@ -1905,7 +1929,7 @@ public:
 #if defined(CL_VERSION_1_1)
     cl_int setCallback(
         cl_int type,
-        void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *),		
+        void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *),
         void * user_data = NULL)
     {
         return detail::errHandler(
@@ -1913,7 +1937,7 @@ public:
                 object_,
                 type,
                 pfn_notify,
-                user_data), 
+                user_data),
             __SET_EVENT_CALLBACK_ERR);
     }
 #endif
@@ -1967,7 +1991,7 @@ public:
     cl_int setStatus(cl_int status)
     {
         return detail::errHandler(
-            ::clSetUserEventStatus(object_,status), 
+            ::clSetUserEventStatus(object_,status),
             __SET_USER_EVENT_STATUS_ERR);
     }
 };
@@ -2031,14 +2055,14 @@ public:
 
 #if defined(CL_VERSION_1_1)
     cl_int setDestructorCallback(
-        void (CL_CALLBACK * pfn_notify)(cl_mem, void *),		
+        void (CL_CALLBACK * pfn_notify)(cl_mem, void *),
         void * user_data = NULL)
     {
         return detail::errHandler(
             ::clSetMemObjectDestructorCallback(
                 object_,
                 pfn_notify,
-                user_data), 
+                user_data),
             __SET_MEM_OBJECT_DESTRUCTOR_CALLBACK_ERR);
     }
 #endif
@@ -2118,10 +2142,10 @@ public:
         Buffer result;
         cl_int error;
         result.object_ = ::clCreateSubBuffer(
-            object_, 
-            flags, 
-            buffer_create_type, 
-            buffer_create_info, 
+            object_,
+            flags,
+            buffer_create_type,
+            buffer_create_info,
             &error);
 
         detail::errHandler(error, __CREATE_SUBBUFFER_ERR);
@@ -2130,7 +2154,7 @@ public:
         }
 
         return result;
-    }		
+    }
 #endif
 };
 
@@ -2559,7 +2583,7 @@ public:
     {
         cl_int error;
         object_ = ::clCreateSampler(
-            context(), 
+            context(),
             normalized_coords,
             addressing_mode,
             filter_mode,
@@ -2683,7 +2707,7 @@ struct KernelArgumentHandler<LocalSpaceArg>
     static void* ptr(LocalSpaceArg&) { return NULL; }
 };
 
-} 
+}
 //! \endcond
 
 inline LocalSpaceArg
@@ -3079,14 +3103,14 @@ inline VECTOR_CLASS<char *> cl::Program::getInfo<CL_PROGRAM_BINARIES>(cl_int* er
 {
     VECTOR_CLASS< ::size_t> sizes = getInfo<CL_PROGRAM_BINARY_SIZES>();
     VECTOR_CLASS<char *> binaries;
-    for (VECTOR_CLASS< ::size_t>::iterator s = sizes.begin(); s != sizes.end(); ++s) 
+    for (VECTOR_CLASS< ::size_t>::iterator s = sizes.begin(); s != sizes.end(); ++s)
     {
         char *ptr = NULL;
-        if (*s != 0) 
+        if (*s != 0)
             ptr = new char[*s];
         binaries.push_back(ptr);
     }
-    
+
     cl_int result = getInfo(CL_PROGRAM_BINARIES, &binaries);
     if (err != NULL) {
         *err = result;
@@ -3162,10 +3186,10 @@ public:
         }
     }
 
-    static CommandQueue getDefault(cl_int * err = NULL) 
+    static CommandQueue getDefault(cl_int * err = NULL)
     {
         int state = detail::compare_exchange(
-            &default_initialized_, 
+            &default_initialized_,
             __DEFAULT_BEING_INITIALIZED, __DEFAULT_NOT_INITIALIZED);
 
         if (state & __DEFAULT_INITIALIZED) {
@@ -3353,9 +3377,9 @@ public:
         cl_event tmp;
         cl_int err = detail::errHandler(
             ::clEnqueueReadBufferRect(
-                object_, 
-                buffer(), 
-                blocking, 
+                object_,
+                buffer(),
+                blocking,
                 (const ::size_t *)buffer_offset,
                 (const ::size_t *)host_offset,
                 (const ::size_t *)region,
@@ -3393,9 +3417,9 @@ public:
         cl_event tmp;
         cl_int err = detail::errHandler(
             ::clEnqueueWriteBufferRect(
-                object_, 
-                buffer(), 
-                blocking, 
+                object_,
+                buffer(),
+                blocking,
                 (const ::size_t *)buffer_offset,
                 (const ::size_t *)host_offset,
                 (const ::size_t *)region,
@@ -3431,11 +3455,11 @@ public:
         cl_event tmp;
         cl_int err = detail::errHandler(
             ::clEnqueueCopyBufferRect(
-                object_, 
-                src(), 
-                dst(), 
-                (const ::size_t *)src_origin, 
-                (const ::size_t *)dst_origin, 
+                object_,
+                src(),
+                dst(),
+                (const ::size_t *)src_origin,
+                (const ::size_t *)dst_origin,
                 (const ::size_t *)region,
                 src_row_pitch,
                 src_slice_pitch,
@@ -3711,7 +3735,7 @@ public:
         const VECTOR_CLASS<Event>* events = NULL,
         Event* event = NULL) const
     {
-        cl_mem * mems = (mem_objects != NULL && mem_objects->size() > 0) 
+        cl_mem * mems = (mem_objects != NULL && mem_objects->size() > 0)
             ? (cl_mem*) alloca(mem_objects->size() * sizeof(cl_mem))
             : NULL;
 
@@ -3817,7 +3841,7 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *PFN_clEnqueueReleaseD3D10ObjectsKHR)(
      {
          static PFN_clEnqueueAcquireD3D10ObjectsKHR pfn_clEnqueueAcquireD3D10ObjectsKHR = NULL;
          __INIT_CL_EXT_FCN_PTR(clEnqueueAcquireD3D10ObjectsKHR);
-        
+
         cl_event tmp;
         cl_int err = detail::errHandler(
              pfn_clEnqueueAcquireD3D10ObjectsKHR(
@@ -3971,17 +3995,17 @@ inline cl_int enqueueReadBufferRect(
     }
 
     return queue.enqueueReadBufferRect(
-        buffer, 
-        blocking, 
-        buffer_offset, 
+        buffer,
+        blocking,
+        buffer_offset,
         host_offset,
         region,
         buffer_row_pitch,
         host_slice_pitch,
         host_row_pitch,
         host_slice_pitch,
-        ptr, 
-        events, 
+        ptr,
+        events,
         event);
 }
 
@@ -4007,17 +4031,17 @@ inline cl_int enqueueWriteBufferRect(
     }
 
     return queue.enqueueWriteBufferRect(
-        buffer, 
-        blocking, 
-        buffer_offset, 
+        buffer,
+        blocking,
+        buffer_offset,
         host_offset,
         region,
         buffer_row_pitch,
         buffer_slice_pitch,
         host_row_pitch,
         host_slice_pitch,
-        ptr, 
-        events, 
+        ptr,
+        events,
         event);
 }
 
@@ -4051,7 +4075,7 @@ inline cl_int enqueueCopyBufferRect(
         src_slice_pitch,
         dst_row_pitch,
         dst_slice_pitch,
-        events, 
+        events,
         event);
 }
 #endif
@@ -4065,7 +4089,7 @@ inline cl_int enqueueReadImage(
     ::size_t slice_pitch,
     void* ptr,
     const VECTOR_CLASS<Event>* events = NULL,
-    Event* event = NULL) 
+    Event* event = NULL)
 {
     cl_int error;
     CommandQueue queue = CommandQueue::getDefault(&error);
@@ -4082,7 +4106,7 @@ inline cl_int enqueueReadImage(
         row_pitch,
         slice_pitch,
         ptr,
-        events, 
+        events,
         event);
 }
 
@@ -4112,7 +4136,7 @@ inline cl_int enqueueWriteImage(
         row_pitch,
         slice_pitch,
         ptr,
-        events, 
+        events,
         event);
 }
 
@@ -4234,54 +4258,54 @@ struct EnqueueArgs
     NDRange global_;
     NDRange local_;
 
-    EnqueueArgs(NDRange global) : 
+    EnqueueArgs(NDRange global) :
       queue_(CommandQueue::getDefault()),
-      offset_(NullRange), 
+      offset_(NullRange),
       global_(global),
       local_(NullRange)
     {
 
     }
 
-    EnqueueArgs(NDRange global, NDRange local) : 
+    EnqueueArgs(NDRange global, NDRange local) :
       queue_(CommandQueue::getDefault()),
-      offset_(NullRange), 
+      offset_(NullRange),
       global_(global),
       local_(local)
     {
 
     }
 
-    EnqueueArgs(NDRange offset, NDRange global, NDRange local) : 
+    EnqueueArgs(NDRange offset, NDRange global, NDRange local) :
       queue_(CommandQueue::getDefault()),
-      offset_(offset), 
+      offset_(offset),
       global_(global),
       local_(local)
     {
 
     }
 
-    EnqueueArgs(CommandQueue queue, NDRange global) : 
+    EnqueueArgs(CommandQueue queue, NDRange global) :
       queue_(queue),
-      offset_(NullRange), 
+      offset_(NullRange),
       global_(global),
       local_(NullRange)
     {
 
     }
 
-    EnqueueArgs(CommandQueue queue, NDRange global, NDRange local) : 
+    EnqueueArgs(CommandQueue queue, NDRange global, NDRange local) :
       queue_(queue),
-      offset_(NullRange), 
+      offset_(NullRange),
       global_(global),
       local_(local)
     {
 
     }
 
-    EnqueueArgs(CommandQueue queue, NDRange offset, NDRange global, NDRange local) : 
+    EnqueueArgs(CommandQueue queue, NDRange offset, NDRange global, NDRange local) :
       queue_(queue),
-      offset_(offset), 
+      offset_(offset),
       global_(global),
       local_(local)
     {
@@ -6385,7 +6409,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0)> type_;
@@ -6398,7 +6422,7 @@ struct functionImplementation_<
 			arg0);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -6674,7 +6698,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -6690,7 +6714,7 @@ struct functionImplementation_<
 			arg1);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -6967,7 +6991,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -6986,7 +7010,7 @@ struct functionImplementation_<
 			arg2);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -7264,7 +7288,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -7286,7 +7310,7 @@ struct functionImplementation_<
 			arg3);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -7565,7 +7589,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -7590,7 +7614,7 @@ struct functionImplementation_<
 			arg4);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -7870,7 +7894,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -7898,7 +7922,7 @@ struct functionImplementation_<
 			arg5);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -8179,7 +8203,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -8210,7 +8234,7 @@ struct functionImplementation_<
 			arg6);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -8492,7 +8516,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -8526,7 +8550,7 @@ struct functionImplementation_<
 			arg7);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -8809,7 +8833,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -8846,7 +8870,7 @@ struct functionImplementation_<
 			arg8);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -9130,7 +9154,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -9170,7 +9194,7 @@ struct functionImplementation_<
 			arg9);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -9455,7 +9479,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -9498,7 +9522,7 @@ struct functionImplementation_<
 			arg10);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -9784,7 +9808,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -9830,7 +9854,7 @@ struct functionImplementation_<
 			arg11);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -10117,7 +10141,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -10166,7 +10190,7 @@ struct functionImplementation_<
 			arg12);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -10454,7 +10478,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -10506,7 +10530,7 @@ struct functionImplementation_<
 			arg13);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -10795,7 +10819,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -10850,7 +10874,7 @@ struct functionImplementation_<
 			arg14);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -11140,7 +11164,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -11198,7 +11222,7 @@ struct functionImplementation_<
 			arg15);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -11489,7 +11513,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -11550,7 +11574,7 @@ struct functionImplementation_<
 			arg16);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -11842,7 +11866,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -11906,7 +11930,7 @@ struct functionImplementation_<
 			arg17);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -12199,7 +12223,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -12266,7 +12290,7 @@ struct functionImplementation_<
 			arg18);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -12560,7 +12584,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -12630,7 +12654,7 @@ struct functionImplementation_<
 			arg19);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -12925,7 +12949,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -12998,7 +13022,7 @@ struct functionImplementation_<
 			arg20);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -13294,7 +13318,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -13370,7 +13394,7 @@ struct functionImplementation_<
 			arg21);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -13667,7 +13691,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -13746,7 +13770,7 @@ struct functionImplementation_<
 			arg22);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -14044,7 +14068,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -14126,7 +14150,7 @@ struct functionImplementation_<
 			arg23);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -14425,7 +14449,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -14510,7 +14534,7 @@ struct functionImplementation_<
 			arg24);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -14810,7 +14834,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -14898,7 +14922,7 @@ struct functionImplementation_<
 			arg25);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -15199,7 +15223,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -15290,7 +15314,7 @@ struct functionImplementation_<
 			arg26);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -15592,7 +15616,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -15686,7 +15710,7 @@ struct functionImplementation_<
 			arg27);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -15989,7 +16013,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -16086,7 +16110,7 @@ struct functionImplementation_<
 			arg28);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -16390,7 +16414,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -16490,7 +16514,7 @@ struct functionImplementation_<
 			arg29);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -16795,7 +16819,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -16898,7 +16922,7 @@ struct functionImplementation_<
 			arg30);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -17204,7 +17228,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -17310,7 +17334,7 @@ struct functionImplementation_<
 			arg31);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -17617,7 +17641,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -17726,7 +17750,7 @@ struct functionImplementation_<
 			arg32);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -18034,7 +18058,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -18146,7 +18170,7 @@ struct functionImplementation_<
 			arg33);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -18455,7 +18479,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -18570,7 +18594,7 @@ struct functionImplementation_<
 			arg34);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -18880,7 +18904,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -18998,7 +19022,7 @@ struct functionImplementation_<
 			arg35);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -19309,7 +19333,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -19430,7 +19454,7 @@ struct functionImplementation_<
 			arg36);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -19742,7 +19766,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -19866,7 +19890,7 @@ struct functionImplementation_<
 			arg37);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -20179,7 +20203,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -20306,7 +20330,7 @@ struct functionImplementation_<
 			arg38);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -20620,7 +20644,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -20750,7 +20774,7 @@ struct functionImplementation_<
 			arg39);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -21065,7 +21089,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -21198,7 +21222,7 @@ struct functionImplementation_<
 			arg40);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -21514,7 +21538,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -21650,7 +21674,7 @@ struct functionImplementation_<
 			arg41);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -21967,7 +21991,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -22106,7 +22130,7 @@ struct functionImplementation_<
 			arg42);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -22424,7 +22448,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -22566,7 +22590,7 @@ struct functionImplementation_<
 			arg43);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -22885,7 +22909,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -23030,7 +23054,7 @@ struct functionImplementation_<
 			arg44);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -23350,7 +23374,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -23498,7 +23522,7 @@ struct functionImplementation_<
 			arg45);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -23819,7 +23843,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -23970,7 +23994,7 @@ struct functionImplementation_<
 			arg46);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -24292,7 +24316,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -24446,7 +24470,7 @@ struct functionImplementation_<
 			arg47);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -24769,7 +24793,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -24926,7 +24950,7 @@ struct functionImplementation_<
 			arg48);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -25250,7 +25274,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -25410,7 +25434,7 @@ struct functionImplementation_<
 			arg49);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -25735,7 +25759,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -25898,7 +25922,7 @@ struct functionImplementation_<
 			arg50);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -26224,7 +26248,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -26390,7 +26414,7 @@ struct functionImplementation_<
 			arg51);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -26717,7 +26741,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -26886,7 +26910,7 @@ struct functionImplementation_<
 			arg52);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -27214,7 +27238,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -27386,7 +27410,7 @@ struct functionImplementation_<
 			arg53);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -27715,7 +27739,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -27890,7 +27914,7 @@ struct functionImplementation_<
 			arg54);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -28220,7 +28244,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -28398,7 +28422,7 @@ struct functionImplementation_<
 			arg55);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -28729,7 +28753,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -28910,7 +28934,7 @@ struct functionImplementation_<
 			arg56);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -29242,7 +29266,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -29426,7 +29450,7 @@ struct functionImplementation_<
 			arg57);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -29759,7 +29783,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -29946,7 +29970,7 @@ struct functionImplementation_<
 			arg58);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -30280,7 +30304,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -30470,7 +30494,7 @@ struct functionImplementation_<
 			arg59);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -30805,7 +30829,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -30998,7 +31022,7 @@ struct functionImplementation_<
 			arg60);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -31334,7 +31358,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -31530,7 +31554,7 @@ struct functionImplementation_<
 			arg61);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -31867,7 +31891,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -32066,7 +32090,7 @@ struct functionImplementation_<
 			arg62);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -32404,7 +32428,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -32606,7 +32630,7 @@ struct functionImplementation_<
 			arg63);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -32945,7 +32969,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -33150,7 +33174,7 @@ struct functionImplementation_<
 			arg64);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -33490,7 +33514,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -33698,7 +33722,7 @@ struct functionImplementation_<
 			arg65);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -34039,7 +34063,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -34250,7 +34274,7 @@ struct functionImplementation_<
 			arg66);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -34592,7 +34616,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -34806,7 +34830,7 @@ struct functionImplementation_<
 			arg67);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -35149,7 +35173,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -35366,7 +35390,7 @@ struct functionImplementation_<
 			arg68);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -35710,7 +35734,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -35930,7 +35954,7 @@ struct functionImplementation_<
 			arg69);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -36275,7 +36299,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -36498,7 +36522,7 @@ struct functionImplementation_<
 			arg70);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -36844,7 +36868,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -37070,7 +37094,7 @@ struct functionImplementation_<
 			arg71);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -37417,7 +37441,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -37646,7 +37670,7 @@ struct functionImplementation_<
 			arg72);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -37994,7 +38018,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -38226,7 +38250,7 @@ struct functionImplementation_<
 			arg73);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -38575,7 +38599,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -38810,7 +38834,7 @@ struct functionImplementation_<
 			arg74);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -39160,7 +39184,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -39398,7 +39422,7 @@ struct functionImplementation_<
 			arg75);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -39749,7 +39773,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -39990,7 +40014,7 @@ struct functionImplementation_<
 			arg76);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -40342,7 +40366,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -40586,7 +40610,7 @@ struct functionImplementation_<
 			arg77);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -40939,7 +40963,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -41186,7 +41210,7 @@ struct functionImplementation_<
 			arg78);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -41540,7 +41564,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -41790,7 +41814,7 @@ struct functionImplementation_<
 			arg79);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -42145,7 +42169,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -42398,7 +42422,7 @@ struct functionImplementation_<
 			arg80);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -42754,7 +42778,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -43010,7 +43034,7 @@ struct functionImplementation_<
 			arg81);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -43367,7 +43391,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -43626,7 +43650,7 @@ struct functionImplementation_<
 			arg82);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -43984,7 +44008,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -44246,7 +44270,7 @@ struct functionImplementation_<
 			arg83);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -44605,7 +44629,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -44870,7 +44894,7 @@ struct functionImplementation_<
 			arg84);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -45230,7 +45254,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -45498,7 +45522,7 @@ struct functionImplementation_<
 			arg85);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -45859,7 +45883,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -46130,7 +46154,7 @@ struct functionImplementation_<
 			arg86);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -46492,7 +46516,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -46766,7 +46790,7 @@ struct functionImplementation_<
 			arg87);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -47129,7 +47153,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -47406,7 +47430,7 @@ struct functionImplementation_<
 			arg88);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -47770,7 +47794,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -48050,7 +48074,7 @@ struct functionImplementation_<
 			arg89);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -48415,7 +48439,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -48698,7 +48722,7 @@ struct functionImplementation_<
 			arg90);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -49064,7 +49088,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -49350,7 +49374,7 @@ struct functionImplementation_<
 			arg91);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -49717,7 +49741,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -50006,7 +50030,7 @@ struct functionImplementation_<
 			arg92);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -50374,7 +50398,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -50666,7 +50690,7 @@ struct functionImplementation_<
 			arg93);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -51035,7 +51059,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -51330,7 +51354,7 @@ struct functionImplementation_<
 			arg94);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -51700,7 +51724,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -51998,7 +52022,7 @@ struct functionImplementation_<
 			arg95);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -52369,7 +52393,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -52670,7 +52694,7 @@ struct functionImplementation_<
 			arg96);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -53042,7 +53066,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -53346,7 +53370,7 @@ struct functionImplementation_<
 			arg97);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -53719,7 +53743,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -54026,7 +54050,7 @@ struct functionImplementation_<
 			arg98);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -54400,7 +54424,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -54710,7 +54734,7 @@ struct functionImplementation_<
 			arg99);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -55085,7 +55109,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -55398,7 +55422,7 @@ struct functionImplementation_<
 			arg100);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -55774,7 +55798,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -56090,7 +56114,7 @@ struct functionImplementation_<
 			arg101);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -56467,7 +56491,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -56786,7 +56810,7 @@ struct functionImplementation_<
 			arg102);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -57164,7 +57188,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -57486,7 +57510,7 @@ struct functionImplementation_<
 			arg103);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -57865,7 +57889,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -58190,7 +58214,7 @@ struct functionImplementation_<
 			arg104);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -58570,7 +58594,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -58898,7 +58922,7 @@ struct functionImplementation_<
 			arg105);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -59279,7 +59303,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -59610,7 +59634,7 @@ struct functionImplementation_<
 			arg106);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -59992,7 +60016,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -60326,7 +60350,7 @@ struct functionImplementation_<
 			arg107);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -60709,7 +60733,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -61046,7 +61070,7 @@ struct functionImplementation_<
 			arg108);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -61430,7 +61454,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -61770,7 +61794,7 @@ struct functionImplementation_<
 			arg109);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -62155,7 +62179,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -62498,7 +62522,7 @@ struct functionImplementation_<
 			arg110);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -62884,7 +62908,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -63230,7 +63254,7 @@ struct functionImplementation_<
 			arg111);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -63617,7 +63641,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -63966,7 +63990,7 @@ struct functionImplementation_<
 			arg112);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -64354,7 +64378,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -64706,7 +64730,7 @@ struct functionImplementation_<
 			arg113);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -65095,7 +65119,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -65450,7 +65474,7 @@ struct functionImplementation_<
 			arg114);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -65840,7 +65864,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -66198,7 +66222,7 @@ struct functionImplementation_<
 			arg115);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -66589,7 +66613,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -66950,7 +66974,7 @@ struct functionImplementation_<
 			arg116);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -67342,7 +67366,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -67706,7 +67730,7 @@ struct functionImplementation_<
 			arg117);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -68099,7 +68123,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -68466,7 +68490,7 @@ struct functionImplementation_<
 			arg118);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -68860,7 +68884,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -69230,7 +69254,7 @@ struct functionImplementation_<
 			arg119);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -69625,7 +69649,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -69998,7 +70022,7 @@ struct functionImplementation_<
 			arg120);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -70394,7 +70418,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -70770,7 +70794,7 @@ struct functionImplementation_<
 			arg121);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -71167,7 +71191,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -71546,7 +71570,7 @@ struct functionImplementation_<
 			arg122);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -71944,7 +71968,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -72326,7 +72350,7 @@ struct functionImplementation_<
 			arg123);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -72725,7 +72749,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -73110,7 +73134,7 @@ struct functionImplementation_<
 			arg124);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -73510,7 +73534,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -73898,7 +73922,7 @@ struct functionImplementation_<
 			arg125);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -74299,7 +74323,7 @@ struct functionImplementation_<
 		functor_(functor)
 	{
 	}
-        
+
 	typedef std::tr1::function<Event (
 		const EnqueueArgs&,
 		T0,
@@ -74690,7 +74714,7 @@ struct functionImplementation_<
 			arg126);
 	}
 
-	operator type_ ()    
+	operator type_ ()
 	{
 		return type_(*this);
 	}
@@ -74806,7 +74830,7 @@ struct make_kernel :
                T124,   T125,   T126,   T127>
 {
 public:
-	typedef detail::KernelFunctorGlobal<             
+	typedef detail::KernelFunctorGlobal<
 		       T0,   T1,   T2,   T3,
                T4,   T5,   T6,   T7,
                T8,   T9,   T10,   T11,
@@ -74877,7 +74901,7 @@ public:
                        T116,   T117,   T118,   T119,
                        T120,   T121,   T122,   T123,
                        T124,   T125,   T126,   T127>(
-            FunctorType(program, name, err)) 
+            FunctorType(program, name, err))
     {}
 
     make_kernel(
@@ -74916,8 +74940,8 @@ public:
                        T116,   T117,   T118,   T119,
                        T120,   T121,   T122,   T123,
                        T124,   T125,   T126,   T127>(
-            FunctorType(kernel, err)) 
-    {}    
+            FunctorType(kernel, err))
+    {}
 };
 
 #endif
@@ -74998,8 +75022,8 @@ public:
 #undef __PARAM_NAME_DEVICE_FISSION
 #endif // USE_CL_DEVICE_FISSION
 
-#undef __DEFAULT_NOT_INITIALIZED 
-#undef __DEFAULT_BEING_INITIALIZED 
+#undef __DEFAULT_NOT_INITIALIZED
+#undef __DEFAULT_BEING_INITIALIZED
 #undef __DEFAULT_INITIALIZED
 
 } // namespace cl

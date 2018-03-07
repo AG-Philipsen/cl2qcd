@@ -1,11 +1,35 @@
+/**
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * NOTE: The code contained in this file was developed by external developers
+ *       and the copyright and license statements above refer to the work
+ *       that was done to include the third party code into CL2QCD.
+ */
+
 /** @file
- * 
+ *
  * Mike Clark - 25th May 2005
- * 
+ *
  * bigfloat.h
- * 
+ *
  * Simple C++ wrapper for multiprecision datatype used by AlgRemez algorithm
- * 
+ *
  */
 
 #include <gmp.h>
@@ -29,7 +53,7 @@ public:
   bigfloat(const long i) { mpf_init_set_si(x, i); }
   bigfloat(const int i) {mpf_init_set_si(x,(long)i);}
   bigfloat(const float d) { mpf_init_set_d(x, (double)d); }
-  bigfloat(const double d) { mpf_init_set_d(x, d); }  
+  bigfloat(const double d) { mpf_init_set_d(x, d); }
   bigfloat(const char *str) { mpf_init_set_str(x, (char*)str, 10); }
   ~bigfloat(void) { mpf_clear(x); }
   operator double (void) const { return (double)mpf_get_d(x); }
@@ -42,33 +66,33 @@ public:
     unsigned long bprec =  (unsigned long)(3.321928094 * (double)dprec);
     mpf_set_prec(x,bprec);
   }
-  
+
   unsigned long getPrecision(void) const { return mpf_get_prec(x); }
 
   unsigned long getDefaultPrecision(void) const { return mpf_get_default_prec(); }
 
   bigfloat& operator=(const bigfloat& y) {
-    mpf_set(x, y.x); 
+    mpf_set(x, y.x);
     return *this;
   }
 
-  bigfloat& operator=(const unsigned long y) { 
+  bigfloat& operator=(const unsigned long y) {
     mpf_set_ui(x, y);
-    return *this; 
-  }
-  
-  bigfloat& operator=(const signed long y) {
-    mpf_set_si(x, y); 
     return *this;
   }
-  
+
+  bigfloat& operator=(const signed long y) {
+    mpf_set_si(x, y);
+    return *this;
+  }
+
   bigfloat& operator=(const float y) {
-    mpf_set_d(x, (double)y); 
+    mpf_set_d(x, (double)y);
     return *this;
   }
 
   bigfloat& operator=(const double y) {
-    mpf_set_d(x, y); 
+    mpf_set_d(x, y);
     return *this;
   }
 
@@ -99,13 +123,13 @@ public:
     mpf_sub(a.x,x.x,y.x);
     return a;
   }
-  
+
   friend bigfloat operator-(const unsigned long x, const bigfloat& y) {
     bigfloat a;
     mpf_ui_sub(a.x,x,y.x);
     return a;
   }
-  
+
   friend bigfloat operator-(const bigfloat& x, const unsigned long y) {
     bigfloat a;
     mpf_sub_ui(a.x,x.x,y);

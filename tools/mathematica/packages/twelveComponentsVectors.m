@@ -1,36 +1,57 @@
 (* ::Package:: *)
 
+(*
+ * Copyright 2012,2013 Lars Zeidlewicz,Christopher Pinke,
+ * Matthias Bach,Christian Sch\[ADoubleDot]fer,Stefano Lottini,Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software:you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation,either version 3 of the License,or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.If not,see<http://www.gnu.org/licenses/>.
+*)
+
+
 Get["gammaMatricesTensorColorIdentity.m", Path -> {NotebookDirectory[]}]
 BeginPackage["TwelveComponentsVectors`"]
 
-spinorCold::usage = 
+spinorCold::usage =
 	"spinorCold gives a cold filled spinor (uniformly filled by {1.,0.})."
 
-spinorAscendingReal::usage = 
+spinorAscendingReal::usage =
 	"spinorAscendingReal gives a spinor filled with ascending real numbers."
 
-spinorAscendingComplex::usage = 
+spinorAscendingComplex::usage =
 	"spinorAscendingReal gives a spinor filled with ascending complex numbers."
 
-countSf::usage = 
+countSf::usage =
 	"countSf[s] takes a spinor as argument and compute the sum of all its (real+imaginary) components."
 
-gamma5TimesSpinor::usage = 
+gamma5TimesSpinor::usage =
 	"gamma5TimesSpinor takes a spinor and applies Gamma5[Idty] to it."
 
-idtyPlusGenericGammaTimesSpinor::usage = 
+idtyPlusGenericGammaTimesSpinor::usage =
 	"idtyPlusGenericGammaTimesSpinor takes a spinor and performs the operation (1 pm gamma_mu).spinor."
 
-SaxpyAndGamma5EvenOdd::usage = 
+SaxpyAndGamma5EvenOdd::usage =
 	"SaxpyAndGamma5EvenOdd takes two spinors applies Gamma5[Idty] to the first and adds the result to the second."
 
 Begin["Private`"]
 Needs["GammaMatricesTensorColorIdentity`"]
 
-f[x_, y_] := x; 
+f[x_, y_] := x;
 g[x_, y_] := (2*(x - 1) + 1)*1.0000000000000 + I*(2*(x - 1) + 2);
 
-spinorCold := 
+spinorCold :=
 	Module[ {spinorCold=ConstantArray[1., {12, 1}]},
 	spinorCold
 	]
@@ -46,9 +67,9 @@ spinorAscendingComplex:=
 	]
 
 countSf[s_]:=
-	Module[{countSf = Re[s[[1]]] + Im[s[[1]]] + Re[s[[2]]] + Im[s[[2]]] + Re[s[[3]]] + Im[s[[3]]]  
-                     + Re[s[[4]]] + Im[s[[4]]] + Re[s[[5]]] + Im[s[[5]]] + Re[s[[6]]] + Im[s[[6]]] 
-                     + Re[s[[7]]] + Im[s[[7]]] + Re[s[[8]]] + Im[s[[8]]] + Re[s[[9]]] + Im[s[[9]]] 
+	Module[{countSf = Re[s[[1]]] + Im[s[[1]]] + Re[s[[2]]] + Im[s[[2]]] + Re[s[[3]]] + Im[s[[3]]]
+                     + Re[s[[4]]] + Im[s[[4]]] + Re[s[[5]]] + Im[s[[5]]] + Re[s[[6]]] + Im[s[[6]]]
+                     + Re[s[[7]]] + Im[s[[7]]] + Re[s[[8]]] + Im[s[[8]]] + Re[s[[9]]] + Im[s[[9]]]
                      + Re[s[[10]]] + Im[s[[10]]] + Re[s[[11]]] + Im[s[[11]]] + Re[s[[12]]] + Im[s[[12]]]},
 	countSf
 	]
