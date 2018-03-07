@@ -188,21 +188,21 @@ function GiveAdviceAboutAstyle() {
 }
 
 function PrintReportOnFilesWithWrongOrMissingHeader() {
-    errecho "=====================================================================================================\n" 14
+    errecho "================================================================================================================\n" 14
     errecho "   Here a list of files with wrong or missing license header:\n" 202
     for file in "$@"; do
         errecho "     - ${file}\n" 11
     done
-    errecho "=====================================================================================================\n\n" 14
+    errecho "================================================================================================================\n\n" 14
 }
 
 function PrintReportOnFilesWithMissingCopyright() {
-    errecho "=====================================================================================================\n" 14
-    errecho "   Here a list of files with missing copyright statement in the header:\n" 202
+    errecho "================================================================================================================\n" 14
+    errecho "   Here a list of modified files with present year and author missing in the copyright statement in the header:\n" 202
     for file in "$@"; do
         errecho "     - ${file}\n" 11
     done
-    errecho "=====================================================================================================\n\n" 14
+    errecho "================================================================================================================\n\n" 14
 }
 
 function PrintSuggestionToFixHeader() {
