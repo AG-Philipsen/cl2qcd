@@ -1083,7 +1083,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(GAUSSIAN_1, 8) // 6 failures (3 for the mean, 3 for the variance) could arise in the Kolmogorov-Smirnov test
+    BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(GAUSSIAN_1, 8) // 6 failures (3 for the mean, 3 for the variance) could arise in the Kolmogorov-Smirnov test
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_1 )
 	{
@@ -1655,7 +1655,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(GAUSSIAN_EO_1, 8) // 6 failures (3 for the mean, 3 for the variance) could arise in the Kolmogorov-Smirnov test
+    BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(GAUSSIAN_EO_1, 8) // 6 failures (3 for the mean, 3 for the variance) could arise in the Kolmogorov-Smirnov test
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_1 )
 	{
