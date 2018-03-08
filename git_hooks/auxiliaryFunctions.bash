@@ -191,21 +191,21 @@ function GiveAdviceAboutClangFormat() {
 }
 
 function PrintReportOnFilesWithWrongOrMissingHeader() {
-    errecho "================================================================================================================\n" 14
+    errecho "====================================================================\n" 14
     errecho "   Here a list of files with wrong or missing license header:\n" 202
     for file in "$@"; do
         errecho "     - ${file}\n" 11
     done
-    errecho "================================================================================================================\n\n" 14
+    errecho "====================================================================\n\n" 14
 }
 
 function PrintReportOnFilesWithMissingCopyright() {
-    errecho "================================================================================================================\n" 14
+    errecho "===================================================================================================================\n" 14
     errecho "   Here a list of modified files with present year and author missing in the copyright statement in the header:\n" 202
     for file in "$@"; do
         errecho "     - ${file}\n" 11
     done
-    errecho "================================================================================================================\n\n" 14
+    errecho "===================================================================================================================\n\n" 14
 }
 
 function PrintSuggestionToFixHeader() {
@@ -214,7 +214,8 @@ function PrintSuggestionToFixHeader() {
     errecho "file. If only the copyright statement is missing add\n" 202
     errecho "   Copyright (c) [past-years]$(date +%Y) $userName\n" 11
     errecho "in the header before the license part The [past-years] part may contain other years and\n" 202
-    errecho "you should use a comma separated list, using a \"-\" to concatenate consecutive years.\n\n" 202
+    errecho "you should use a comma separated list, using a \"-\" to concatenate consecutive years.\n" 202
+    errecho "Have a look to the \e[38;5;11mCONTRIBUTING.md\e[38;5;202m file for more information.\n\n" 202
 }
 
 function PrintReportOnFilesWithStyleErrors() {
