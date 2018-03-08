@@ -30,8 +30,8 @@
 # Copy this script to .git/hooks to enforce proper coding style on
 # committed files (or use automatic hooks setup)
 #
-# Copyright (c) 2012, 2013 Matthias Bach
-# Copyright (c) 2017 Alessandro Sciarra
+# Copyright (c) 2012,2013 Matthias Bach
+# Copyright (c) 2017,2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #

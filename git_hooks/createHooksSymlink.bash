@@ -39,12 +39,12 @@ cd ${hookGitFolder}
 # Here we rely on the fact that in the "hooks" folder the executable files are only this
 # script together with all the hooks that will then be used. It sounds reasonable.
 errecho '\n'
-for hook in $(find ${CL2QCD_hooksFolder} -maxdepth 1 -perm -111 -type f -printf "%f\n"); do
+for hookBash in $(find ${CL2QCD_hooksFolder} -maxdepth 1 -perm -111 -type f -printf "%f\n"); do
     #We have to skip this executable file
-    if [ ${hook} != $(basename ${BASH_SOURCE}) ]; then
-        if [ -e ${hook} ]; then
-
-            if [ -L ${hook} ] && [ $(realpath ${hook}) = ${CL2QCD_hooksFolder}/${hook} ]; then
+    if [ ${hookBash} != $(basename ${BASH_SOURCE}) ]; then
+        hook="${hookBash%.bash}"
+        if [ -e ${hook} ]; then #Here we are in the git folder (see cd above)
+            if [ -L ${hook} ] && [ $(realpath ${hook}) = ${CL2QCD_hooksFolder}/${hookBash} ]; then
                 errecho "Hook \"${hook}\" already correctly symlinked!\n" 10
                 continue
             else
@@ -52,7 +52,7 @@ for hook in $(find ${CL2QCD_hooksFolder} -maxdepth 1 -perm -111 -type f -printf 
                 continue
             fi
         else
-            commandToBeRun="ln -s -f ../../${CL2QCD_hooksFolderFromTopLevel}/${hook} ${hook}"
+            commandToBeRun="ln -s -f ../../${CL2QCD_hooksFolderFromTopLevel}/${hookBash} ${hook}"
             errecho "Symlinking hook \"${hook}\"" 13
             errecho "${commandToBeRun}"
             ${commandToBeRun}
