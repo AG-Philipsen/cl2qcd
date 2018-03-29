@@ -1,8 +1,0 @@
-NS=4
-NT=4
-
-use_eo=true
-fermact=twistedmass
-use_merge_kernels_fermion=true
-
-
