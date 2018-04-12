@@ -2,8 +2,8 @@
 # coding=utf8
 #
 # Copyright (c) 2011,2013 Matthias Bach
-# Copyright (c) 2013,2018 Alessandro Sciarra
 # Copyright (c) 2014 Christopher Pinke
+# Copyright (c) 2018 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
