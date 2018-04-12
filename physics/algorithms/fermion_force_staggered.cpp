@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the fermion_force functions
  *
- * Copyright (c) 2014-2018 Alessandro Sciarra
+ * Copyright (c) 2014-2016,2018 Alessandro Sciarra
  * Copyright (c) 2016 Christopher Czaban
  * Copyright (c) 2017 Francesca Cuteri
  *

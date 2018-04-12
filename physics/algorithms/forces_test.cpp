@@ -1,7 +1,7 @@
 /** @file
  * Tests of the fermion force algorithms
  *
- * Copyright (c) 2013-2018 Alessandro Sciarra
+ * Copyright (c) 2013-2016,2018 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2015,2016 Christopher Czaban
  * Copyright (c) 2015 Christopher Pinke

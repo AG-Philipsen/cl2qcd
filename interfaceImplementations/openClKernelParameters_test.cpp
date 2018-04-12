@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
  * Copyright (c) 2018 Alessandro Sciarra
  *

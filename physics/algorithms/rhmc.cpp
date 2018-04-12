@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the rhmc algorithm
  *
- * Copyright (c) 2013,2015-2018 Alessandro Sciarra
+ * Copyright (c) 2013,2015,2016,2018 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2016,2017 Francesca Cuteri
  * Copyright (c) 2016 Christopher Czaban
