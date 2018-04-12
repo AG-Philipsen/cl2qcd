@@ -2,6 +2,10 @@
  *
  * Everything required by inverter's main()
  *
+ * Copyright (c) 2011 Lars Zeidlewicz
+ * Copyright (c) 2013,2014 Christopher Pinke
+ * Copyright (c) 2018 Alessandro Sciarra
+ *
  * This file is part of CL2QCD.
  *
  * CL2QCD is free software: you can redistribute it and/or modify

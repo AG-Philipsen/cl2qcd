@@ -2,6 +2,12 @@
  * Functionality common to all Opencl_Modules
  * Basically just a utility for keeping the device and input parameters references as well as some profiling utilities.
  *
+ * Copyright (c) 2011,2012,2014-2016 Christopher Pinke
+ * Copyright (c) 2011-2013 Matthias Bach
+ * Copyright (c) 2011 Lars Zeidlewicz
+ * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2015 Francesca Cuteri
+ *
  * This file is part of CL2QCD.
  *
  * CL2QCD is free software: you can redistribute it and/or modify
