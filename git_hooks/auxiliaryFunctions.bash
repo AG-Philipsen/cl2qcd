@@ -182,9 +182,12 @@ function GiveAdviceAboutWhitespaceError() {
     errecho 'to have a look to the whitespace violation on staged files.\n\n' 202
 }
 
-function GiveAdviceAboutAstyle() {
+function GiveAdviceAboutClangFormat() {
     errecho 'Please install it before continuing\n' 202
-    errecho '  http://astyle.sourceforge.net/\n\n' 11
+    errecho '  http://releases.llvm.org/\n\n' 11
+    errecho 'Download the entire pre-built LLVM toolchain and extract the\n' 202
+    errecho 'clang-format binary. Put it where you wish but make sure its\n' 202
+    errecho 'location can be automatically found (e.g. setting the PATH variable).\n\n' 202
 }
 
 function PrintReportOnFilesWithWrongOrMissingHeader() {
@@ -222,9 +225,9 @@ function PrintReportOnFilesWithStyleErrors() {
     done
     errecho "\n"
     errecho " Please fix before committing. Don't forget to run \"git add\" before trying to commit again.\n" 202
-    errecho " If the whole file is to be committed, this should work (run from the top-level directory):\n" 202
+    errecho " If the whole file is to be committed, this should work:\n" 202
     errecho "\n"
-    errecho "    astyle ${astyleParameters} $file; git add $file; git commit" 11
+    errecho "    clang-format -i ${clangFormatParameters} filename; git add filename; git commit" 11
     errecho "\n"
     errecho "=================================================================================================\n\n" 14
 }

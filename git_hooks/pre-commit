@@ -15,7 +15,7 @@
 #  6) Go through staged files and
 #      - check copyright statement
 #      - check license notice
-#      - check code style using astyle
+#      - check code style using clang-format
 #
 # Called by "git commit" with no arguments.  The hook should
 # exit with non-zero status after issuing an appropriate message if
@@ -241,24 +241,24 @@ fi
 readonly listOfFilesToBeChecked=( $(git diff-index --cached --name-only HEAD --diff-filter=ACMR | grep -e "\.c$" -e "\.cpp$" -e "\.h$" -e "\.hpp$" -e "\.cl$") )
 if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
     # Check for existence of astyle, and error out if not present.
-    if ! builtin type -P astyle; then
-        : #AbortCommit "The program \"astyle\" was not found!" GiveAdviceAboutAstyle
+    if ! builtin type -P clang-format >>/dev/null; then
+        AbortCommit "The program \"clang-format\" was not found!" GiveAdviceAboutClangFormat
     else
         errecho "\n"
         errecho "Checking style of code... " 39
-        readonly astyleParameters="--options=astylerc"
+        readonly clangFormatParameters="-style=file"
         filesWithCodeStyleErrors=()
         for file in "${listOfFilesToBeChecked[@]}"; do
             # nf is the temporary checkout. This makes sure we check against the
             # revision in the index (and not the checked out version).
-            nf=`git checkout-index --temp ${file} | cut -f 1`
-            newfile=`mktemp /tmp/${nf}.XXXXXX` || exit $CL2QCD_failureExitCode
-            astyle ${astyleParameters} < $nf > $newfile 2>> /dev/null
+            nf=$(git checkout-index --temp ${file} | cut -f 1)
+            newfile=$(mktemp /tmp/${nf}.XXXXXX) || exit ${CL2QCD_failureExitCode}
+            clang-format ${clangFormatParameters} ${nf} > ${newfile} 2>> /dev/null
             diff -u -p "${nf}" "${newfile}"
-            r=$?
+            exitCode=$?
             rm "${newfile}"
             rm "${nf}"
-            if [ $r != 0 ] ; then
+            if [ ${exitCode} != 0 ] ; then
                 filesWithCodeStyleErrors+=( "${file}" )
             fi
         done

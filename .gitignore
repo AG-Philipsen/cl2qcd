@@ -34,3 +34,5 @@ README.html
 *.settings/
 
 /Debug/
+
+/_clang-format

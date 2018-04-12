@@ -66,7 +66,30 @@ for hook in $(find ${CL2QCD_hooksFolder} -maxdepth 1 -perm -111 -type f -printf 
 done
 errecho '\n'
 
-#Check and in case warn the user about the absence of "astyle"
-if ! builtin type -P astyle; then
-    errecho '\e[1mWARNING:\e[21m The program "astyle" was not found but it is needed by the pre-commit hook.\n\n' 11
+#Check and in case warn the user about the absence of "clang-format"
+if ! builtin type -P clang-format >/dev/null; then
+    errecho '\e[1mWARNING:\e[21m The program "clang-format" was not found but it is needed by the pre-commit hook.\n\n' 11
 fi
+
+#Symlink clang-format options file to top directory so that it is found by clang-format
+cd ${CL2QCD_repositoryTopLevelPath}
+readonly clangFormatOptionFilesDestination="${CL2QCD_repositoryTopLevelPath}/_clang-format"
+readonly clangFormatOptionFilesSource="${CL2QCD_hooksFolder}/_clang-format"
+if [ -e ${clangFormatOptionFilesDestination} ]; then
+    if [ -L ${clangFormatOptionFilesDestination} ] && [ $(realpath ${clangFormatOptionFilesDestination}) = ${clangFormatOptionFilesSource} ]; then
+        errecho "File with clang-format options already correctly symlinked!\n" 10
+    else
+        errecho "File with clang-format options already existing, symlink not created!\n" 9
+    fi
+else
+    commandToBeRun="ln -s -f ${CL2QCD_hooksFolderFromTopLevel}/$(basename ${clangFormatOptionFilesSource}) $(basename ${clangFormatOptionFilesSource})"
+    errecho "Symlinking file with clang-format options" 13
+    errecho "${commandToBeRun}"
+    ${commandToBeRun}
+    if [ ! -e ${clangFormatOptionFilesDestination} ]; then
+        errecho "...failed!\n" 9
+    else
+        errecho "...done!\n" 10
+    fi
+fi
+errecho '\n'
