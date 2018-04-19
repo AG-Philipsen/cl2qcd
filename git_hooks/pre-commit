@@ -254,7 +254,7 @@ if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
             nf=$(git checkout-index --temp ${file} | cut -f 1)
             newfile=$(mktemp /tmp/${nf}.XXXXXX) || exit ${CL2QCD_failureExitCode}
             clang-format ${clangFormatParameters} ${nf} > ${newfile} 2>> /dev/null
-            diff -u -p "${nf}" "${newfile}"
+            diff  "${nf}" "${newfile}" >>/dev/null
             exitCode=$?
             rm "${newfile}"
             rm "${nf}"
@@ -263,7 +263,7 @@ if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
             fi
         done
         if [ ${#filesWithCodeStyleErrors[@]} -ne 0 ]; then
-            AbortCommit "Code style error found!" PrintReportOnFilesWithStyleErrors "${filesWithCodeStyleErrors[@]}"
+            echo; AbortCommit "Code style error found!" PrintReportOnFilesWithStyleErrors "${filesWithCodeStyleErrors[@]}"
         else
             errecho " done!\n" 39
         fi
