@@ -80,7 +80,7 @@ The following sample shows how the top level comment of a `C++` source file shou
 
 ```cpp
 /** @file
- * Cool functionality to show of some neat things
+ * Cool functionality to show some neat things
  *
  * Copyright (c) 2013 Jane Doe <doe@example.com>
  *
@@ -113,8 +113,17 @@ Again, to be sure to have done everything according to our standard, we encourag
 
 CL2QCD contains a set of git hooks which are meant to help the developer to respect the common style and to minimise the risk of violating the community rules.
 Executing the [`createHooksSymlink.bash`](git_hooks/createHooksSymlink.bash) will set up the available hooks.
-Since [`astyle`](http://astyle.sourceforge.net/) is used to uniform the code style in the remote repository, you need to have it installed.
-Still, you can use your favourite style developing the code, but you should run `astyle` on the modified files before committing them.
+Since [`clang-format`](http://releases.llvm.org/) is used to uniform the code style in the remote repository, you need to have it installed.
+It is part of the LLVM suite, which can be download as pre-built binaries for your operative system.
+Once extracted the `.tar.xz`, make sure that the `bin/clang-format` executable can be automatically found, e.g. setting the `PATH` environment variable accordingly.
+
+In principle, you can use your favourite style developing the code, but you should run `clang-format` on the modified files before committing them.
+However, we encourage you to use our style straight away, since most of the editors and IDE offer the possibility to integrate `clang-format`.
+Have a look [here](https://clang.llvm.org/docs/ClangFormat.html#vim-integration) for more information, or check out on the web if your editor is not here mentioned.
+For example, if you use `Eclipse`, you can take advantage of the [`CppStyle` plug-in](https://github.com/wangzw/CppStyle).
+
+After having run the `createHooksSymlink.bash` script, you will maybe notice that a `_clang-format` symlink will appear at the top-level of the CL2QCD repository.
+This is meant to contain the code style options and it has to be placed there in order to be naturally found by `clang-format` (which should be run with the `-style=file` option).
 
 #### `pre-commit`
 
@@ -132,7 +141,7 @@ Still, you can use your favourite style developing the code, but you should run 
 * It goes through all staged files and
    * it checks the copyright statement;
    * it checks the license notice;
-   * it checks the code style using astyle (which must be installed).
+   * it checks the code style using `clang-format` (which must be installed).
 
 #### `commit-msg`
 
