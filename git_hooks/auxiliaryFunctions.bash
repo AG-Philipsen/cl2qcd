@@ -219,15 +219,28 @@ function PrintSuggestionToFixHeader() {
 
 function PrintReportOnFilesWithStyleErrors() {
     errecho "=================================================================================================\n" 14
-    errecho "   Here a list of the affected files:\n" 202
+    errecho " Here a list of the affected files:\n" 202
     for file in "$@"; do
-        errecho "     - ${file}\n" 11
+        errecho "   - ${file}\n" 11
     done
     errecho "\n"
     errecho " Please fix before committing. Don't forget to run \"git add\" before trying to commit again.\n" 202
     errecho " If the whole file is to be committed, this should work:\n" 202
     errecho "\n"
-    errecho "    clang-format -i ${clangFormatParameters} filename; git add filename; git commit" 11
+    errecho "    clang-format -i ${clangFormatParameters} filename; git add filename; git commit\n" 11
     errecho "\n"
+    errecho " If some of the files above was only partially staged, it could be that the code-style\n" 202
+    errecho " violation is not in the staged part. This does not prevent the commit from failing and you\n" 202
+    errecho " should any way correctly format your code. Consider moving them back from the staging area\n" 202
+    errecho "\n"
+    errecho "    git reset HEAD filename\n" 11
+    errecho "\n"
+    errecho " and running clang-format on them, before partially stage them again.\n\n" 202
+    errecho " If you are sure that the code-style violation is in not in the staged part and you\n" 202
+    errecho " do NOT want to fix the style in the whole file, another possibility is to \n" 202
+    errecho "\n"
+    errecho "    git stash; git commit; git stash pop\n" 11
+    errecho "\n"
+    errecho " (we cannot forsee all possible scenario => think carefully about what you do  before acting!)\n" 202
     errecho "=================================================================================================\n\n" 14
 }

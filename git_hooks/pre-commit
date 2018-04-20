@@ -162,18 +162,26 @@ if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
         readonly clangFormatParameters="-style=file"
         filesWithCodeStyleErrors=()
         for file in "${listOfFilesToBeChecked[@]}"; do
-            # nf is the temporary checkout. This makes sure we check against the
-            # revision in the index (and not the checked out version)
-            nf=$(git checkout-index --temp ${file} | cut -f 1)
-            newfile=$(mktemp /tmp/${nf}.XXXXXX) || exit ${CL2QCD_failureExitCode}
-            clang-format ${clangFormatParameters} ${nf} > ${newfile} 2>> /dev/null
-            diff  "${nf}" "${newfile}" >>/dev/null
-            exitCode=$?
-            rm "${newfile}"
-            rm "${nf}"
-            if [ ${exitCode} != 0 ] ; then
+            # The file in the staging area could differ from the ${file} in case
+            # it was only partially staged. It would be possible, in principle, to
+            # obtain the file from the index using
+            #     indexFile=$(git checkout-index --temp ${file} | cut -f 1)
+            #
+            # Actually, if we use a copy of ${file} with a different name
+            # in order to check if the code style rules are respected,
+            # clang-format could reorder differently the #include, since
+            # it might not identify that the ${file} is a .cpp associated
+            # with a .hpp (in this case the .hpp should be included as first).
+            # Therefore, we always check the ${file} as if it was fully staged
+            # and if there are style violation in the not staged modifications
+            # we do not care and we abort the commit any way (just give some
+            # advice to the user).
+            newfile=$(mktemp /tmp/$(basename ${file}).XXXXXX) || exit ${CL2QCD_failureExitCode}
+            clang-format ${clangFormatParameters} ${file} > ${newfile} 2>> /dev/null
+            if ! cmp -s "${file}" "${newfile}"; then # <- if they differ
                 filesWithCodeStyleErrors+=( "${file}" )
             fi
+            rm "${newfile}"
         done
         if [ ${#filesWithCodeStyleErrors[@]} -ne 0 ]; then
             echo; AbortCommit "Code style error found!" PrintReportOnFilesWithStyleErrors "${filesWithCodeStyleErrors[@]}"
