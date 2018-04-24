@@ -139,6 +139,7 @@ bool meta::ParametersConfig::get_split_cpu() const noexcept
 meta::ParametersConfig::ParametersConfig()
 	: options("Configuration options")
 {
+    // clang-format off
 	options.add_options()
 	("prec", po::value<size_t>(&precision)->default_value(sizeof(double) * 8))
 	("device,d", po::value<std::vector<int>>(&selected_devices), "ID of a device to use. Can be specified multiple times.")
@@ -166,6 +167,7 @@ meta::ParametersConfig::ParametersConfig()
 	("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
 	//todo: this is not used ?!
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false));
+	// clang-format on
 }
 
 meta::ParametersConfig::~ParametersConfig() = default;

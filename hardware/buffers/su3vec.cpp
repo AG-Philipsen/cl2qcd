@@ -115,6 +115,7 @@ void hardware::buffers::SU3vec::dump(su3vec * ptr, const size_t elems, const siz
 }
 
 
+// clang-format off
 
 /*To be added...
 
@@ -154,6 +155,8 @@ hardware::SynchronizationEvent hardware::buffers::Spinor::dumpRect_rawAsync(void
 	return Buffer::dump_rectAsync(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
 }
 */
+
+// clang-format on
 
 size_t hardware::buffers::SU3vec::get_storage_type_size() const noexcept
 {

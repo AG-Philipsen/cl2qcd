@@ -87,6 +87,7 @@ double ParametersHmc::get_lambda(size_t timescale) const noexcept
 ParametersHmc::ParametersHmc()
 	: options("HMC options")
 {
+    // clang-format off
 	options.add_options()
 	("tau", po::value<double>(&tau)->default_value(0.5))
 	("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
@@ -104,6 +105,7 @@ ParametersHmc::ParametersHmc()
 	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
 	("use_mp", po::value<bool>(&use_mp)->default_value(false));
+	// clang-format on
 }
 
 meta::ParametersHmc::~ParametersHmc() = default;

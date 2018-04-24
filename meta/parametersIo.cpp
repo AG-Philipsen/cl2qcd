@@ -152,6 +152,7 @@ std::string meta::ParametersIo::get_transportcoefficientKappaFilename() const no
 meta::ParametersIo::ParametersIo()
 	: options("IO options")
 {
+    // clang-format off
 	options.add_options()
 	("writefrequency", po::value<int>(&writefrequency)->default_value(1), "Frequency of online measurements")
 	("savefrequency", po::value<int>(&savefrequency)->default_value(100), "Frequency of conf and prng storing")
@@ -179,6 +180,7 @@ meta::ParametersIo::ParametersIo()
 	("rhmc_obs_to_single_file", po::value<bool>(&rhmc_obs_to_single_file)->default_value(true), "Save rhmc observables to one single file")
 	("rhmc_obs_prefix", po::value<std::string>(&rhmc_obs_prefix)->default_value("rhmc_output"), "Prefix for rhmc observables file")
 	("rhmc_obs_postfix", po::value<std::string>(&rhmc_obs_postfix)->default_value(""), "Postfix for rhmc observables file");
+	// clang-format on
 }
 
 meta::ParametersIo::~ParametersIo() = default;

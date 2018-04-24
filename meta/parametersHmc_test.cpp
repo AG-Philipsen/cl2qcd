@@ -64,6 +64,8 @@ BOOST_AUTO_TEST_CASE(input_file1)
 	ParametersHmc params(2, _params);
 	checkDefaults(params);
 }
+
+// clang-format off
 /*
 BOOST_AUTO_TEST_CASE(input_file2)
 {
@@ -233,3 +235,4 @@ BOOST_AUTO_TEST_CASE(help)
   BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
 }
 */
+// clang-format on

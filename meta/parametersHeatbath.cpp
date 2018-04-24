@@ -42,6 +42,7 @@ int meta::ParametersHeatbath::get_xi() const noexcept
 meta::ParametersHeatbath::ParametersHeatbath()
 	: options("Heatbath options")
 {
+    // clang-format off
 	options.add_options()
 	//todo: this is also needed in the HMC!
 	("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
@@ -49,6 +50,7 @@ meta::ParametersHeatbath::ParametersHeatbath()
 	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
 	//todo: is this used?
 	("xi", po::value<int>(&xi)->default_value(1));
+	// clang-format on
 }
 
 meta::ParametersHeatbath::~ParametersHeatbath() = default;

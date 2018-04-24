@@ -74,9 +74,11 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 	 * We need that to get the option file.
 	 */
 	po::options_description cmd_opts("Generic options");
+	// clang-format off
 	cmd_opts.add_options()
 		("help,h", "Produce this help message")
 		("input-file", po::value<std::string>(), "File containing the input parameters");
+	// clang-format on
 	// TODO add log-level etc
 	po::positional_options_description pos_opts;
 	pos_opts.add("input-file", 1);

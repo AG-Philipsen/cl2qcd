@@ -49,12 +49,14 @@ bool meta::ParametersGauge::get_use_smearing() const noexcept
 meta::ParametersGauge::ParametersGauge()
 	: options("Gaugefield options")
 {
+    // clang-format off
 	options.add_options()
 	("beta", po::value<double>(&beta)->default_value(4.0))
 	("use_smearing", po::value<bool>(&use_smearing)->default_value(false))
 	("rho", po::value<double>(&rho)->default_value(0.))
 	("rho_iter", po::value<int>(&rho_iter)->default_value(0))
 	("gaugeact", po::value<std::string>()->default_value("wilson"));
+	// clang-format on
 }
 
 meta::ParametersGauge::~ParametersGauge() = default;

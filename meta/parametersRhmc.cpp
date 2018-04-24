@@ -92,6 +92,7 @@ bool ParametersRhmc::get_read_rational_approximations_from_file() const noexcept
 meta::ParametersRhmc::ParametersRhmc()
 	: options("RHMC options")
 {
+    // clang-format off
 	options.add_options()
 	("md_approx_ord", po::value<unsigned int>(&molecularDynamicsRationalApproximationOrder)->default_value(8))
 	("metro_approx_ord", po::value<unsigned int>(&metropolisTestRationalApproximationOrder)->default_value(15))
@@ -109,6 +110,7 @@ meta::ParametersRhmc::ParametersRhmc()
 	("approx_md_file", po::value<std::string>(&molecularDynamicsRationalApproximationFilename)->default_value("Approx_MD"))
 	("approx_metropolis_file", po::value<std::string>(&metropolisTestRationalApproximationFilename)->default_value("Approx_Metropolis"))
 	("read_rational_approximations_from_file", po::value<bool>(&readRationalApproximationsFromFile)->default_value(true));
+	// clang-format on
 }
 
 meta::ParametersRhmc::~ParametersRhmc() = default;

@@ -34,9 +34,11 @@ double meta::ParametersTest::get_test_ref_value2() const noexcept
 meta::ParametersTest::ParametersTest()
 	: options("Test options")
 {
+    // clang-format off
 	options.add_options()
 	("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
 	("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
+	// clang-format on
 }
 
 meta::ParametersTest::~ParametersTest() = default;

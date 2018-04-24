@@ -60,6 +60,7 @@ common::sourcecontents meta::ParametersSources::get_sourcecontent() const noexce
 meta::ParametersSources::ParametersSources()
 	: options("Source options")
 {
+    // clang-format off
 	options.add_options()
 	("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
 	("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
@@ -69,6 +70,7 @@ meta::ParametersSources::ParametersSources()
 	("source_z", po::value<int>(&source_z)->default_value(0))
 	("source_t", po::value<int>(&source_t)->default_value(0))
 	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
+	// clang-format on
 }
 
 meta::ParametersSources::~ParametersSources() = default;
