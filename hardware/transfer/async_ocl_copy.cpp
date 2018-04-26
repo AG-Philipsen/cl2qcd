@@ -111,7 +111,9 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 	// back migration is a performance optimization that is not functionally required.
 	// if it is not available just work
 	back_migration_event = transfer_event;
-#pragma message "clEnqueueMigrateMemObjects is not available on your system. This might negativly affect multi-device performance. Please upgrade to OpenCL 1.2 or higher."
+#pragma message \
+        "clEnqueueMigrateMemObjects is not available on your system. " \
+        "This might negatively affect multi-device performance. Please upgrade to OpenCL 1.2 or higher."
 #endif
 
 	return transfer_event;
