@@ -43,7 +43,7 @@ BreakAfterJavaFieldAnnotations: false
 BreakConstructorInitializers: BeforeComma
 BreakStringLiterals: true
 ColumnLimit:     120
-CommentPragmas:  '^ KAT pragma:'
+CommentPragmas:  '^ KAT pragma:' # Keep As Text
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 4
@@ -55,7 +55,7 @@ ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
 ForEachMacros:
   - PARALLEL_FOR
-IncludeBlocks:   Preserve
+IncludeBlocks: Regroup
 IncludeCategories:
   - Regex:           '^".*\.h"'
     Priority:        1
