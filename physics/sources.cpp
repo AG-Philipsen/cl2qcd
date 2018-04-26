@@ -157,7 +157,7 @@ std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(
     return sources;
 }
 
-/*******************************************************************************************************************************/
+/*********************************************************************************************************************/
 
 void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * inout, const PRNG& prng)
 {
