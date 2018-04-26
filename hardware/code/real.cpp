@@ -28,7 +28,7 @@
 
 void hardware::code::Real::fill_kernels()
 {
-	basic_real_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.hpp" << "operations_real.cl";
+	basic_real_code = get_fundamental_sources() << "types.hpp" << "operations_real.cl";
 
 	logger.debug() << "Creating Real kernels...";
 

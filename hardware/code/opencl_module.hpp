@@ -79,8 +79,8 @@ public:
 
 	/**
 	 * Returns the sources for all children modules.
-	 * @return basic_sources
 	 */
+	ClSourcePackage get_fundamental_sources() const noexcept;
 	ClSourcePackage get_basic_sources() const noexcept;
 
 protected:
@@ -152,6 +152,7 @@ private:
 	/**
 	 * The basic source used by all modules (children classes of this)
 	 */
+	ClSourcePackage fundamental_sources;
 	ClSourcePackage basic_sources;
 
 };

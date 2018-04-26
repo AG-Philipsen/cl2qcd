@@ -41,7 +41,22 @@ static void print_profile_header(const std::string& filename, int number);
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 
-static std::string collect_build_options(const hardware::Device * device, const hardware::code::OpenClKernelParametersInterface &kernelParameters)
+static std::string collect_fundamental_options(const hardware::Device * device, const hardware::code::OpenClKernelParametersInterface &kernelParameters)
+{
+    std::ostringstream options;
+    options.precision(16);
+
+    options << "-I " << SOURCEDIR;
+    options << " -D _INKERNEL_";
+    if(kernelParameters.getPrecision() == 64) {
+        options << " -D _USEDOUBLEPREC_";
+        options << " -D _DEVICE_DOUBLE_EXTENSION_KHR_";
+    }
+
+    return options.str();
+}
+
+static std::string collect_basic_options(const hardware::Device * device, const hardware::code::OpenClKernelParametersInterface &kernelParameters)
 {
 	/**
 	 * @Todo: Move all the explicit lattice size fcts. to own fcts.
@@ -214,8 +229,8 @@ static std::vector<std::string> collect_build_files()
 hardware::code::Opencl_Module::Opencl_Module(const hardware::code::OpenClKernelParametersInterface &kernelParameters, const hardware::Device * deviceIn):
 		kernelParameters(&kernelParameters),
 		device(deviceIn),
-		basic_sources ( ClSourcePackage(collect_build_files(),
-				collect_build_options(device, kernelParameters) )  )
+		fundamental_sources(ClSourcePackage(collect_build_files(), collect_fundamental_options(device, kernelParameters))),
+		basic_sources(ClSourcePackage(collect_build_files(), collect_basic_options(device, kernelParameters)))
 {}
 
 hardware::code::Opencl_Module::~Opencl_Module(){}
@@ -223,6 +238,11 @@ hardware::code::Opencl_Module::~Opencl_Module(){}
 const hardware::Device * hardware::code::Opencl_Module::get_device() const noexcept
 {
 	return device;
+}
+
+ClSourcePackage hardware::code::Opencl_Module::get_fundamental_sources() const noexcept
+{
+    return fundamental_sources;
 }
 
 ClSourcePackage hardware::code::Opencl_Module::get_basic_sources() const noexcept

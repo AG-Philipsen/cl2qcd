@@ -32,7 +32,7 @@
 
 void hardware::code::Complex::fill_kernels()
 {
-	basic_complex_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.hpp" << "operations_complex.hpp";
+	basic_complex_code = get_fundamental_sources() << "types.hpp" << "operations_complex.hpp";
 
 	logger.debug() << "Creating Complex kernels...";
 
