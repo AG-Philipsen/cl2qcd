@@ -22,6 +22,10 @@
 #ifndef OPERATIONS_COMPLEX
 #define OPERATIONS_COMPLEX
 
+#ifndef _INKERNEL_
+    #include "types.hpp" //in #ifndef not to break the OpenCL code which uses this file!
+#endif
+
 inline hmc_complex complexconj(hmc_complex in)
 {
 	in.im = -(in.im);

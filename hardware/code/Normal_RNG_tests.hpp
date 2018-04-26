@@ -18,6 +18,8 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../../host_functionality/logger.hpp"
+#include <boost/test/unit_test.hpp>
 #include <cmath>
 #include <vector>
 #include <numeric>

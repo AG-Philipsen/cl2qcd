@@ -21,6 +21,8 @@
 
 # pragma once
 
+#include "../common_header_files/types.hpp"
+
 namespace hardware {
 	namespace code {
 		struct OpenClKernelParametersInterface

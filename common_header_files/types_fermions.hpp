@@ -24,7 +24,9 @@
 #ifndef _TYPES_FERMIONSH_
 #define _TYPES_FERMIONSH_
 
-// relies on "types.hpp"
+#ifndef _INKERNEL_
+    #include "types.hpp" //in #ifndef not to break the OpenCL code which uses this file!
+#endif
 
 typedef struct {
 	hmc_complex e0;
