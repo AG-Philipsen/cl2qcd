@@ -74,6 +74,7 @@ namespace hardware {
 		const std::vector<Device*>& get_devices() const noexcept;
 		const meta::Inputparameters& get_inputparameters() const noexcept; //@todo: remove
 		const hardware::HardwareParametersInterface * getHardwareParameters() const noexcept;
+		const hardware::code::OpenClKernelParametersInterface* getOpenClParameters() const noexcept; //needed only in microbenchmarks -> remove!?
 
 		// non-copyable
 		System& operator=(const System&) = delete;

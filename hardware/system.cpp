@@ -365,3 +365,8 @@ const hardware::HardwareParametersInterface * hardware::System::getHardwareParam
 {
 	return hardwareParameters;
 }
+
+const hardware::code::OpenClKernelParametersInterface* hardware::System::getOpenClParameters() const noexcept
+{
+    return kernelParameters;
+}

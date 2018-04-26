@@ -85,7 +85,7 @@ protected:
 	};
 
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+	Device(const hardware::code::OpenClKernelParametersInterface& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
 	};
 	virtual ~Device() {
@@ -99,7 +99,7 @@ class Test {
 
 public:
 	Test(const hardware::System& system, size_t maxMemSize)
-		: maxMemSize(maxMemSize), device(system.get_devices().at(0)), code(system.get_inputparameters(), device) {
+		: maxMemSize(maxMemSize), device(system.get_devices().at(0)), code(*(system.getOpenClParameters()), device) {
 		fill_buffers();
 	};
 
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 	}
 
 	meta::Inputparameters params(0, 0);
-	hardware::System system(params, true);
+	hardware::System system(params);
 
 	if(vm.count("stepelements")) {
 		logger.info() << "Sweeping element count for fixed thread count.";
@@ -362,7 +362,7 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 
 	size_t num_meas = 10;
 
-	hardware::Device * dev = get_device();
+	const hardware::Device * dev = get_device();
 	dev->enqueue_kernel(kernel, total_threads, local_threads);
 	dev->synchronize();
 	klepsydra::Monotonic timer;
