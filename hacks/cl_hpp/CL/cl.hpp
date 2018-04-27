@@ -161,6 +161,8 @@
  * \endcode
  *
  */
+
+// clang-format off
 #ifndef CL_HPP_
 #define CL_HPP_
 
@@ -75033,3 +75035,5 @@ public:
 #endif // _WIN32
 
 #endif // CL_HPP_
+
+// clang-format off
