@@ -45,65 +45,61 @@
  * along with Klepsydra.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _MONOTONIC_H_
 #define _MONOTONIC_H_
 
 #include "timer.hpp"
 
-namespace klepsydra
-{
+namespace klepsydra {
 
-	/**
-	 * A timer that measures time using the monotonic
-	 * timer at micro-second accuracy (if the system permits)
-	 */
-	class Monotonic : public Timer
-	{
-		public:
-			/**
-			 * Default and only constructor.
-			 * Immediately starts the measurement.
-			 */
-			Monotonic();
+    /**
+     * A timer that measures time using the monotonic
+     * timer at micro-second accuracy (if the system permits)
+     */
+    class Monotonic : public Timer {
+      public:
+        /**
+         * Default and only constructor.
+         * Immediately starts the measurement.
+         */
+        Monotonic();
 
-			/**
-			 * Resets the timer to start at 0 again.
-			 */
-			void reset();
+        /**
+         * Resets the timer to start at 0 again.
+         */
+        void reset();
 
-			/**
-			 * Recieves the time passed since timer start/reset.
-			 * The value returned is in microseconds.
-			 */
-			uint64_t getTime();
+        /**
+         * Recieves the time passed since timer start/reset.
+         * The value returned is in microseconds.
+         */
+        uint64_t getTime();
 
-			/**
-			 * Recieves the time passed sind timer start/reset
-			 * and resets the timer.
-			 * The value returned is in microseconds.
-			 */
-			uint64_t getTimeAndReset();
+        /**
+         * Recieves the time passed sind timer start/reset
+         * and resets the timer.
+         * The value returned is in microseconds.
+         */
+        uint64_t getTimeAndReset();
 
-		private:
-			/**
-			 * Time of the timer start/reset.
-			 * This is the offset that needs to be substracted from
-			 * later measurements to get the time difference.
-			 */
-			uint64_t start;
+      private:
+        /**
+         * Time of the timer start/reset.
+         * This is the offset that needs to be substracted from
+         * later measurements to get the time difference.
+         */
+        uint64_t start;
 
-			/**
-			 * Calculates the difference in microseconds between the two events
-			 */
-			uint64_t getDifference( uint64_t start, uint64_t end ) const;
+        /**
+         * Calculates the difference in microseconds between the two events
+         */
+        uint64_t getDifference(uint64_t start, uint64_t end) const;
 
+        /**
+         * Retrieves the current Timestamp in an OS-specific manner
+         */
+        uint64_t getTimestamp() const;
+    };
+}  // namespace klepsydra
 
-			/**
-			 * Retrieves the current Timestamp in an OS-specific manner
-			 */
-			uint64_t getTimestamp() const;
-	};
-}
-
-#endif // _MONOTONIC_H_
+#endif  // _MONOTONIC_H_

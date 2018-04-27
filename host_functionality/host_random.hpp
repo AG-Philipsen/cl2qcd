@@ -27,8 +27,9 @@
 
 #include "../common_header_files/globaldefs.hpp"
 #include "../common_header_files/types.hpp"
-#include <cmath>
 #include "host_use_timer.hpp"
+
+#include <cmath>
 
 /**
  * Seed the host prng.
@@ -51,7 +52,7 @@ void prng_get(int* buf);
 void prng_set(int* buf);
 
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
-void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
+void SU2Update(hmc_float dst[su2_entries], const hmc_float alpha);
 
 /**
  * Fill the real and imaginary parts of complex numbers in an
@@ -61,13 +62,13 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
  * \param[in] length The amount of complex numbers to be copied
  * \param[in] sigma The variance of the Gaussian distribution
  */
-void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma);
+void gaussianComplexVector(hmc_complex* vector, int length, hmc_float sigma);
 /**
  * Generate two independent normal standard real numbers
  *
  * \param[out] z1 A real number
  * \param[out] z2 A real number
  */
-void gaussianNormalPair(hmc_float * z1, hmc_float * z2);
+void gaussianNormalPair(hmc_float* z1, hmc_float* z2);
 
 #endif /* _RANDOMH_ */

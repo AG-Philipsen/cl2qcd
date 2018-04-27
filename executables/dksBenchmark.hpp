@@ -20,32 +20,32 @@
 #ifndef DKSBENCHMARK_H_
 #define DKSBENCHMARK_H_
 
-#include "../physics/lattices/staggeredfield_eo.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
 #include "../physics/fermionmatrix/fermionmatrix_stagg.hpp"
+#include "../physics/lattices/staggeredfield_eo.hpp"
 #include "benchmarkExecutable.hpp"
 
 class dksBenchmark : public benchmarkExecutable {
-public:
-  dksBenchmark(int argc, const char* argv[]);
+  public:
+    dksBenchmark(int argc, const char* argv[]);
 
-protected:
-	const physics::lattices::Staggeredfield_eo * staggeredfield1;
-	const physics::lattices::Staggeredfield_eo * staggeredfield2;
+  protected:
+    const physics::lattices::Staggeredfield_eo* staggeredfield1;
+    const physics::lattices::Staggeredfield_eo* staggeredfield2;
 
-	/*
-	 * Calls the dks_eo kernel.
-	 * Per iteration, the kernel is called with EVEN and ODD parameters.
-	 */
-	void performBenchmarkForSpecificKernels() override;
-	/*
-	 * Calls dks_eo on all devices in the system.
-	 * Per iteration, the kernel is called with EVEN and ODD parameters.
-	 */
-	void enqueueSpecificKernelForBenchmarkingMultipleDevices()  override;
+    /*
+     * Calls the dks_eo kernel.
+     * Per iteration, the kernel is called with EVEN and ODD parameters.
+     */
+    void performBenchmarkForSpecificKernels() override;
+    /*
+     * Calls dks_eo on all devices in the system.
+     * Per iteration, the kernel is called with EVEN and ODD parameters.
+     */
+    void enqueueSpecificKernelForBenchmarkingMultipleDevices() override;
 
-	void printProfilingDataToScreen() override;
+    void printProfilingDataToScreen() override;
 };
 
 #endif /* DSLASHBENCHMARK_H_ */

@@ -23,34 +23,35 @@
 #include "../meta/parametersConfig.hpp"
 #include "exceptions.hpp"
 
-gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv, "gaugeobservables")
+gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[])
+    : measurementExecutable(argc, argv, "gaugeobservables")
 {
-	if ( parameters.get_startcondition() != common::startcondition::start_from_source )
-	{
-		throw std::logic_error("Invalid startcondition specified for gaugeobservables executable! Must be continue!");
-	}
-	printParametersToScreenAndFile();
+    if (parameters.get_startcondition() != common::startcondition::start_from_source) {
+        throw std::logic_error("Invalid startcondition specified for gaugeobservables executable! Must be continue!");
+    }
+    printParametersToScreenAndFile();
 }
 
 void gaugeobservablesExecutable::writeGaugeobservablesLogfile()
 {
-  outputToFile.open(filenameForLogfile,
-		    std::ios::out | std::ios::app);
-	if (outputToFile.is_open()) {
-		meta::print_info_observables_gauge_io(&outputToFile, parameters);
-		outputToFile.close();
-	} else {
-		throw File_Exception(filenameForLogfile);
-	}
+    outputToFile.open(filenameForLogfile, std::ios::out | std::ios::app);
+    if (outputToFile.is_open()) {
+        meta::print_info_observables_gauge_io(&outputToFile, parameters);
+        outputToFile.close();
+    } else {
+        throw File_Exception(filenameForLogfile);
+    }
 }
 
 void gaugeobservablesExecutable::printParametersToScreenAndFile()
 {
-	meta::print_info_observables_gauge_io(parameters);
-	writeGaugeobservablesLogfile();
+    meta::print_info_observables_gauge_io(parameters);
+    writeGaugeobservablesLogfile();
 }
 
 void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
 {
-	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit(), interfacesHandler->getGaugeObservablesParametersInterface());
+    physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit(),
+                                                                interfacesHandler
+                                                                    ->getGaugeObservablesParametersInterface());
 }

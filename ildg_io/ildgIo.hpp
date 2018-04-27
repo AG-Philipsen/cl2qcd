@@ -24,13 +24,15 @@
 #define ILDGIO_HPP_
 
 #include "../common_header_files/types.hpp"
-#include <string>
-#include <vector>
 #include "../physics/lattices/latticesInterfaces.hpp"
 
+#include <string>
+#include <vector>
+
 namespace ildgIo {
-	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const physics::lattices::GaugefieldParametersInterface *, int &);
-	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const physics::lattices::GaugefieldParametersInterface *, int);
-}
+    Matrixsu3* readGaugefieldFromSourcefile(std::string, const physics::lattices::GaugefieldParametersInterface*, int&);
+    void writeGaugefieldToFile(std::string, std::vector<Matrixsu3>&,
+                               const physics::lattices::GaugefieldParametersInterface*, int);
+}  // namespace ildgIo
 
 #endif

@@ -50,23 +50,23 @@ below. An examle initialization kernel would be:
 upload them again when done. Example kernel that generates a float4 where each
 component is uniformly distributed between 0 and 1, end points not included:
     #include "ranluxcl.cl"
-	__kernel void Kernel_Example(__global float4 *ranluxcltab){
-		//ranluxclstate is a struct of 7 float4 variables
-		//storing the state of the generator.
-		ranluxcl_state_t ranluxclstate;
+    __kernel void Kernel_Example(__global float4 *ranluxcltab){
+        //ranluxclstate is a struct of 7 float4 variables
+        //storing the state of the generator.
+        ranluxcl_state_t ranluxclstate;
 
-		//Download state into ranluxclstate struct.
-		ranluxcl_download_seed(&ranluxclstate, ranluxcltab);
+        //Download state into ranluxclstate struct.
+        ranluxcl_download_seed(&ranluxclstate, ranluxcltab);
 
-		//Generate a float4 with each component on (0,1),
-		//end points not included. We can call ranluxcl as many
-		//times as we like until we upload the state again.
-		float4 randomnr = ranluxcl(&ranluxclstate);
+        //Generate a float4 with each component on (0,1),
+        //end points not included. We can call ranluxcl as many
+        //times as we like until we upload the state again.
+        float4 randomnr = ranluxcl(&ranluxclstate);
 
-		//Upload state again so that we don't get the same
-		//numbers over again the next time we use ranluxcl.
-		ranluxcl_upload_seed(&ranluxclstate, ranluxcltab);
-	}
+        //Upload state again so that we don't get the same
+        //numbers over again the next time we use ranluxcl.
+        ranluxcl_upload_seed(&ranluxclstate, ranluxcltab);
+    }
 
 ***** MACROS ***********************************************************************
 
@@ -247,447 +247,650 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ***************************************************************************************/
 
-typedef struct{
-	float4 s01to04;
-	float4 s05to08;
-	float4 s09to12;
-	float4 s13to16;
-	float4 s17to20;
-	float4 s21to24;
-	float4 carryin24stepnr; //Fourth component unused
+typedef struct {
+    float4 s01to04;
+    float4 s05to08;
+    float4 s09to12;
+    float4 s13to16;
+    float4 s17to20;
+    float4 s21to24;
+    float4 carryin24stepnr;  // Fourth component unused
 } ranluxcl_state_t;
 
 #define RANLUXCL_TWOM24 0.000000059604644775f
 #define RANLUXCL_TWOM12 0.000244140625f
 
 #ifdef RANLUXCL_LUX
-#if RANLUXCL_LUX < 0
-#error ranluxcl: lux must be zero or positive.
-#endif
+#    if RANLUXCL_LUX < 0
+#        error ranluxcl: lux must be zero or positive.
+#    endif
 #else
-#define RANLUXCL_LUX 4 //Default to high quality
-#endif //RANLUXCL_LUX
+#    define RANLUXCL_LUX 4  // Default to high quality
+#endif                      // RANLUXCL_LUX
 
-//Here the luxury values are defined
+// Here the luxury values are defined
 #if RANLUXCL_LUX == 0
-#define RANLUXCL_NSKIP 0
+#    define RANLUXCL_NSKIP 0
 #elif RANLUXCL_LUX == 1
-#define RANLUXCL_NSKIP 24
+#    define RANLUXCL_NSKIP 24
 #elif RANLUXCL_LUX == 2
-#define RANLUXCL_NSKIP 76
+#    define RANLUXCL_NSKIP 76
 #elif RANLUXCL_LUX == 3
-#define RANLUXCL_NSKIP 200
+#    define RANLUXCL_NSKIP 200
 #elif RANLUXCL_LUX == 4
-#define RANLUXCL_NSKIP 380
+#    define RANLUXCL_NSKIP 380
 #else
-#define RANLUXCL_NSKIP (RANLUXCL_LUX - 24)
-#endif //RANLUXCL_LUX == 0
+#    define RANLUXCL_NSKIP (RANLUXCL_LUX - 24)
+#endif  // RANLUXCL_LUX == 0
 
-//Check that nskip is a permissible value
+// Check that nskip is a permissible value
 #if RANLUXCL_NSKIP % 4 != 0
-#error nskip must be divisible by 4!
+#    error nskip must be divisible by 4!
 #endif
 #if RANLUXCL_NSKIP < 24 && RANLUXCL_NSKIP != 0
-#error nskip must be either 0 or >= 24!
+#    error nskip must be either 0 or >= 24!
 #endif
 #if RANLUXCL_NSKIP < 0
-#error nskip is negative!
+#    error nskip is negative!
 #endif
 
-//Check if planar scheme is recovered
+// Check if planar scheme is recovered
 #if RANLUXCL_NSKIP % 24 == 0
-#define RANLUXCL_PLANAR
+#    define RANLUXCL_PLANAR
 #endif
 
-//Check if we will skip at all
+// Check if we will skip at all
 #if RANLUXCL_NSKIP == 0
-#define RANLUXCL_NOSKIP
+#    define RANLUXCL_NOSKIP
 #endif
 
-//Single-value global size and id
+// Single-value global size and id
 #define RANLUXCL_NUMWORKITEMS (get_global_size(0) * get_global_size(1) * get_global_size(2))
-#define RANLUXCL_MYID (get_global_id(0) + get_global_id(1) * get_global_size(0) + get_global_id(2) * get_global_size(0) * get_global_size(1))
+#define RANLUXCL_MYID                                           \
+    (get_global_id(0) + get_global_id(1) * get_global_size(0) + \
+     get_global_id(2) * get_global_size(0) * get_global_size(1))
 
-void ranluxcl_download_seed(ranluxcl_state_t *ranluxclstate, __global float4 *ranluxcltab)
+void ranluxcl_download_seed(ranluxcl_state_t* ranluxclstate, __global float4* ranluxcltab)
 {
-	(*ranluxclstate).s01to04         = ranluxcltab[RANLUXCL_MYID + 0 * RANLUXCL_NUMWORKITEMS];
-	(*ranluxclstate).s05to08         = ranluxcltab[RANLUXCL_MYID + 1 * RANLUXCL_NUMWORKITEMS];
-	(*ranluxclstate).s09to12         = ranluxcltab[RANLUXCL_MYID + 2 * RANLUXCL_NUMWORKITEMS];
-	(*ranluxclstate).s13to16         = ranluxcltab[RANLUXCL_MYID + 3 * RANLUXCL_NUMWORKITEMS];
-	(*ranluxclstate).s17to20         = ranluxcltab[RANLUXCL_MYID + 4 * RANLUXCL_NUMWORKITEMS];
-	(*ranluxclstate).s21to24         = ranluxcltab[RANLUXCL_MYID + 5 * RANLUXCL_NUMWORKITEMS];
-	(*ranluxclstate).carryin24stepnr = ranluxcltab[RANLUXCL_MYID + 6 * RANLUXCL_NUMWORKITEMS];
+    (*ranluxclstate).s01to04         = ranluxcltab[RANLUXCL_MYID + 0 * RANLUXCL_NUMWORKITEMS];
+    (*ranluxclstate).s05to08         = ranluxcltab[RANLUXCL_MYID + 1 * RANLUXCL_NUMWORKITEMS];
+    (*ranluxclstate).s09to12         = ranluxcltab[RANLUXCL_MYID + 2 * RANLUXCL_NUMWORKITEMS];
+    (*ranluxclstate).s13to16         = ranluxcltab[RANLUXCL_MYID + 3 * RANLUXCL_NUMWORKITEMS];
+    (*ranluxclstate).s17to20         = ranluxcltab[RANLUXCL_MYID + 4 * RANLUXCL_NUMWORKITEMS];
+    (*ranluxclstate).s21to24         = ranluxcltab[RANLUXCL_MYID + 5 * RANLUXCL_NUMWORKITEMS];
+    (*ranluxclstate).carryin24stepnr = ranluxcltab[RANLUXCL_MYID + 6 * RANLUXCL_NUMWORKITEMS];
 }
 
-void ranluxcl_upload_seed(ranluxcl_state_t *ranluxclstate, __global float4 *ranluxcltab)
+void ranluxcl_upload_seed(ranluxcl_state_t* ranluxclstate, __global float4* ranluxcltab)
 {
-	ranluxcltab[RANLUXCL_MYID + 0 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s01to04;
-	ranluxcltab[RANLUXCL_MYID + 1 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s05to08;
-	ranluxcltab[RANLUXCL_MYID + 2 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s09to12;
-	ranluxcltab[RANLUXCL_MYID + 3 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s13to16;
-	ranluxcltab[RANLUXCL_MYID + 4 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s17to20;
-	ranluxcltab[RANLUXCL_MYID + 5 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s21to24;
-	ranluxcltab[RANLUXCL_MYID + 6 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).carryin24stepnr;
+    ranluxcltab[RANLUXCL_MYID + 0 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s01to04;
+    ranluxcltab[RANLUXCL_MYID + 1 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s05to08;
+    ranluxcltab[RANLUXCL_MYID + 2 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s09to12;
+    ranluxcltab[RANLUXCL_MYID + 3 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s13to16;
+    ranluxcltab[RANLUXCL_MYID + 4 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s17to20;
+    ranluxcltab[RANLUXCL_MYID + 5 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).s21to24;
+    ranluxcltab[RANLUXCL_MYID + 6 * RANLUXCL_NUMWORKITEMS] = (*ranluxclstate).carryin24stepnr;
 }
 
-float ranluxcl_onestep_1(float4* vec1, float4* vec2, float4* carryin24stepnr){
-	float uni, out;
-	uni = (*vec1).y - (*vec2).w - (*carryin24stepnr).x;
-	if(uni < 0.0f){
-		uni += 1.0f;
-		(*carryin24stepnr).x = RANLUXCL_TWOM24;
-	} else (*carryin24stepnr).x = 0.0f;
-	out = ((*vec2).w = uni);
-
-	if(uni < RANLUXCL_TWOM12) out += RANLUXCL_TWOM24 * (*vec1).y;
-
-	if(out == 0.0f) out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
-	return out;
-}
-
-float ranluxcl_onestep_2(float4* vec1, float4* vec2, float4* carryin24stepnr){
-	float uni, out;
-	uni = (*vec1).x - (*vec2).z - (*carryin24stepnr).x;
-	if(uni < 0.0f){
-		uni += 1.0f;
-		(*carryin24stepnr).x = RANLUXCL_TWOM24;
-	} else (*carryin24stepnr).x = 0.0f;
-	out = ((*vec2).z = uni);
-
-	if(uni < RANLUXCL_TWOM12) out += RANLUXCL_TWOM24 * (*vec1).x;
-
-	if(out == 0.0f) out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
-	return out;
-}
-
-float ranluxcl_onestep_3(float4* vec1, float4* vec2, float4* carryin24stepnr){
-	float uni, out;
-	uni = (*vec1).w - (*vec2).y - (*carryin24stepnr).x;
-	if(uni < 0.0f){
-		uni += 1.0f;
-		(*carryin24stepnr).x = RANLUXCL_TWOM24;
-	} else (*carryin24stepnr).x = 0.0f;
-	out = ((*vec2).y = uni);
-
-	if(uni < RANLUXCL_TWOM12) out += RANLUXCL_TWOM24 * (*vec1).w;
-
-	if(out == 0.0f) out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
-	return out;
-}
-
-float ranluxcl_onestep_4(float4* vec1, float4* vec2, float4* carryin24stepnr){
-	float uni, out;
-	uni = (*vec1).z - (*vec2).x - (*carryin24stepnr).x;
-	if(uni < 0.0f){
-		uni += 1.0f;
-		(*carryin24stepnr).x = RANLUXCL_TWOM24;
-	} else (*carryin24stepnr).x = 0.0f;
-	out = ((*vec2).x = uni);
-
-	if(uni < RANLUXCL_TWOM12) out += RANLUXCL_TWOM24 * (*vec1).z;
-
-	if(out == 0.0f) out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
-	return out;
-}
-
-float4 ranluxcl(ranluxcl_state_t *ranluxclstate)
+float ranluxcl_onestep_1(float4* vec1, float4* vec2, float4* carryin24stepnr)
 {
-	//ranluxcl returns a 4-component float vector where each component is uniformly distributed
-	//between 0-1, end points not included.
+    float uni, out;
+    uni = (*vec1).y - (*vec2).w - (*carryin24stepnr).x;
+    if (uni < 0.0f) {
+        uni += 1.0f;
+        (*carryin24stepnr).x = RANLUXCL_TWOM24;
+    } else
+        (*carryin24stepnr).x = 0.0f;
+    out = ((*vec2).w = uni);
 
-	float4 out;
+    if (uni < RANLUXCL_TWOM12)
+        out += RANLUXCL_TWOM24 * (*vec1).y;
 
-	if((*ranluxclstate).carryin24stepnr.z == 0.0f){
-		out.x = ranluxcl_onestep_1(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-		out.y = ranluxcl_onestep_2(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-		out.z = ranluxcl_onestep_3(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-		out.w = ranluxcl_onestep_4(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-		(*ranluxclstate).carryin24stepnr.z += 4.0f;
-	}
+    if (out == 0.0f)
+        out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
+    return out;
+}
 
-	else if((*ranluxclstate).carryin24stepnr.z == 4.0f){
-		out.x = ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-		out.y = ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-		out.z = ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-		out.w = ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-		(*ranluxclstate).carryin24stepnr.z += 4.0f;
-	}
+float ranluxcl_onestep_2(float4* vec1, float4* vec2, float4* carryin24stepnr)
+{
+    float uni, out;
+    uni = (*vec1).x - (*vec2).z - (*carryin24stepnr).x;
+    if (uni < 0.0f) {
+        uni += 1.0f;
+        (*carryin24stepnr).x = RANLUXCL_TWOM24;
+    } else
+        (*carryin24stepnr).x = 0.0f;
+    out = ((*vec2).z = uni);
 
-	else if((*ranluxclstate).carryin24stepnr.z == 8.0f){
-		out.x = ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-		out.y = ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-		out.z = ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-		out.w = ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-		(*ranluxclstate).carryin24stepnr.z += 4.0f;
-	}
+    if (uni < RANLUXCL_TWOM12)
+        out += RANLUXCL_TWOM24 * (*vec1).x;
 
-	else if((*ranluxclstate).carryin24stepnr.z == 12.0f){
-		out.x = ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-		out.y = ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-		out.z = ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-		out.w = ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-		(*ranluxclstate).carryin24stepnr.z += 4.0f;
-	}
+    if (out == 0.0f)
+        out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
+    return out;
+}
 
-	else if((*ranluxclstate).carryin24stepnr.z == 16.0f){
-		out.x = ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-		out.y = ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-		out.z = ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-		out.w = ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-		(*ranluxclstate).carryin24stepnr.z += 4.0f;
-	}
+float ranluxcl_onestep_3(float4* vec1, float4* vec2, float4* carryin24stepnr)
+{
+    float uni, out;
+    uni = (*vec1).w - (*vec2).y - (*carryin24stepnr).x;
+    if (uni < 0.0f) {
+        uni += 1.0f;
+        (*carryin24stepnr).x = RANLUXCL_TWOM24;
+    } else
+        (*carryin24stepnr).x = 0.0f;
+    out = ((*vec2).y = uni);
 
-	else if((*ranluxclstate).carryin24stepnr.z == 20.0f){
-		out.x = ranluxcl_onestep_1(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-		out.y = ranluxcl_onestep_2(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-		out.z = ranluxcl_onestep_3(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-		out.w = ranluxcl_onestep_4(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-		(*ranluxclstate).carryin24stepnr.z = 0.0f;
+    if (uni < RANLUXCL_TWOM12)
+        out += RANLUXCL_TWOM24 * (*vec1).w;
 
-//The below preprocessor directives are here to recover the simpler planar scheme when nskip is a multiple of 24.
-//For the most general planar shift approach, just ignore all #if's below.
+    if (out == 0.0f)
+        out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
+    return out;
+}
+
+float ranluxcl_onestep_4(float4* vec1, float4* vec2, float4* carryin24stepnr)
+{
+    float uni, out;
+    uni = (*vec1).z - (*vec2).x - (*carryin24stepnr).x;
+    if (uni < 0.0f) {
+        uni += 1.0f;
+        (*carryin24stepnr).x = RANLUXCL_TWOM24;
+    } else
+        (*carryin24stepnr).x = 0.0f;
+    out = ((*vec2).x = uni);
+
+    if (uni < RANLUXCL_TWOM12)
+        out += RANLUXCL_TWOM24 * (*vec1).z;
+
+    if (out == 0.0f)
+        out = RANLUXCL_TWOM24 * RANLUXCL_TWOM24;
+    return out;
+}
+
+float4 ranluxcl(ranluxcl_state_t* ranluxclstate)
+{
+    // ranluxcl returns a 4-component float vector where each component is uniformly distributed
+    // between 0-1, end points not included.
+
+    float4 out;
+
+    if ((*ranluxclstate).carryin24stepnr.z == 0.0f) {
+        out.x = ranluxcl_onestep_1(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.y = ranluxcl_onestep_2(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.z = ranluxcl_onestep_3(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.w = ranluxcl_onestep_4(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24),
+                                   &((*ranluxclstate).carryin24stepnr));
+        (*ranluxclstate).carryin24stepnr.z += 4.0f;
+    }
+
+    else if ((*ranluxclstate).carryin24stepnr.z == 4.0f) {
+        out.x = ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.y = ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.z = ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.w = ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+        (*ranluxclstate).carryin24stepnr.z += 4.0f;
+    }
+
+    else if ((*ranluxclstate).carryin24stepnr.z == 8.0f) {
+        out.x = ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.y = ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.z = ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.w = ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+        (*ranluxclstate).carryin24stepnr.z += 4.0f;
+    }
+
+    else if ((*ranluxclstate).carryin24stepnr.z == 12.0f) {
+        out.x = ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.y = ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.z = ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.w = ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+        (*ranluxclstate).carryin24stepnr.z += 4.0f;
+    }
+
+    else if ((*ranluxclstate).carryin24stepnr.z == 16.0f) {
+        out.x = ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.y = ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.z = ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.w = ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+        (*ranluxclstate).carryin24stepnr.z += 4.0f;
+    }
+
+    else if ((*ranluxclstate).carryin24stepnr.z == 20.0f) {
+        out.x = ranluxcl_onestep_1(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.y = ranluxcl_onestep_2(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.z = ranluxcl_onestep_3(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+        out.w = ranluxcl_onestep_4(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+        (*ranluxclstate).carryin24stepnr.z = 0.0f;
+
+// The below preprocessor directives are here to recover the simpler planar scheme when nskip is a multiple of 24.
+// For the most general planar shift approach, just ignore all #if's below.
 #ifndef RANLUXCL_PLANAR
-	}
+    }
 
-	(*&((*ranluxclstate).carryin24stepnr)).y += 4.0f;
-	if((*&((*ranluxclstate).carryin24stepnr)).y == 24.0f){
-		(*&((*ranluxclstate).carryin24stepnr)).y = 0.0f;
-#endif //RANLUXCL_PLANAR
+    (*&((*ranluxclstate).carryin24stepnr)).y += 4.0f;
+    if ((*&((*ranluxclstate).carryin24stepnr)).y == 24.0f) {
+        (*&((*ranluxclstate).carryin24stepnr)).y = 0.0f;
+#endif  // RANLUXCL_PLANAR
 
-		int initialskips = (int)((*ranluxclstate).carryin24stepnr.z) ? (24 - (int)((*ranluxclstate).carryin24stepnr.z)) : 0;
-		int bulkskips = ((RANLUXCL_NSKIP - initialskips)/24) * 24;
-		int remainingskips = RANLUXCL_NSKIP - initialskips - bulkskips;
+        int initialskips = (int)((*ranluxclstate).carryin24stepnr.z) ? (24 - (int)((*ranluxclstate).carryin24stepnr.z))
+                                                                     : 0;
+        int bulkskips      = ((RANLUXCL_NSKIP - initialskips) / 24) * 24;
+        int remainingskips = RANLUXCL_NSKIP - initialskips - bulkskips;
 
-//We know there won't be any initial skips in the planar scheme
+// We know there won't be any initial skips in the planar scheme
 #ifndef RANLUXCL_PLANAR
-		//Do initial skips (lack of breaks in switch is intentional).
-		switch(initialskips){
-			case(20):
-				ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-			case(16):
-				ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-			case(12):
-				ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-			case(8):
-				ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-			case(4):
-				ranluxcl_onestep_1(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-		}
-#endif //RANLUXCL_PLANAR
+        // Do initial skips (lack of breaks in switch is intentional).
+        switch (initialskips) {
+            case (20):
+                ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+            case (16):
+                ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+            case (12):
+                ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+            case (8):
+                ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+            case (4):
+                ranluxcl_onestep_1(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04),
+                                   &((*ranluxclstate).carryin24stepnr));
+        }
+#endif  // RANLUXCL_PLANAR
 
-//Also check if we will ever need to skip at all
+// Also check if we will ever need to skip at all
 #ifndef RANLUXCL_NOSKIP
-		for(int i=0; i<bulkskips/24; i++){
-			ranluxcl_onestep_1(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_2(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_3(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_4(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_1(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_2(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_3(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_4(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04), &((*ranluxclstate).carryin24stepnr));
-		}
-#endif //RANLUXCL_NOSKIP
+        for (int i = 0; i < bulkskips / 24; i++) {
+            ranluxcl_onestep_1(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_2(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_3(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_4(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_1(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_2(&((*ranluxclstate).s13to16), &((*ranluxclstate).s01to04),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_3(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_4(&((*ranluxclstate).s09to12), &((*ranluxclstate).s01to04),
+                               &((*ranluxclstate).carryin24stepnr));
+        }
+#endif  // RANLUXCL_NOSKIP
 
-//There also won't be any remaining skips in the planar scheme
+// There also won't be any remaining skips in the planar scheme
 #ifndef RANLUXCL_PLANAR
-		//Do remaining skips
-		if(remainingskips){
-			ranluxcl_onestep_1(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_2(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_3(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
-			ranluxcl_onestep_4(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24), &((*ranluxclstate).carryin24stepnr));
+        // Do remaining skips
+        if (remainingskips) {
+            ranluxcl_onestep_1(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_2(&((*ranluxclstate).s09to12), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_3(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
+            ranluxcl_onestep_4(&((*ranluxclstate).s05to08), &((*ranluxclstate).s21to24),
+                               &((*ranluxclstate).carryin24stepnr));
 
-			if(remainingskips > 4){
-				ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20), &((*ranluxclstate).carryin24stepnr));
-			}
+            if (remainingskips > 4) {
+                ranluxcl_onestep_1(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s05to08), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s01to04), &((*ranluxclstate).s17to20),
+                                   &((*ranluxclstate).carryin24stepnr));
+            }
 
-			if(remainingskips > 8){
-				ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16), &((*ranluxclstate).carryin24stepnr));
-			}
+            if (remainingskips > 8) {
+                ranluxcl_onestep_1(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s01to04), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s21to24), &((*ranluxclstate).s13to16),
+                                   &((*ranluxclstate).carryin24stepnr));
+            }
 
-			if(remainingskips > 12){
-				ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12), &((*ranluxclstate).carryin24stepnr));
-			}
+            if (remainingskips > 12) {
+                ranluxcl_onestep_1(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s21to24), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s17to20), &((*ranluxclstate).s09to12),
+                                   &((*ranluxclstate).carryin24stepnr));
+            }
 
-			if(remainingskips > 16){
-				ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-				ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08), &((*ranluxclstate).carryin24stepnr));
-			}
-		}
-#endif //RANLUXCL_PLANAR
+            if (remainingskips > 16) {
+                ranluxcl_onestep_1(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_2(&((*ranluxclstate).s17to20), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_3(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+                ranluxcl_onestep_4(&((*ranluxclstate).s13to16), &((*ranluxclstate).s05to08),
+                                   &((*ranluxclstate).carryin24stepnr));
+            }
+        }
+#endif  // RANLUXCL_PLANAR
 
-		//Initial skips brought stepnr down to 0. The bulk skips did only full cycles.
-		//Therefore stepnr is now equal to remainingskips.
-		(*ranluxclstate).carryin24stepnr.z = (float)remainingskips;
-	}
+        // Initial skips brought stepnr down to 0. The bulk skips did only full cycles.
+        // Therefore stepnr is now equal to remainingskips.
+        (*ranluxclstate).carryin24stepnr.z = (float)remainingskips;
+    }
 
-	return out;
+    return out;
 }
 
-void ranluxcl_synchronize(ranluxcl_state_t *ranluxclstate){
-	//This function generates numbers so that the generator is at the beginning,
-	//i.e. ready to generate 24 numbers before the next skipping sequence. This is
-	//useful if different work-items have called ranluxcl a different number of times.
-	//Since that would lead to out of sync execution it could be rather inefficient on
-	//SIMD architectures like GPUs. This function thus allows us to resynchronize
-	//execution across all work-items.
-
-	//Do necessary number of calls to ranluxcl so that stepnr == 0 at the end.
-	if((*ranluxclstate).carryin24stepnr.z == 4.0f)
-		ranluxcl(ranluxclstate);
-	if((*ranluxclstate).carryin24stepnr.z == 8.0f)
-		ranluxcl(ranluxclstate);
-	if((*ranluxclstate).carryin24stepnr.z == 12.0f)
-		ranluxcl(ranluxclstate);
-	if((*ranluxclstate).carryin24stepnr.z == 16.0f)
-		ranluxcl(ranluxclstate);
-	if((*ranluxclstate).carryin24stepnr.z == 20.0f)
-		ranluxcl(ranluxclstate);
-}
-
-void ranluxcl_initialization(int ins, global float4 *ranluxcltab)
+void ranluxcl_synchronize(ranluxcl_state_t* ranluxclstate)
 {
-	#define IC 2147483563
-	#define ITWO24 16777216
+    // This function generates numbers so that the generator is at the beginning,
+    // i.e. ready to generate 24 numbers before the next skipping sequence. This is
+    // useful if different work-items have called ranluxcl a different number of times.
+    // Since that would lead to out of sync execution it could be rather inefficient on
+    // SIMD architectures like GPUs. This function thus allows us to resynchronize
+    // execution across all work-items.
 
-	int scaledins, k, maxWorkitems;
+    // Do necessary number of calls to ranluxcl so that stepnr == 0 at the end.
+    if ((*ranluxclstate).carryin24stepnr.z == 4.0f)
+        ranluxcl(ranluxclstate);
+    if ((*ranluxclstate).carryin24stepnr.z == 8.0f)
+        ranluxcl(ranluxclstate);
+    if ((*ranluxclstate).carryin24stepnr.z == 12.0f)
+        ranluxcl(ranluxclstate);
+    if ((*ranluxclstate).carryin24stepnr.z == 16.0f)
+        ranluxcl(ranluxclstate);
+    if ((*ranluxclstate).carryin24stepnr.z == 20.0f)
+        ranluxcl(ranluxclstate);
+}
 
-	ranluxcl_state_t rst;
+void ranluxcl_initialization(int ins, global float4* ranluxcltab)
+{
+#define IC 2147483563
+#define ITWO24 16777216
 
-	//Make sure ins isn't negative.
-	if(ins < 0)
-		ins = 0;
+    int scaledins, k, maxWorkitems;
 
-	#ifdef RANLUXCL_MAXWORKITEMS
-	maxWorkitems = RANLUXCL_MAXWORKITEMS;
-	#else
-	maxWorkitems = RANLUXCL_NUMWORKITEMS;
-	#endif
+    ranluxcl_state_t rst;
 
+    // Make sure ins isn't negative.
+    if (ins < 0)
+        ins = 0;
 
-	//ins is scaled so that if the user makes another call somewhere else
-	//with ins + 1 there should be no overlap. Also adding one
-	//allows us to use ins = 0.
-	scaledins = ins * maxWorkitems + 1;
+#ifdef RANLUXCL_MAXWORKITEMS
+    maxWorkitems = RANLUXCL_MAXWORKITEMS;
+#else
+    maxWorkitems = RANLUXCL_NUMWORKITEMS;
+#endif
 
-	int js = scaledins + RANLUXCL_MYID;
+    // ins is scaled so that if the user makes another call somewhere else
+    // with ins + 1 there should be no overlap. Also adding one
+    // allows us to use ins = 0.
+    scaledins = ins * maxWorkitems + 1;
 
-	//Make sure js is not too small (should really be an error)
-	if(js < 1)
-		js = 1;
+    int js = scaledins + RANLUXCL_MYID;
 
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s01to04.x=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s01to04.y=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s01to04.z=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s01to04.w=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s05to08.x=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s05to08.y=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s05to08.z=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s05to08.w=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s09to12.x=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s09to12.y=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s09to12.z=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s09to12.w=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s13to16.x=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s13to16.y=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s13to16.z=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s13to16.w=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s17to20.x=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s17to20.y=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s17to20.z=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s17to20.w=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s21to24.x=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s21to24.y=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s21to24.z=(js%ITWO24)*RANLUXCL_TWOM24;
-	k = js/53668; js=40014*(js-k*53668)-k*12211; if(js<0)js=js+IC; rst.s21to24.w=(js%ITWO24)*RANLUXCL_TWOM24;
+    // Make sure js is not too small (should really be an error)
+    if (js < 1)
+        js = 1;
 
-	rst.carryin24stepnr.x = 0.0f; //carry
-	if(rst.s21to24.w == 0.0f)
-		rst.carryin24stepnr.x = RANLUXCL_TWOM24;
+    k  = js / 53668;
+    js = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s01to04.x = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s01to04.y = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s01to04.z = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s01to04.w = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s05to08.x = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s05to08.y = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s05to08.z = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s05to08.w = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s09to12.x = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s09to12.y = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s09to12.z = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s09to12.w = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s13to16.x = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s13to16.y = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s13to16.z = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s13to16.w = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s17to20.x = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s17to20.y = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s17to20.z = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s17to20.w = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s21to24.x = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s21to24.y = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s21to24.z = (js % ITWO24) * RANLUXCL_TWOM24;
+    k             = js / 53668;
+    js            = 40014 * (js - k * 53668) - k * 12211;
+    if (js < 0)
+        js = js + IC;
+    rst.s21to24.w = (js % ITWO24) * RANLUXCL_TWOM24;
 
-	rst.carryin24stepnr.y = 0.0f; //in24
-	rst.carryin24stepnr.z = 0.0f; //stepnr
+    rst.carryin24stepnr.x = 0.0f;  // carry
+    if (rst.s21to24.w == 0.0f)
+        rst.carryin24stepnr.x = RANLUXCL_TWOM24;
 
-	#ifndef RANLUXCL_NO_WARMUP
-	//Warming up the generator, ensuring there are no initial correlations.
-	//16 is a "magic number". It is the number of times we must generate
-	//a batch of 24 numbers to ensure complete decorrelation.
-	for(int i=0; i<16; i++){
-		ranluxcl_onestep_1(&(rst.s09to12), &(rst.s21to24), &(rst.carryin24stepnr));
-		ranluxcl_onestep_2(&(rst.s09to12), &(rst.s21to24), &(rst.carryin24stepnr));
-		ranluxcl_onestep_3(&(rst.s05to08), &(rst.s21to24), &(rst.carryin24stepnr));
-		ranluxcl_onestep_4(&(rst.s05to08), &(rst.s21to24), &(rst.carryin24stepnr));
-		ranluxcl_onestep_1(&(rst.s05to08), &(rst.s17to20), &(rst.carryin24stepnr));
-		ranluxcl_onestep_2(&(rst.s05to08), &(rst.s17to20), &(rst.carryin24stepnr));
-		ranluxcl_onestep_3(&(rst.s01to04), &(rst.s17to20), &(rst.carryin24stepnr));
-		ranluxcl_onestep_4(&(rst.s01to04), &(rst.s17to20), &(rst.carryin24stepnr));
-		ranluxcl_onestep_1(&(rst.s01to04), &(rst.s13to16), &(rst.carryin24stepnr));
-		ranluxcl_onestep_2(&(rst.s01to04), &(rst.s13to16), &(rst.carryin24stepnr));
-		ranluxcl_onestep_3(&(rst.s21to24), &(rst.s13to16), &(rst.carryin24stepnr));
-		ranluxcl_onestep_4(&(rst.s21to24), &(rst.s13to16), &(rst.carryin24stepnr));
-		ranluxcl_onestep_1(&(rst.s21to24), &(rst.s09to12), &(rst.carryin24stepnr));
-		ranluxcl_onestep_2(&(rst.s21to24), &(rst.s09to12), &(rst.carryin24stepnr));
-		ranluxcl_onestep_3(&(rst.s17to20), &(rst.s09to12), &(rst.carryin24stepnr));
-		ranluxcl_onestep_4(&(rst.s17to20), &(rst.s09to12), &(rst.carryin24stepnr));
-		ranluxcl_onestep_1(&(rst.s17to20), &(rst.s05to08), &(rst.carryin24stepnr));
-		ranluxcl_onestep_2(&(rst.s17to20), &(rst.s05to08), &(rst.carryin24stepnr));
-		ranluxcl_onestep_3(&(rst.s13to16), &(rst.s05to08), &(rst.carryin24stepnr));
-		ranluxcl_onestep_4(&(rst.s13to16), &(rst.s05to08), &(rst.carryin24stepnr));
-		ranluxcl_onestep_1(&(rst.s13to16), &(rst.s01to04), &(rst.carryin24stepnr));
-		ranluxcl_onestep_2(&(rst.s13to16), &(rst.s01to04), &(rst.carryin24stepnr));
-		ranluxcl_onestep_3(&(rst.s09to12), &(rst.s01to04), &(rst.carryin24stepnr));
-		ranluxcl_onestep_4(&(rst.s09to12), &(rst.s01to04), &(rst.carryin24stepnr));
-	}
-	#endif //RANLUXCL_NO_WARMUP
+    rst.carryin24stepnr.y = 0.0f;  // in24
+    rst.carryin24stepnr.z = 0.0f;  // stepnr
 
-	//Upload the state
-	ranluxcl_upload_seed(&rst, ranluxcltab);
+#ifndef RANLUXCL_NO_WARMUP
+    // Warming up the generator, ensuring there are no initial correlations.
+    // 16 is a "magic number". It is the number of times we must generate
+    // a batch of 24 numbers to ensure complete decorrelation.
+    for (int i = 0; i < 16; i++) {
+        ranluxcl_onestep_1(&(rst.s09to12), &(rst.s21to24), &(rst.carryin24stepnr));
+        ranluxcl_onestep_2(&(rst.s09to12), &(rst.s21to24), &(rst.carryin24stepnr));
+        ranluxcl_onestep_3(&(rst.s05to08), &(rst.s21to24), &(rst.carryin24stepnr));
+        ranluxcl_onestep_4(&(rst.s05to08), &(rst.s21to24), &(rst.carryin24stepnr));
+        ranluxcl_onestep_1(&(rst.s05to08), &(rst.s17to20), &(rst.carryin24stepnr));
+        ranluxcl_onestep_2(&(rst.s05to08), &(rst.s17to20), &(rst.carryin24stepnr));
+        ranluxcl_onestep_3(&(rst.s01to04), &(rst.s17to20), &(rst.carryin24stepnr));
+        ranluxcl_onestep_4(&(rst.s01to04), &(rst.s17to20), &(rst.carryin24stepnr));
+        ranluxcl_onestep_1(&(rst.s01to04), &(rst.s13to16), &(rst.carryin24stepnr));
+        ranluxcl_onestep_2(&(rst.s01to04), &(rst.s13to16), &(rst.carryin24stepnr));
+        ranluxcl_onestep_3(&(rst.s21to24), &(rst.s13to16), &(rst.carryin24stepnr));
+        ranluxcl_onestep_4(&(rst.s21to24), &(rst.s13to16), &(rst.carryin24stepnr));
+        ranluxcl_onestep_1(&(rst.s21to24), &(rst.s09to12), &(rst.carryin24stepnr));
+        ranluxcl_onestep_2(&(rst.s21to24), &(rst.s09to12), &(rst.carryin24stepnr));
+        ranluxcl_onestep_3(&(rst.s17to20), &(rst.s09to12), &(rst.carryin24stepnr));
+        ranluxcl_onestep_4(&(rst.s17to20), &(rst.s09to12), &(rst.carryin24stepnr));
+        ranluxcl_onestep_1(&(rst.s17to20), &(rst.s05to08), &(rst.carryin24stepnr));
+        ranluxcl_onestep_2(&(rst.s17to20), &(rst.s05to08), &(rst.carryin24stepnr));
+        ranluxcl_onestep_3(&(rst.s13to16), &(rst.s05to08), &(rst.carryin24stepnr));
+        ranluxcl_onestep_4(&(rst.s13to16), &(rst.s05to08), &(rst.carryin24stepnr));
+        ranluxcl_onestep_1(&(rst.s13to16), &(rst.s01to04), &(rst.carryin24stepnr));
+        ranluxcl_onestep_2(&(rst.s13to16), &(rst.s01to04), &(rst.carryin24stepnr));
+        ranluxcl_onestep_3(&(rst.s09to12), &(rst.s01to04), &(rst.carryin24stepnr));
+        ranluxcl_onestep_4(&(rst.s09to12), &(rst.s01to04), &(rst.carryin24stepnr));
+    }
+#endif  // RANLUXCL_NO_WARMUP
 
-	#undef IC
-	#undef ITWO24
+    // Upload the state
+    ranluxcl_upload_seed(&rst, ranluxcltab);
+
+#undef IC
+#undef ITWO24
 }
 
 #undef RANLUXCL_TWOM24
@@ -700,4 +903,4 @@ void ranluxcl_initialization(int ins, global float4 *ranluxcltab)
 #undef RANLUXCL_NOSKIP
 #undef RANLUXCL_NO_WARMUP
 
-#endif //RANLUXCL_CL
+#endif  // RANLUXCL_CL

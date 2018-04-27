@@ -22,53 +22,57 @@
 
 #pragma once
 
-#include <vector>
-#include <boost/test/unit_test.hpp>
+#include "../../geometry/latticeExtents.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "testUtilities.hpp"
-#include "../system.hpp"
 #include "../device.hpp"
 #include "../interfaceMockups.hpp"
-#include "../../geometry/latticeExtents.hpp"
+#include "../system.hpp"
+#include "testUtilities.hpp"
+
+#include <boost/test/unit_test.hpp>
+#include <vector>
 
 const double nonTrivialParameter = 0.123456;
 
 typedef std::vector<boost::any> ReferenceValues;
 ReferenceValues defaultReferenceValues();
 
-struct TestParameters
-{
-	int ns;
-	int nt;
-	LatticeExtents latticeExtents;
-	const double testPrecision = 10e-8;
+struct TestParameters {
+    int ns;
+    int nt;
+    LatticeExtents latticeExtents;
+    const double testPrecision = 10e-8;
 
-	TestParameters(const LatticeExtents latticeExtentsIn, const double testPrecisionIn = 10e-8):
-		ns(latticeExtentsIn.getNs()), nt(latticeExtentsIn.getNt()), latticeExtents(latticeExtentsIn), testPrecision(testPrecisionIn) {}
-	TestParameters() = delete;
+    TestParameters(const LatticeExtents latticeExtentsIn, const double testPrecisionIn = 10e-8)
+        : ns(latticeExtentsIn.getNs())
+        , nt(latticeExtentsIn.getNt())
+        , latticeExtents(latticeExtentsIn)
+        , testPrecision(testPrecisionIn)
+    {
+    }
+    TestParameters() = delete;
 };
 
-struct ParameterCollection
-{
-	ParameterCollection(const hardware::HardwareParametersInterface & hardwareParametersIn, const hardware::code::OpenClKernelParametersInterface & kernelParametersIn):
-		hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn) {};
-	const hardware::HardwareParametersInterface & hardwareParameters;
-	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
+struct ParameterCollection {
+    ParameterCollection(const hardware::HardwareParametersInterface& hardwareParametersIn,
+                        const hardware::code::OpenClKernelParametersInterface& kernelParametersIn)
+        : hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn){};
+    const hardware::HardwareParametersInterface& hardwareParameters;
+    const hardware::code::OpenClKernelParametersInterface& kernelParameters;
 };
 
-struct KernelTester
-{
-	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
-			const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
-	virtual ~KernelTester();
+struct KernelTester {
+    KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
+                 const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
+    virtual ~KernelTester();
 
-protected:
-	const TestParameters testParameters;
-	std::vector<double> kernelResult;
-	ReferenceValues refValues;
+  protected:
+    const TestParameters testParameters;
+    std::vector<double> kernelResult;
+    ReferenceValues refValues;
 
-	const hardware::System * system;
-	hardware::Device * device;
-	const hardware::HardwareParametersInterface * hardwareParameters;
-	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
+    const hardware::System* system;
+    hardware::Device* device;
+    const hardware::HardwareParametersInterface* hardwareParameters;
+    const hardware::code::OpenClKernelParametersInterface* kernelParameters;
 };

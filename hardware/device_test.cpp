@@ -25,43 +25,42 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::Device
-#include <boost/test/unit_test.hpp>
-
-#include "system.hpp"
 #include "device.hpp"
+
 #include "hardwareTestUtilities.hpp"
 #include "interfaceMockups.hpp"
+#include "system.hpp"
 
-void querrySomeInformationsFromDevice( const hardware::Device * device )
+#include <boost/test/unit_test.hpp>
+
+void querrySomeInformationsFromDevice(const hardware::Device* device)
 {
-	BOOST_REQUIRE_NE(device->get_preferred_local_thread_num(), 0);
-	BOOST_REQUIRE_NE(device->get_preferred_global_thread_num(), 0);
-	const size_t recommended_stride = device->recommendStride(1024, 16, 2);
-	BOOST_REQUIRE_GE(recommended_stride, 1024);
+    BOOST_REQUIRE_NE(device->get_preferred_local_thread_num(), 0);
+    BOOST_REQUIRE_NE(device->get_preferred_global_thread_num(), 0);
+    const size_t recommended_stride = device->recommendStride(1024, 16, 2);
+    BOOST_REQUIRE_GE(recommended_stride, 1024);
 }
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
-	atLeastOneDeviceMustExistForSanityOfSystem( &system );
+    const hardware::HardwareParametersMockup hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
+    atLeastOneDeviceMustExistForSanityOfSystem(&system);
 
-	for(const hardware::Device * device : system.get_devices())
-	{
-		querrySomeInformationsFromDevice(device);
-	}
+    for (const hardware::Device* device : system.get_devices()) {
+        querrySomeInformationsFromDevice(device);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(compile)
 {
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
-	atLeastOneDeviceMustExistForSanityOfSystem( &system );
+    const hardware::HardwareParametersMockup hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
+    atLeastOneDeviceMustExistForSanityOfSystem(&system);
 
-	for(const hardware::Device * device : system.get_devices())
-	{
-		device->createKernel("foo", "") << "../hardware/device_test.cl";
-	}
+    for (const hardware::Device* device : system.get_devices()) {
+        device->createKernel("foo", "") << "../hardware/device_test.cl";
+    }
 }

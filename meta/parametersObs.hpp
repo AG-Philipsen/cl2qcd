@@ -27,37 +27,36 @@
 #include "parametersBasic.hpp"
 
 namespace meta {
-class ParametersObs {
-public:
+    class ParametersObs {
+      public:
+        bool get_measure_transportcoefficient_kappa() const noexcept;
+        bool get_measure_rectangles() const noexcept;
+        bool get_measure_correlators() const noexcept;
+        bool get_measure_pbp() const noexcept;
+        common::pbp_version get_pbp_version() const noexcept;
+        int get_corr_dir() const noexcept;
+        int get_pbp_measurements() const noexcept;
 
-	bool get_measure_transportcoefficient_kappa() const noexcept;
-	bool get_measure_rectangles() const noexcept;
-	bool get_measure_correlators() const noexcept;
-	bool get_measure_pbp() const noexcept;
-	common::pbp_version get_pbp_version() const noexcept;
-	int get_corr_dir() const noexcept;
-	int get_pbp_measurements() const noexcept;
+      private:
+        po::options_description options;
 
-private:
-	po::options_description options;
+        bool measure_transportcoefficient_kappa;
+        bool measure_rectangles;
+        bool measure_correlators;
+        bool measure_pbp;
+        int corr_dir;
+        int pbp_measurements;
 
-	bool measure_transportcoefficient_kappa;
-	bool measure_rectangles;
-	bool measure_correlators;
-	bool measure_pbp;
-	int corr_dir;
-	int pbp_measurements;
+      protected:
+        ParametersObs();
+        virtual ~ParametersObs();
+        ParametersObs(ParametersObs const&) = delete;
+        ParametersObs& operator=(ParametersObs const&) = delete;
+        po::options_description& getOptions();
 
-protected:
-	ParametersObs();
-	virtual ~ParametersObs();
-	ParametersObs(ParametersObs const&) = delete;
-	ParametersObs & operator=(ParametersObs const&) = delete;
-	po::options_description & getOptions();
+        common::pbp_version pbp_version_;
+    };
 
-	common::pbp_version pbp_version_;
-};
-
-}
+}  // namespace meta
 
 #endif

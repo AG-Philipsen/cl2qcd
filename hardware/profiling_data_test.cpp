@@ -25,60 +25,55 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::ProfilingData
-#include <boost/test/unit_test.hpp>
-
 #include "profiling_data.hpp"
 
-#include "system.hpp"
-#include "device.hpp"
 #include "code/buffer.hpp"
+#include "device.hpp"
 #include "interfaceMockups.hpp"
+#include "system.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(initial)
 {
-	using namespace hardware;
+    using namespace hardware;
 
-	const ProfilingData data;
-	BOOST_CHECK_EQUAL(data.get_total_time(), 0);
-	BOOST_CHECK_EQUAL(data.get_num_values(), 0);
+    const ProfilingData data;
+    BOOST_CHECK_EQUAL(data.get_total_time(), 0);
+    BOOST_CHECK_EQUAL(data.get_num_values(), 0);
 }
 
 namespace hardware {
-	cl_command_queue profilingDataTestCommandQueueHelper(const hardware::Device * device)
-	{
-		return device->get_queue();
-	}
-}
+    cl_command_queue profilingDataTestCommandQueueHelper(const hardware::Device* device) { return device->get_queue(); }
+}  // namespace hardware
 
 BOOST_AUTO_TEST_CASE(add_value)
 {
-	using namespace hardware;
+    using namespace hardware;
 
-	const hardware::HardwareParametersMockupWithProfiling hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
+    const hardware::HardwareParametersMockupWithProfiling hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
 
-	// there should always be at least one device
-	// otherwise code or system is broken
-	// in both cases it is good to fail
-	const std::vector<Device*>& devices = system.get_devices();
-	BOOST_REQUIRE_GE(devices.size(), 1);
+    // there should always be at least one device
+    // otherwise code or system is broken
+    // in both cases it is good to fail
+    const std::vector<Device*>& devices = system.get_devices();
+    BOOST_REQUIRE_GE(devices.size(), 1);
 
-	// query some data
-	for(const Device * device : devices)
-	{
-		ProfilingData data;
-		ProfilingData old_data;
-		cl_event event;
-		for(size_t i = 0; i < 3; i++)
-		{
-			clEnqueueMarker(profilingDataTestCommandQueueHelper(device), &event);
-			clWaitForEvents(1, &event);
-			data += event;
-			clReleaseEvent(event);
-			BOOST_REQUIRE_EQUAL(data.get_num_values(), old_data.get_num_values() + 1);
-			BOOST_REQUIRE_GE(data.get_total_time(), old_data.get_total_time());
-			old_data = data;
-		}
-	}
+    // query some data
+    for (const Device* device : devices) {
+        ProfilingData data;
+        ProfilingData old_data;
+        cl_event event;
+        for (size_t i = 0; i < 3; i++) {
+            clEnqueueMarker(profilingDataTestCommandQueueHelper(device), &event);
+            clWaitForEvents(1, &event);
+            data += event;
+            clReleaseEvent(event);
+            BOOST_REQUIRE_EQUAL(data.get_num_values(), old_data.get_num_values() + 1);
+            BOOST_REQUIRE_GE(data.get_total_time(), old_data.get_total_time());
+            old_data = data;
+        }
+    }
 }

@@ -22,23 +22,23 @@
 
 #include "rational_approximation.hpp"
 
-//Rational_Coefficients class
+// Rational_Coefficients class
 
-physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d)
-        : _d(d), _a0()
+physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d) : _d(d), _a0()
 {
-    //This constructor can appear unnecessary. In fact, reserving memory we avoid
-    //reallocations pushing back elements in the vectors, since in this way we are
-    //sure that the capacity of the vectors _a and _b is at least d.
+    // This constructor can appear unnecessary. In fact, reserving memory we avoid
+    // reallocations pushing back elements in the vectors, since in this way we are
+    // sure that the capacity of the vectors _a and _b is at least d.
     _a.reserve(d);
     _b.reserve(d);
 }
 
-physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d, const hmc_float a0, const std::vector<hmc_float> a,
-        const std::vector<hmc_float> b)
-        : _d(d), _a0(a0)
+physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d, const hmc_float a0,
+                                                                  const std::vector<hmc_float> a,
+                                                                  const std::vector<hmc_float> b)
+    : _d(d), _a0(a0)
 {
-    //Reserve and initialize
+    // Reserve and initialize
     _a.reserve(d);
     _b.reserve(d);
     for (int i = 0; i < d; i++) {
@@ -49,7 +49,7 @@ physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d, c
 
 unsigned int physics::algorithms::Rational_Coefficients::Get_order() const
 {
-	return _d;
+    return _d;
 }
 
 hmc_float physics::algorithms::Rational_Coefficients::Get_a0() const
@@ -67,31 +67,35 @@ std::vector<hmc_float> physics::algorithms::Rational_Coefficients::Get_b() const
     return _b;
 }
 
-void physics::algorithms::Rational_Coefficients::Set_coeff(const hmc_float v0, const std::vector<hmc_float> v_a, const std::vector<hmc_float> v_b)
+void physics::algorithms::Rational_Coefficients::Set_coeff(const hmc_float v0, const std::vector<hmc_float> v_a,
+                                                           const std::vector<hmc_float> v_b)
 {
-    if(v_a.size() != v_b.size())
+    if (v_a.size() != v_b.size())
         throw std::invalid_argument("Vectors with different sizes passed to Rational_Coefficients::Set_coeff!");
-    if(_d != (int) v_a.size()) {
+    if (_d != (int)v_a.size()) {
         logger.debug() << "Rational_Coefficients::Set_coeff changed the order of the instance.";
         _d = v_a.size();
     }
     _a0 = v0;
-    _a = v_a;   //Recall that the assignment operator between vectors "Assigns new contents to the
-    _b = v_b;   //container, replacing its current contents, and modifying its size accordingly".
+    _a  = v_a;  // Recall that the assignment operator between vectors "Assigns new contents to the
+    _b  = v_b;  // container, replacing its current contents, and modifying its size accordingly".
 }
 
-//Rational_Approximation class
+// Rational_Approximation class
 
-physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y, int z, hmc_float low, hmc_float high, bool inv, int precision)
-        : Rational_Coefficients(d), inv(inv), y(y), z(z), precision(precision), low(low), high(high)
+physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y, int z, hmc_float low, hmc_float high,
+                                                                    bool inv, int precision)
+    : Rational_Coefficients(d), inv(inv), y(y), z(z), precision(precision), low(low), high(high)
 {
-    //Checks on the exponent numerator and denominator
-    if(y <= 0 || z <= 0 || y % z == 0)
+    // Checks on the exponent numerator and denominator
+    if (y <= 0 || z <= 0 || y % z == 0)
         throw std::invalid_argument("Exponent of the rational approximation not allowed!");
-    if(inv == false) {
-        logger.info() << "Calculating the rational approx. of degree " << d << " of the function x^(" << y << "/" << z << ")...";
+    if (inv == false) {
+        logger.info() << "Calculating the rational approx. of degree " << d << " of the function x^(" << y << "/" << z
+                      << ")...";
     } else {
-        logger.info() << "Calculating the rational approx. of degree " << d << " of the function x^(-" << y << "/" << z << ")...";
+        logger.info() << "Calculating the rational approx. of degree " << d << " of the function x^(-" << y << "/" << z
+                      << ")...";
     }
     // Instantiate the Remez class
     physics::algorithms::AlgRemez remez(low, high, precision);
@@ -101,15 +105,15 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
     error = remez.generateApprox(d, d, y, z);
     // Find the partial fraction expansion of the approximation either
     // to the function x^{y/z} or to the function x^{-y/z}
-    double *a_tmp = new hmc_float[d];
-    double *b_tmp = new hmc_float[d];
-    double *a0_tmp = new hmc_float;
-    if(inv == false)
+    double* a_tmp  = new hmc_float[d];
+    double* b_tmp  = new hmc_float[d];
+    double* a0_tmp = new hmc_float;
+    if (inv == false)
         remez.getPFE(a_tmp, b_tmp, a0_tmp);
     else
         remez.getIPFE(a_tmp, b_tmp, a0_tmp);
 
-    //I need std::vector to use Set_coeff
+    // I need std::vector to use Set_coeff
     std::vector<hmc_float> av_tmp(a_tmp, a_tmp + d);
     std::vector<hmc_float> bv_tmp(b_tmp, b_tmp + d);
 
@@ -121,11 +125,11 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
 }
 
 physics::algorithms::Rational_Approximation::Rational_Approximation(std::string filename)
-        : Rational_Coefficients(0), inv(), y(), z(), precision(), low(), high(), error()
+    : Rational_Coefficients(0), inv(), y(), z(), precision(), low(), high(), error()
 {
     std::fstream file;
     file.open(filename.c_str());
-    if(!file) {
+    if (!file) {
         logger.fatal() << "Unable to open the file with Rational_Approximation data!";
         throw File_Exception(filename);
     }
@@ -140,7 +144,7 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(std::string 
         b.push_back(tmp);
     }
     file >> tmp;
-    if(!(file.peek() == EOF && file.eof()))
+    if (!(file.peek() == EOF && file.eof()))
         logger.warn() << "The file with Rational_Approximation data contains additional stuff! Check it!";
     file.close();
     Set_coeff(a0, a, b);
@@ -150,7 +154,7 @@ void physics::algorithms::Rational_Approximation::Save_rational_approximation(st
 {
     std::fstream outputToFile;
     outputToFile.open(filename.c_str(), std::ios::out);
-    if(!outputToFile.is_open())
+    if (!outputToFile.is_open())
         throw File_Exception(filename);
     outputToFile.precision(15);
     outputToFile << Get_order() << "     " << y << " " << z << "     " << low << " " << high << "     ";
@@ -159,7 +163,7 @@ void physics::algorithms::Rational_Approximation::Save_rational_approximation(st
     outputToFile << error << "\n\n" << Get_a0() << "\n";
     std::vector<hmc_float> a_tmp = Get_a();
     std::vector<hmc_float> b_tmp = Get_b();
-    for(unsigned int i = 0; i < Get_order(); i++)
+    for (unsigned int i = 0; i < Get_order(); i++)
         outputToFile << a_tmp[i] << "\t\t" << b_tmp[i] << "\n";
     outputToFile.close();
 }
@@ -181,43 +185,45 @@ hmc_float physics::algorithms::Rational_Approximation::Get_upper_bound() const
 
 hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
 {
-    if(inv)
-        return -1 * ((hmc_float) y) / z;
+    if (inv)
+        return -1 * ((hmc_float)y) / z;
     else
-        return ((hmc_float) y) / z;
+        return ((hmc_float)y) / z;
 }
 
-physics::algorithms::Rational_Coefficients physics::algorithms::Rational_Approximation::Rescale_Coefficients(const hmc_float minEigenvalue, const hmc_float maxEigenvalue) const
+physics::algorithms::Rational_Coefficients
+physics::algorithms::Rational_Approximation::Rescale_Coefficients(const hmc_float minEigenvalue,
+                                                                  const hmc_float maxEigenvalue) const
 {
-	if(high != 1)
-		throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
+    if (high != 1)
+        throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
 
-	if(low > minEigenvalue/maxEigenvalue)
-	        throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
+    if (low > minEigenvalue / maxEigenvalue)
+        throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
 
-	int ord = Get_order();
-	hmc_float exp = Get_exponent();
-	hmc_float a0_new = Get_a0();
-	std::vector<hmc_float> a_new = Get_a();
-	std::vector<hmc_float> b_new = Get_b();
+    int ord                      = Get_order();
+    hmc_float exp                = Get_exponent();
+    hmc_float a0_new             = Get_a0();
+    std::vector<hmc_float> a_new = Get_a();
+    std::vector<hmc_float> b_new = Get_b();
 
-	hmc_float tmp = pow(maxEigenvalue, exp);
-	a0_new *= tmp;
-	for(int i=0; i<ord; i++){
-		a_new[i] *= (tmp*maxEigenvalue);
-		b_new[i] *= maxEigenvalue;
-	}
+    hmc_float tmp = pow(maxEigenvalue, exp);
+    a0_new *= tmp;
+    for (int i = 0; i < ord; i++) {
+        a_new[i] *= (tmp * maxEigenvalue);
+        b_new[i] *= maxEigenvalue;
+    }
 
-	Rational_Coefficients out(ord, a0_new, a_new, b_new);
-	return out;
+    Rational_Coefficients out(ord, a0_new, a_new, b_new);
+    return out;
 }
 
 namespace physics {
     namespace algorithms {
 
-        std::ostream& operator <<(std::ostream &os, const Rational_Approximation &approx)
+        std::ostream& operator<<(std::ostream& os, const Rational_Approximation& approx)
         {
-            if(approx.inv) {
+            if (approx.inv) {
                 os << "\n\t\t +++++++++++++++++++ Approximation to f(x) = x^(-" << approx.y << "/" << approx.z;
                 os << ") ++++++++++++++++++++\n";
             } else {
@@ -235,8 +241,8 @@ namespace physics {
             os << "\t\t ++\t\t\t\t\t\t\t\t\t++\n";
             os << "\t\t ++        a0 = " << approx.Get_a0();
             os << "\t\t\t\t\t++\n";
-            for(unsigned int i = 0; i < approx.Get_order(); i++) {
-                if(i < 9) {
+            for (unsigned int i = 0; i < approx.Get_order(); i++) {
+                if (i < 9) {
                     os << "\t\t ++      a[" << i + 1 << "] = " << approx.Get_a()[i] << "       ";
                     os << " b[" << i + 1 << "] = " << approx.Get_b()[i] << "\t++\n";
                 } else {
@@ -248,5 +254,5 @@ namespace physics {
             os << "\t\t +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
             return os;
         }
-    }
-}
+    }  // namespace algorithms
+}  // namespace physics

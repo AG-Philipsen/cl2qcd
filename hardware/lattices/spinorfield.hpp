@@ -21,46 +21,43 @@
 #ifndef _HARDWARE_LATTICES_SPINORFIELD_
 #define _HARDWARE_LATTICES_SPINORFIELD_
 
-#include "../system.hpp"
-#include "../device.hpp"
-#include "../buffers/plain.hpp"
 #include "../../common_header_files/types_fermions.hpp"
-
+#include "../buffers/plain.hpp"
+#include "../device.hpp"
+#include "../system.hpp"
 
 namespace hardware {
 
-namespace lattices {
+    namespace lattices {
 
-class Spinorfield
-{
-public:
+        class Spinorfield {
+          public:
+            Spinorfield(const hardware::System&, const bool place_on_host = false);
 
-	Spinorfield(const hardware::System&, const bool place_on_host = false);
+            Spinorfield& operator=(const Spinorfield&) = delete;
+            Spinorfield(const Spinorfield&)            = delete;
+            Spinorfield()                              = delete;
 
-    Spinorfield& operator=(const Spinorfield&) = delete;
-    Spinorfield(const Spinorfield&) = delete;
-    Spinorfield() = delete;
+            virtual ~Spinorfield();
 
-	virtual ~Spinorfield();
+            const std::vector<const hardware::buffers::Plain<spinor>*> get_buffers() const noexcept;
+            std::vector<const hardware::buffers::Plain<spinor>*> allocate_buffers();
+            void import(const spinor* const host) const;
+            void update_halo() const;
 
-	const std::vector<const hardware::buffers::Plain<spinor> *> get_buffers() const noexcept;
-	std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers();
-	void import(const spinor * const host) const;
-	void update_halo() const;
+            // protected:
 
-// protected:
+            void fill_buffers();
+            void clear_buffers();
 
-	void fill_buffers();
-	void clear_buffers();
+          private:
+            hardware::System const& system;
+            std::vector<const hardware::buffers::Plain<spinor>*> buffers;
+            const bool place_on_host;
+        };
 
-private:
-        hardware::System const& system;
-        std::vector<const hardware::buffers::Plain<spinor> *> buffers;
-        const bool place_on_host;
-};
+    }  // namespace lattices
 
-}
-
-}
+}  // namespace hardware
 
 #endif /* _HARDWARE_LATTICES_SPINORFIELD_ */

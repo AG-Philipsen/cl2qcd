@@ -26,22 +26,21 @@
 
 #include "measurementExecutable.hpp"
 
-class gaugeobservablesExecutable : public measurementExecutable
-{
-public:
-	gaugeobservablesExecutable(int argc, const char* argv[]);
+class gaugeobservablesExecutable : public measurementExecutable {
+  public:
+    gaugeobservablesExecutable(int argc, const char* argv[]);
 
-protected:
-	std::string filenameForGaugeobservables;
+  protected:
+    std::string filenameForGaugeobservables;
 
-	void writeGaugeobservablesLogfile();
+    void writeGaugeobservablesLogfile();
 
-	void printParametersToScreenAndFile();
+    void printParametersToScreenAndFile();
 
-	/**
-	 * Performs measurements of gauge observables on possibly multiple gaugefield configurations.
-	 */
-	void performApplicationSpecificMeasurements();
+    /**
+     * Performs measurements of gauge observables on possibly multiple gaugefield configurations.
+     */
+    void performApplicationSpecificMeasurements();
 };
 
 #endif /* GAUGEOBSERVABLESEXECUTABLE_H_ */

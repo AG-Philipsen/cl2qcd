@@ -21,8 +21,8 @@
  * Device code implementing real numbers algebra functionalities
  */
 
-__kernel void real_subtraction(__global hmc_float * a, __global hmc_float * b, __global hmc_float * out)
+__kernel void real_subtraction(__global hmc_float* a, __global hmc_float* b, __global hmc_float* out)
 {
-	if(get_global_id(0) == 0)
-	  (*out) =  (*a) - (*b);
+    if (get_global_id(0) == 0)
+        (*out) = (*a) - (*b);
 }

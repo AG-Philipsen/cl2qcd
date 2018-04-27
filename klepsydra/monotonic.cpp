@@ -45,81 +45,83 @@
  * along with Klepsydra.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "monotonic.hpp"
 
 #ifdef __APPLE__
-#include <mach/mach_time.h>
+#    include <mach/mach_time.h>
 
 // method to get monotonic mac time, inspired by
 // http://www.wand.net.nz/~smr26/wordpress/2009/01/19/monotonic-time-in-mac-os-x/
 
 #else
-#include <time.h>
+#    include <time.h>
 #endif
-
 
 using namespace klepsydra;
 
-
-Monotonic::Monotonic() {
-	// make sure the timer is initialized with the current value
-	reset();
+Monotonic::Monotonic()
+{
+    // make sure the timer is initialized with the current value
+    reset();
 }
 
-void Monotonic::reset() {
-	// replace the start value with the current value of the
-	// monotonic clock
-	start = getTimestamp();
+void Monotonic::reset()
+{
+    // replace the start value with the current value of the
+    // monotonic clock
+    start = getTimestamp();
 }
 
-uint64_t Monotonic::getTime() {
-	uint64_t now = getTimestamp();
+uint64_t Monotonic::getTime()
+{
+    uint64_t now = getTimestamp();
 
-	return getDifference( start, now );
+    return getDifference(start, now);
 }
 
-uint64_t Monotonic::getTimeAndReset() {
-	uint64_t now = getTimestamp();
+uint64_t Monotonic::getTimeAndReset()
+{
+    uint64_t now = getTimestamp();
 
-	uint64_t diff = getDifference( start, now );
+    uint64_t diff = getDifference(start, now);
 
-	start = now;
+    start = now;
 
-	return diff;
+    return diff;
 }
 
-uint64_t Monotonic::getDifference( uint64_t start, uint64_t end) const {
-	uint64_t mus;
+uint64_t Monotonic::getDifference(uint64_t start, uint64_t end) const
+{
+    uint64_t mus;
 #ifdef __APPLE__
-	uint64_t difference = end - start;
-	static mach_timebase_info_data_t info = {0,0};
+    uint64_t difference                   = end - start;
+    static mach_timebase_info_data_t info = {0, 0};
 
-	if (info.denom == 0)
-		mach_timebase_info(&info);
+    if (info.denom == 0)
+        mach_timebase_info(&info);
 
-	uint64_t nanos = difference * (info.numer / info.denom);
-	mus = nanos / 1000;
+    uint64_t nanos = difference * (info.numer / info.denom);
+    mus            = nanos / 1000;
 #else
-	mus = end - start;
+    mus = end - start;
 #endif
 
-	return mus;
+    return mus;
 }
 
 uint64_t Monotonic::getTimestamp() const
 {
 #ifdef __APPLE__
-	return mach_absolute_time();
+    return mach_absolute_time();
 #else
-	struct timespec now;
-	clock_gettime( CLOCK_MONOTONIC, &now );
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
 
-	long nanos = now.tv_nsec;
-	time_t seconds = now.tv_sec;
+    long nanos     = now.tv_nsec;
+    time_t seconds = now.tv_sec;
 
-	uint64_t mus = static_cast<uint64_t>( seconds ) * 1000 * 1000 + nanos / 1000;
+    uint64_t mus = static_cast<uint64_t>(seconds) * 1000 * 1000 + nanos / 1000;
 
-	return mus;
+    return mus;
 #endif
 }

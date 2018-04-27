@@ -31,7 +31,7 @@ void generalExecutable::printParametersToScreenAndFile()
     print_info_prng_io(parameters);
 
     outputToFile.open(filenameForLogfile);
-    if(outputToFile.is_open()) {
+    if (outputToFile.is_open()) {
         meta::print_info_global(&outputToFile, parameters);
         meta::print_info_configs_io(&outputToFile, parameters);
         meta::print_info_prng_io(&outputToFile, parameters);
@@ -43,11 +43,11 @@ void generalExecutable::printParametersToScreenAndFile()
 
 void generalExecutable::printProfilingDataToFile()
 {
-    if(parameters.get_enable_profiling()) {
+    if (parameters.get_enable_profiling()) {
         logger.info() << "## writing general times to file: \"" << filenameForProfilingData << "\"";
         // For benchmarking one might need the lattice sizes
         outputToFile.open(filenameForProfilingData, std::ios::out | std::ios::app);
-        if(outputToFile.is_open()) {
+        if (outputToFile.is_open()) {
             meta::print_info_global(&outputToFile, parameters);
             outputToFile.close();
         } else {
@@ -58,31 +58,31 @@ void generalExecutable::printProfilingDataToFile()
 }
 
 generalExecutable::generalExecutable(int argc, const char* argv[], std::string parameterSet)
-        : parameters(argc, argv, parameterSet), prngParameters(nullptr)
+    : parameters(argc, argv, parameterSet), prngParameters(nullptr)
 {
-	totalRuntimeOfExecutable.reset();
-	initializationTimer.reset();
-	ownName = argv[0];
-	filenameForLogfile = meta::createLogfileName(ownName);
-	filenameForProfilingData = meta::create_profiling_data_filename(parameters, ownName);
-	switchLogLevel(parameters.get_log_level());
-	printParametersToScreenAndFile();
-	//@todo: these new here are not deleted apparently!!
-	hP = new hardware::HardwareParametersImplementation (&parameters);
-	kP = new hardware::code::OpenClKernelParametersImplementation (parameters);
-	system = new hardware::System(*hP, *kP);
-	prngParameters = new physics::PrngParametersImplementation(parameters);
-	prng = new physics::PRNG(*system, prngParameters);
-	interfacesHandler = std::unique_ptr<physics::InterfacesHandler>(new physics::InterfacesHandlerImplementation{parameters});
-	initializationTimer.add();
-
+    totalRuntimeOfExecutable.reset();
+    initializationTimer.reset();
+    ownName                  = argv[0];
+    filenameForLogfile       = meta::createLogfileName(ownName);
+    filenameForProfilingData = meta::create_profiling_data_filename(parameters, ownName);
+    switchLogLevel(parameters.get_log_level());
+    printParametersToScreenAndFile();
+    //@todo: these new here are not deleted apparently!!
+    hP                = new hardware::HardwareParametersImplementation(&parameters);
+    kP                = new hardware::code::OpenClKernelParametersImplementation(parameters);
+    system            = new hardware::System(*hP, *kP);
+    prngParameters    = new physics::PrngParametersImplementation(parameters);
+    prng              = new physics::PRNG(*system, prngParameters);
+    interfacesHandler = std::unique_ptr<physics::InterfacesHandler>(
+        new physics::InterfacesHandlerImplementation{parameters});
+    initializationTimer.add();
 }
 generalExecutable::~generalExecutable()
 {
     totalRuntimeOfExecutable.add();
     printRuntimeInformationToScreenAndFile();
     printProfilingDataToFile();
-    if(prngParameters) {
+    if (prngParameters) {
         delete prngParameters;
     }
 }
@@ -102,10 +102,11 @@ void generalExecutable::printGeneralTimesToScreen()
     logger.info() << "## *******************************************************************";
     logger.info() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
     logger.info() << "## Total:\t" << setfill(' ') << setw(12) << totalRuntimeOfExecutable.getTime();
-    logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << initializationTimer.getTime() << '\t' << fixed << setw(5) << setprecision(1)
-            << percent(initializationTimer.getTime(), totalRuntimeOfExecutable.getTime());
-    logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << performanceTimer.getTime() << '\t' << fixed << setw(5) << setprecision(1)
-            << percent(performanceTimer.getTime(), totalRuntimeOfExecutable.getTime());
+    logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << initializationTimer.getTime() << '\t' << fixed
+                  << setw(5) << setprecision(1)
+                  << percent(initializationTimer.getTime(), totalRuntimeOfExecutable.getTime());
+    logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << performanceTimer.getTime() << '\t' << fixed << setw(5)
+                  << setprecision(1) << percent(performanceTimer.getTime(), totalRuntimeOfExecutable.getTime());
     logger.info() << "## *******************************************************************";
     return;
 }
@@ -114,11 +115,12 @@ void generalExecutable::printGeneralTimesToFile()
     using namespace std;
     logger.info() << "## writing general times to file: \"" << generalTimeOutputFilename << "\"";
     outputToFile.open(generalTimeOutputFilename);
-    if(outputToFile.is_open()) {
+    if (outputToFile.is_open()) {
         outputToFile << "## *******************************************************************" << endl;
         outputToFile << "## General Times [mus]:" << endl;
         outputToFile << "## Total\tInit\tPerformance" << endl;
-        outputToFile << totalRuntimeOfExecutable.getTime() << "\t" << initializationTimer.getTime() << '\t' << performanceTimer.getTime() << endl;
+        outputToFile << totalRuntimeOfExecutable.getTime() << "\t" << initializationTimer.getTime() << '\t'
+                     << performanceTimer.getTime() << endl;
         outputToFile.close();
     } else {
         logger.warn() << "Could not open output file for general time output.";

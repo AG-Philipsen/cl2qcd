@@ -23,49 +23,49 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE localQ_test
-#include <boost/test/unit_test.hpp>
-
 #include "testCode.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 const ReferenceValues calculateReferenceValue_localQ(const LatticeExtents lE)
 {
-	return ReferenceValues{ 72.00012210960028 * lE.getLatticeVolume() };
+    return ReferenceValues{72.00012210960028 * lE.getLatticeVolume()};
 }
 
-struct LocalQTestCode : public TestCode
-{
-	LocalQTestCode(const hardware::code::OpenClKernelParametersInterface & kP, hardware::Device * device):
-		TestCode(kP, device)
-	{
-		testKernel = createKernel("localQ_test") << get_device()->getGaugefieldCode()->get_sources()  << "../hardware/code/miscellaneousTests/localQ_test.cl";
-	}
+struct LocalQTestCode : public TestCode {
+    LocalQTestCode(const hardware::code::OpenClKernelParametersInterface& kP, hardware::Device* device)
+        : TestCode(kP, device)
+    {
+        testKernel = createKernel("localQ_test") << get_device()->getGaugefieldCode()->get_sources()
+                                                 << "../hardware/code/miscellaneousTests/localQ_test.cl";
+    }
 
-	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, const int gs, const int ls) override
-	{
-		err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
-		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-		err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
-		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+    void runTestKernel(const hardware::buffers::SU3* gf, const hardware::buffers::Plain<hmc_float>* out, const int gs,
+                       const int ls) override
+    {
+        err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
+        BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+        err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
+        BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-		get_device()->enqueue_kernel(testKernel, gs, ls);
-	}
+        get_device()->enqueue_kernel(testKernel, gs, ls);
+    }
 };
 
-struct LocalQTester : public OtherKernelTester
-{
-	LocalQTester(const ParameterCollection pC, const GaugefieldTestParameters tP):
-		OtherKernelTester("local_Q_test", pC, tP, calculateReferenceValue_localQ(tP.latticeExtents))
-	{
-		testCode = new LocalQTestCode(pC.kernelParameters, device);
-		testCode->runTestKernel(OtherKernelTester::gaugefieldBuffer, out, gs, ls);
-	}
+struct LocalQTester : public OtherKernelTester {
+    LocalQTester(const ParameterCollection pC, const GaugefieldTestParameters tP)
+        : OtherKernelTester("local_Q_test", pC, tP, calculateReferenceValue_localQ(tP.latticeExtents))
+    {
+        testCode = new LocalQTestCode(pC.kernelParameters, device);
+        testCode->runTestKernel(OtherKernelTester::gaugefieldBuffer, out, gs, ls);
+    }
 };
 
-BOOST_AUTO_TEST_CASE( LOCAL_Q )
+BOOST_AUTO_TEST_CASE(LOCAL_Q)
 {
-	GaugefieldTestParameters parametersForThisTest {LatticeExtents{4,4}, GaugefieldFillType::nonTrivial};
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns,parametersForThisTest.nt);
-	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns,parametersForThisTest.nt);
-	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-	LocalQTester tester(parameterCollection, parametersForThisTest);
+    GaugefieldTestParameters parametersForThisTest{LatticeExtents{4, 4}, GaugefieldFillType::nonTrivial};
+    hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+    hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+    ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
+    LocalQTester tester(parameterCollection, parametersForThisTest);
 }

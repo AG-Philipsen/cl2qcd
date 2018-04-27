@@ -26,94 +26,103 @@
 #include "../../hardware/lattices/vector.hpp"
 
 namespace physics {
-	namespace lattices {
+    namespace lattices {
 
-		/**
-		 * Utility method to create the buffers for a Vector
-		 */
-		template<typename SCALAR> static std::vector<const hardware::buffers::Plain<SCALAR>* > create_vector_buffers(const size_t N, const hardware::System& system);
+        /**
+         * Utility method to create the buffers for a Vector
+         */
+        template<typename SCALAR>
+        static std::vector<const hardware::buffers::Plain<SCALAR>*>
+        create_vector_buffers(const size_t N, const hardware::System& system);
 
-		/**
-		 * Allows usage of scalar datatypes.
-		 */
-		/* Note: here the size of the vector could be either specified as non type template
-		 *       parameter or as constructor standard parameter. The difference is that in
-		 *       the former case, at compile-time, a different instatiation of the class
-		 *       is created for each size used, while in the latter case the compiler behaves
-		 *       as usual. If we needed to create an array or a valarray with the size,
-		 *       the first approach would be mandatory, then. Here we will use the second one.
-		 */
-		template<typename SCALAR> class Vector {
+        /**
+         * Allows usage of scalar datatypes.
+         */
+        /* Note: here the size of the vector could be either specified as non type template
+         *       parameter or as constructor standard parameter. The difference is that in
+         *       the former case, at compile-time, a different instatiation of the class
+         *       is created for each size used, while in the latter case the compiler behaves
+         *       as usual. If we needed to create an array or a valarray with the size,
+         *       the first approach would be mandatory, then. Here we will use the second one.
+         */
+        template<typename SCALAR>
+        class Vector {
+          public:
+            /**
+             * Create a new Vector
+             */
+            Vector(const size_t N, const hardware::System& system) : N(N), system(system), vector(N, system){};
 
-		public:
-			/**
-			 * Create a new Vector
-			 */
-			Vector(const size_t N, const hardware::System& system) : N(N), system(system), vector(N,system) { };
+            /**
+             * Cleanup
+             */
+            ~Vector();
 
-			/**
-			 * Cleanup
-			 */
-			~Vector();
+            /*
+             * Don't allow copies
+             */
+            Vector& operator=(const Vector&) = delete;
+            Vector(const Vector&)            = delete;
+            Vector()                         = delete;
 
-			/*
-			 * Don't allow copies
-			 */
-			Vector& operator=(const Vector&) = delete;
-			Vector(const Vector&) = delete;
-			Vector() = delete;
+            /**
+             * Retrieve the values
+             */
+            std::vector<SCALAR> get() const;
 
-			/**
-			 * Retrieve the values
-			 */
-			std::vector<SCALAR> get() const;
+            /**
+             * Store values
+             */
+            void store(const std::vector<SCALAR> val) const;
 
-			/**
-			 * Store values
-			 */
-			void store(const std::vector<SCALAR> val) const;
+            /**
+             * Retrieve the number of elements of each buffer
+             */
+            size_t get_vector_size() const noexcept;
 
-			/**
-			 * Retrieve the number of elements of each buffer
-			 */
-			size_t get_vector_size() const noexcept;
+            /**
+             * Get the buffers containing the vectors on the devices.
+             *
+             * @todo with multi-device we might have to give up on the noexcept part
+             */
+            const std::vector<const hardware::buffers::Plain<SCALAR>*> get_buffers() const noexcept;
 
-			/**
-			 * Get the buffers containing the vectors on the devices.
-			 *
-			 * @todo with multi-device we might have to give up on the noexcept part
-			 */
-			const std::vector<const hardware::buffers::Plain<SCALAR> *> get_buffers() const noexcept;
+          private:
+            const size_t N;
+            const hardware::System& system;
+            hardware::lattices::Vector<SCALAR> vector;
+        };
+    }  // namespace lattices
+}  // namespace physics
 
-		private:
-			const size_t N;
-			const hardware::System& system;
-			hardware::lattices::Vector<SCALAR> vector;
-		};
-	}
+template<typename SCALAR>
+physics::lattices::Vector<SCALAR>::~Vector()
+{
 }
 
-template<typename SCALAR> physics::lattices::Vector<SCALAR>::~Vector()
-{}
-
-template<typename SCALAR> std::vector<SCALAR> physics::lattices::Vector<SCALAR>::get() const
+template<typename SCALAR>
+std::vector<SCALAR> physics::lattices::Vector<SCALAR>::get() const
 {
-	return vector.get();
+    return vector.get();
 }
 
-template<typename SCALAR> void physics::lattices::Vector<SCALAR>::store(const std::vector<SCALAR> vec) const
+template<typename SCALAR>
+void physics::lattices::Vector<SCALAR>::store(const std::vector<SCALAR> vec) const
 {
-	vector.store(vec);
+    vector.store(vec);
 }
 
-template<typename SCALAR> const std::vector<const hardware::buffers::Plain<SCALAR> *> physics::lattices::Vector<SCALAR>::get_buffers() const noexcept
+template<typename SCALAR>
+const std::vector<const hardware::buffers::Plain<SCALAR>*> physics::lattices::Vector<SCALAR>::get_buffers() const
+    noexcept
 {
-	return vector.get_buffers();
+    return vector.get_buffers();
 }
 
-template<typename SCALAR> size_t physics::lattices::Vector<SCALAR>::get_vector_size() const noexcept
+template<typename SCALAR>
+size_t physics::lattices::Vector<SCALAR>::get_vector_size() const noexcept
 {
-	return N;
+    return N;
 }
 
 #endif /* _PHYSICS_LATTICES_VECTOR_ */

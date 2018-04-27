@@ -22,149 +22,154 @@
  */
 
 #include "gaugefield.hpp"
-#include "../../host_functionality/logger.hpp"
-#include "../../hardware/device.hpp"
-#include "../../ildg_io/ildgIo.hpp"
-#include "../../hardware/code/gaugefield.hpp"
 
+#include "../../hardware/code/gaugefield.hpp"
+#include "../../hardware/device.hpp"
 #include "../../host_functionality/host_operations_gaugefield.hpp"
+#include "../../host_functionality/logger.hpp"
+#include "../../ildg_io/ildgIo.hpp"
 #include "../utilities.hpp"
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng)
-  : system(system), prng(prng),  latticeObjectParameters(parameters), gaugefield(system)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system,
+                                          const GaugefieldParametersInterface* parameters, const physics::PRNG& prng)
+    : system(system), prng(prng), latticeObjectParameters(parameters), gaugefield(system)
 {
-	initializeBasedOnParameters();
+    initializeBasedOnParameters();
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng, bool hot)
-  : system(system), prng(prng), latticeObjectParameters(parameters), gaugefield(system)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system,
+                                          const GaugefieldParametersInterface* parameters, const physics::PRNG& prng,
+                                          bool hot)
+    : system(system), prng(prng), latticeObjectParameters(parameters), gaugefield(system)
 {
-	initializeHotOrCold(hot);
+    initializeHotOrCold(hot);
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng, std::string ildgfile)
-  : system(system), prng(prng),  latticeObjectParameters(parameters), gaugefield(system)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system,
+                                          const GaugefieldParametersInterface* parameters, const physics::PRNG& prng,
+                                          std::string ildgfile)
+    : system(system), prng(prng), latticeObjectParameters(parameters), gaugefield(system)
 {
-	initializeFromILDGSourcefile(ildgfile);
+    initializeFromILDGSourcefile(ildgfile);
 }
 
 void physics::lattices::Gaugefield::initializeBasedOnParameters()
 {
-	switch(latticeObjectParameters->getStartcondition()) {
-		case common::startcondition::start_from_source:
-			initializeFromILDGSourcefile(latticeObjectParameters->getSourcefileName());
-			break;
-		case common::startcondition::cold_start:
-			initializeHotOrCold(false);
-			break;
-		case common::startcondition::hot_start:
-			initializeHotOrCold(true);
-			break;
-	}
+    switch (latticeObjectParameters->getStartcondition()) {
+        case common::startcondition::start_from_source:
+            initializeFromILDGSourcefile(latticeObjectParameters->getSourcefileName());
+            break;
+        case common::startcondition::cold_start:
+            initializeHotOrCold(false);
+            break;
+        case common::startcondition::hot_start:
+            initializeHotOrCold(true);
+            break;
+    }
 }
 
 void physics::lattices::Gaugefield::initializeHotOrCold(bool hot)
 {
-	if(hot) {
-		gaugefield.set_hot();
-		update_halo();
-	} else {
-		gaugefield.set_cold();
-	}
-	trajectoryNumberAtInit = 0;
+    if (hot) {
+        gaugefield.set_hot();
+        update_halo();
+    } else {
+        gaugefield.set_cold();
+    }
+    trajectoryNumberAtInit = 0;
 }
-
-
 
 void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ildgfile)
 {
-	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, latticeObjectParameters, trajectoryNumberAtInit);
+    Matrixsu3* gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, latticeObjectParameters,
+                                                              trajectoryNumberAtInit);
 
-	gaugefield.send_gaugefield_to_buffers(gf_host);
+    gaugefield.send_gaugefield_to_buffers(gf_host);
 
-	delete[] gf_host;
+    delete[] gf_host;
 }
 
-physics::lattices::Gaugefield::~Gaugefield()
-{}
+physics::lattices::Gaugefield::~Gaugefield() {}
 
 std::string physics::lattices::Gaugefield::getName(int number) const noexcept
 {
-	return physics::buildCheckpointName( latticeObjectParameters->getNamePrefix(), latticeObjectParameters->getNamePostfix(), latticeObjectParameters->getNumberOfDigitsInName(), number);
+    return physics::buildCheckpointName(latticeObjectParameters->getNamePrefix(),
+                                        latticeObjectParameters->getNamePostfix(),
+                                        latticeObjectParameters->getNumberOfDigitsInName(), number);
 }
 
 void physics::lattices::Gaugefield::save(int number)
 {
-	save(getName(), number);
+    save(getName(), number);
 }
 
 void physics::lattices::Gaugefield::saveToSpecificFile(int number)
 {
-	save(getName(number), number);
+    save(getName(number), number);
 }
 
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
-	logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
-	size_t numberOfElements = latticeObjectParameters->getNumberOfElements();
-	Matrixsu3 * host_buf = new Matrixsu3[numberOfElements];
-	gaugefield.fetch_gaugefield_from_buffers(host_buf);
+    logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
+    size_t numberOfElements = latticeObjectParameters->getNumberOfElements();
+    Matrixsu3* host_buf     = new Matrixsu3[numberOfElements];
+    gaugefield.fetch_gaugefield_from_buffers(host_buf);
 
-	//http://stackoverflow.com/questions/2434196/how-to-initialize-stdvector-from-c-style-array
-	std::vector<Matrixsu3> tmp(numberOfElements);
-	tmp.assign(host_buf, host_buf + numberOfElements);
+    // http://stackoverflow.com/questions/2434196/how-to-initialize-stdvector-from-c-style-array
+    std::vector<Matrixsu3> tmp(numberOfElements);
+    tmp.assign(host_buf, host_buf + numberOfElements);
 
-	ildgIo::writeGaugefieldToFile(outputfile, tmp, latticeObjectParameters, number);
+    ildgIo::writeGaugefieldToFile(outputfile, tmp, latticeObjectParameters, number);
 
-	delete host_buf;
+    delete host_buf;
 }
 
-const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield::get_buffers() const noexcept
+const std::vector<const hardware::buffers::SU3*> physics::lattices::Gaugefield::get_buffers() const noexcept
 {
-	return gaugefield.get_buffers();
+    return gaugefield.get_buffers();
 }
 
 void physics::lattices::Gaugefield::smear()
 {
-	gaugefield.smear(latticeObjectParameters->getSmearingSteps());
+    gaugefield.smear(latticeObjectParameters->getSmearingSteps());
 }
 
 void physics::lattices::Gaugefield::smear() const
 {
-	this->smear();
+    this->smear();
 }
 
 void physics::lattices::Gaugefield::unsmear() const
 {
-	this->unsmear();
+    this->unsmear();
 }
 
 void physics::lattices::Gaugefield::unsmear()
 {
-	gaugefield.unsmear();
+    gaugefield.unsmear();
 }
 
 void physics::lattices::Gaugefield::update_halo() const
 {
-	gaugefield.update_halo();
+    gaugefield.update_halo();
 }
 
-const physics::PRNG * physics::lattices::Gaugefield::getPrng() const
+const physics::PRNG* physics::lattices::Gaugefield::getPrng() const
 {
-	return &prng;
+    return &prng;
 }
 
-const hardware::System * physics::lattices::Gaugefield::getSystem() const
+const hardware::System* physics::lattices::Gaugefield::getSystem() const
 {
-	return &system;
+    return &system;
 }
 
-const physics::lattices::GaugefieldParametersInterface * physics::lattices::Gaugefield::getParameters() const
+const physics::lattices::GaugefieldParametersInterface* physics::lattices::Gaugefield::getParameters() const
 {
-	return latticeObjectParameters;
+    return latticeObjectParameters;
 }
 
 int physics::lattices::Gaugefield::get_trajectoryNumberAtInit() const
 {
-	return trajectoryNumberAtInit;
+    return trajectoryNumberAtInit;
 }

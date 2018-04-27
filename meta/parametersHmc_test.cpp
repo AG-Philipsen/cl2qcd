@@ -24,45 +24,45 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE meta::parametersHmc
-#include <boost/test/unit_test.hpp>
+#include "parametersHmc.hpp"
 
 #include "../common_header_files/types.hpp"
 
-#include "parametersHmc.hpp"
+#include <boost/test/unit_test.hpp>
 
 using namespace meta;
 
 void checkDefaults(const ParametersHmc params)
 {
-	BOOST_REQUIRE_EQUAL(params.get_tau(), 0.5);
-	BOOST_REQUIRE_EQUAL(params.get_reversibility_check(), false);
-	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(0), 10);
-	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(1), 10);
-	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
-	BOOST_REQUIRE_EQUAL(params.get_hmcsteps(), 10);
-	BOOST_REQUIRE_EQUAL(params.get_num_timescales(), 1);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(0), ParametersHmc::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(1), ParametersHmc::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(2), ParametersHmc::leapfrog);
-	//this is the optimal value...
-	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.1931833275037836);
-	BOOST_REQUIRE_EQUAL(params.get_lambda(1), 0.1931833275037836);
-	BOOST_REQUIRE_EQUAL(params.get_lambda(2), 0.1931833275037836);
+    BOOST_REQUIRE_EQUAL(params.get_tau(), 0.5);
+    BOOST_REQUIRE_EQUAL(params.get_reversibility_check(), false);
+    BOOST_REQUIRE_EQUAL(params.get_integrationsteps(0), 10);
+    BOOST_REQUIRE_EQUAL(params.get_integrationsteps(1), 10);
+    BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
+    BOOST_REQUIRE_EQUAL(params.get_hmcsteps(), 10);
+    BOOST_REQUIRE_EQUAL(params.get_num_timescales(), 1);
+    BOOST_REQUIRE_EQUAL(params.get_integrator(0), ParametersHmc::leapfrog);
+    BOOST_REQUIRE_EQUAL(params.get_integrator(1), ParametersHmc::leapfrog);
+    BOOST_REQUIRE_EQUAL(params.get_integrator(2), ParametersHmc::leapfrog);
+    // this is the optimal value...
+    BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.1931833275037836);
+    BOOST_REQUIRE_EQUAL(params.get_lambda(1), 0.1931833275037836);
+    BOOST_REQUIRE_EQUAL(params.get_lambda(2), 0.1931833275037836);
 }
 
 BOOST_AUTO_TEST_CASE(defaults)
 {
-	const char* _params[] = {"foo"};
-	ParametersHmc params(1, _params);
-	checkDefaults(params);
+    const char* _params[] = {"foo"};
+    ParametersHmc params(1, _params);
+    checkDefaults(params);
 }
 
 BOOST_AUTO_TEST_CASE(input_file1)
 {
-	// empty input file
-	const char* _params[] = {"foo", "test_input_1"};
-	ParametersHmc params(2, _params);
-	checkDefaults(params);
+    // empty input file
+    const char* _params[] = {"foo", "test_input_1"};
+    ParametersHmc params(2, _params);
+    checkDefaults(params);
 }
 
 // clang-format off

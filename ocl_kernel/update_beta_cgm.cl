@@ -21,12 +21,12 @@
  * Device code implementing real numbers algebra functionalities
  */
 
-__kernel void update_beta_cgm(__global const hmc_float * sbeta_pres, __global const hmc_float * zeta_pres, __global const hmc_float * zeta_prev, const int numeq, __global hmc_float * out)
+__kernel void update_beta_cgm(__global const hmc_float* sbeta_pres, __global const hmc_float* zeta_pres,
+                              __global const hmc_float* zeta_prev, const int numeq, __global hmc_float* out)
 {
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
+    int global_size = get_global_size(0);
+    int id          = get_global_id(0);
 
-	for(int id_mem = id; id_mem < numeq; id_mem += global_size)
-	   out[id_mem] = update_beta_cgm_alg(*sbeta_pres, zeta_pres[id_mem], zeta_prev[id_mem]);
-
+    for (int id_mem = id; id_mem < numeq; id_mem += global_size)
+        out[id_mem] = update_beta_cgm_alg(*sbeta_pres, zeta_pres[id_mem], zeta_prev[id_mem]);
 }

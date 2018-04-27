@@ -25,43 +25,42 @@
 
 namespace meta {
 
-	/**
-	 * Generic counter
-	 */
-	class Counter {
+    /**
+     * Generic counter
+     */
+    class Counter {
+      public:
+        /**
+         * Create the counter, initialized to 0
+         */
+        Counter() noexcept;
 
-	public:
-		/**
-		 * Create the counter, initialized to 0
-		 */
-		Counter() noexcept;
+        /**
+         * Increment the counter
+         */
+        Counter& operator+=(const unsigned&) noexcept;
 
-		/**
-		 * Increment the counter
-		 */
-		Counter& operator+=(const unsigned&) noexcept;
+        /**
+         * Increment the counter
+         */
+        Counter& operator++() noexcept;
 
-		/**
-		 * Increment the counter
-		 */
-		Counter& operator++() noexcept;
+        /**
+         * Evaluation operator
+         */
+        operator unsigned() const noexcept;
 
-		/**
-		 * Evaluation operator
-		 */
-		operator unsigned() const noexcept;
+        /**
+         * Reset the counter
+         */
+        void reset() noexcept;
 
-		/**
-		 * Reset the counter
-		 */
-		void reset() noexcept;
-
-	private:
-		/**
-		 * The actual value of the counter.
-		 */
-		unsigned value;
-	};
-}
+      private:
+        /**
+         * The actual value of the counter.
+         */
+        unsigned value;
+    };
+}  // namespace meta
 
 #endif /* _META_COUNTER_ */

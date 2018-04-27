@@ -25,41 +25,40 @@
 
 bool meta::ParametersObs::get_measure_transportcoefficient_kappa() const noexcept
 {
-	return measure_transportcoefficient_kappa;
+    return measure_transportcoefficient_kappa;
 }
 
 bool meta::ParametersObs::get_measure_rectangles() const noexcept
 {
-	return measure_rectangles;
+    return measure_rectangles;
 }
 
 bool meta::ParametersObs::get_measure_correlators() const noexcept
 {
-	return measure_correlators;
+    return measure_correlators;
 }
 
 bool meta::ParametersObs::get_measure_pbp() const noexcept
 {
-	return measure_pbp;
+    return measure_pbp;
 }
 
 common::pbp_version meta::ParametersObs::get_pbp_version() const noexcept
 {
-	return pbp_version_;
+    return pbp_version_;
 }
 
 int meta::ParametersObs::get_corr_dir() const noexcept
 {
-	return corr_dir;
+    return corr_dir;
 }
 
 int meta::ParametersObs::get_pbp_measurements() const noexcept
 {
-	return pbp_measurements;
+    return pbp_measurements;
 }
 
-meta::ParametersObs::ParametersObs()
-	: options("Observables options")
+meta::ParametersObs::ParametersObs() : options("Observables options")
 {
     // clang-format off
 	options.add_options()
@@ -70,12 +69,12 @@ meta::ParametersObs::ParametersObs()
 	("pbp_measurements", po::value<int>(&pbp_measurements)->default_value(1), "Number of chiral condensate measurements (stagg. only!)")
 	("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
 	("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) );
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersObs::~ParametersObs() = default;
 
-po::options_description & meta::ParametersObs::getOptions()
+po::options_description& meta::ParametersObs::getOptions()
 {
-	return options;
+    return options;
 }

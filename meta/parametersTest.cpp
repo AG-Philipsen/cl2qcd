@@ -24,26 +24,25 @@
 
 double meta::ParametersTest::get_test_ref_value() const noexcept
 {
-	return test_ref_value;
+    return test_ref_value;
 }
 double meta::ParametersTest::get_test_ref_value2() const noexcept
 {
-	return test_ref_value2;
+    return test_ref_value2;
 }
 
-meta::ParametersTest::ParametersTest()
-	: options("Test options")
+meta::ParametersTest::ParametersTest() : options("Test options")
 {
     // clang-format off
 	options.add_options()
 	("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
 	("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersTest::~ParametersTest() = default;
 
-po::options_description & meta::ParametersTest::getOptions()
+po::options_description& meta::ParametersTest::getOptions()
 {
-	return options;
+    return options;
 }

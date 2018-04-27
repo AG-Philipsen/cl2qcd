@@ -21,46 +21,47 @@
 
 #include "su3heatbathExecutable.hpp"
 
-su3heatbathExecutable::su3heatbathExecutable(int argc, const char* argv[]) :
-  generationExecutable(argc, argv, "su3heatbath")
+su3heatbathExecutable::su3heatbathExecutable(int argc, const char* argv[])
+    : generationExecutable(argc, argv, "su3heatbath")
 {
-	initializationTimer.reset();
-	setIterationParameters();
-	printParametersToScreenAndFile();
-	initializationTimer.add();
+    initializationTimer.reset();
+    setIterationParameters();
+    printParametersToScreenAndFile();
+    initializationTimer.add();
 }
 
 void su3heatbathExecutable::printParametersToScreenAndFile()
 {
-  meta::print_info_observables_gauge_io(parameters);
-  meta::print_info_heatbath(parameters);
-  writeSu3heatbathLogfile();
+    meta::print_info_observables_gauge_io(parameters);
+    meta::print_info_heatbath(parameters);
+    writeSu3heatbathLogfile();
 }
 
 inline void su3heatbathExecutable::writeSu3heatbathLogfile()
 {
-	outputToFile.open(filenameForLogfile,
-			std::ios::out | std::ios::app);
-	if (outputToFile.is_open()) {
-		meta::print_info_observables_gauge_io(&outputToFile, parameters);
-		meta::print_info_heatbath(&outputToFile, parameters);
-		outputToFile.close();
-	} else {
-		throw File_Exception(filenameForLogfile);
-	}
+    outputToFile.open(filenameForLogfile, std::ios::out | std::ios::app);
+    if (outputToFile.is_open()) {
+        meta::print_info_observables_gauge_io(&outputToFile, parameters);
+        meta::print_info_heatbath(&outputToFile, parameters);
+        outputToFile.close();
+    } else {
+        throw File_Exception(filenameForLogfile);
+    }
 }
 
 void su3heatbathExecutable::setIterationParameters()
 {
-	generationExecutable::setIterationParameters();
-	generationSteps += parameters.get_heatbathsteps();
-	overrelaxSteps = parameters.get_overrelaxsteps();
+    generationExecutable::setIterationParameters();
+    generationSteps += parameters.get_heatbathsteps();
+    overrelaxSteps = parameters.get_overrelaxsteps();
 }
 
-void su3heatbathExecutable::thermalizeAccordingToSpecificAlgorithm() {
-	physics::algorithms::su3heatbath(*gaugefield, *prng);
+void su3heatbathExecutable::thermalizeAccordingToSpecificAlgorithm()
+{
+    physics::algorithms::su3heatbath(*gaugefield, *prng);
 }
 
-void su3heatbathExecutable::generateAccordingToSpecificAlgorithm() {
-	physics::algorithms::su3heatbath(*gaugefield, *prng, overrelaxSteps);
+void su3heatbathExecutable::generateAccordingToSpecificAlgorithm()
+{
+    physics::algorithms::su3heatbath(*gaugefield, *prng, overrelaxSteps);
 }

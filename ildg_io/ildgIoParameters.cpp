@@ -23,10 +23,10 @@
 
 #include "ildgIoParameters.hpp"
 
-IldgIoParameters_gaugefield createIldgIoParameters(const meta::Inputparameters * parametersIn)
+IldgIoParameters_gaugefield createIldgIoParameters(const meta::Inputparameters* parametersIn)
 {
-	const physics::lattices::GaugefieldParametersImplementation tmp (parametersIn);
-	Inputparameters parameters( &tmp );
-	IldgIoParameters_gaugefield ildgIoParameters(&parameters);
-	return ildgIoParameters;
+    const physics::lattices::GaugefieldParametersImplementation tmp(parametersIn);
+    Inputparameters parameters(&tmp);
+    IldgIoParameters_gaugefield ildgIoParameters(&parameters);
+    return ildgIoParameters;
 }

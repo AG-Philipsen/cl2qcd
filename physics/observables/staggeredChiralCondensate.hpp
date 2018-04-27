@@ -22,31 +22,33 @@
 #ifndef _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_
 #define _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_
 
+#include "../interfacesHandler.hpp"
 #include "../lattices/gaugefield.hpp"
 #include "observablesInterfaces.hpp"
-#include "../interfacesHandler.hpp"
 
 namespace physics {
-  namespace observables {
-    namespace staggered {
+    namespace observables {
+        namespace staggered {
 
-      /**
-       * Calculate chiral condesate with noise estimators (only volume source is accepted so far)
-       * with the content and the number of the sources as specified in Inputparameters
-       * @param[in] gf The actual configuration used in the fermionmatrix
-       * @param[in] prng The actual random number generator
-       * @param[in] system The system to operate on
-       */
-      hmc_complex measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system,
-                                          physics::InterfacesHandler& interfacesHandler);
+            /**
+             * Calculate chiral condesate with noise estimators (only volume source is accepted so far)
+             * with the content and the number of the sources as specified in Inputparameters
+             * @param[in] gf The actual configuration used in the fermionmatrix
+             * @param[in] prng The actual random number generator
+             * @param[in] system The system to operate on
+             */
+            hmc_complex measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng,
+                                                const hardware::System& system,
+                                                physics::InterfacesHandler& interfacesHandler);
 
-       /**
-       * Calculate chiral condesate as above and write the result to file according to the Inputparameters options
-       */
-      void measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration, physics::InterfacesHandler& interfacesHandler);
+            /**
+             * Calculate chiral condesate as above and write the result to file according to the Inputparameters options
+             */
+            void measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration,
+                                                       physics::InterfacesHandler& interfacesHandler);
 
-    }
-  }
-}
+        }  // namespace staggered
+    }      // namespace observables
+}  // namespace physics
 
 #endif /* _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_ */

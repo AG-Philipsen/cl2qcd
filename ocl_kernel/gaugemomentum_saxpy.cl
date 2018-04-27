@@ -26,14 +26,15 @@
  *  @param alpha The REAL number which x has to be multiplied by
  *  @param out The output gaugemomentum field: alpha*x+y (site by site)
  */
-__kernel void gaugemomentum_saxpy(__global const aeStorageType * const x, __global const aeStorageType * const y, __global const hmc_float * const alpha, __global aeStorageType * const out)
+__kernel void gaugemomentum_saxpy(__global const aeStorageType* const x, __global const aeStorageType* const y,
+                                  __global const hmc_float* const alpha, __global aeStorageType* const out)
 {
-	int id = get_global_id(0);
-	int global_size = get_global_size(0);
+    int id          = get_global_id(0);
+    int global_size = get_global_size(0);
 
-	for(int id_mem = id; id_mem < GAUGEMOMENTASIZE_MEM; id_mem += global_size) {
-		ae x_tmp = getAe(x, id_mem);
-		ae y_tmp = getAe(y, id_mem);
-		putAe(out, id_mem, acc_factor_times_algebraelement(y_tmp, *alpha, x_tmp));
-	}
+    for (int id_mem = id; id_mem < GAUGEMOMENTASIZE_MEM; id_mem += global_size) {
+        ae x_tmp = getAe(x, id_mem);
+        ae y_tmp = getAe(y, id_mem);
+        putAe(out, id_mem, acc_factor_times_algebraelement(y_tmp, *alpha, x_tmp));
+    }
 }

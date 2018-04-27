@@ -21,59 +21,66 @@
 
 #include "limeUtilities.hpp"
 
-#include "../host_functionality/logger.hpp"
-#include <boost/lexical_cast.hpp>
 #include "../executables/exceptions.hpp"
+#include "../host_functionality/logger.hpp"
 
-LimeHeaderData::LimeHeaderData(LimeReader *r)
+#include <boost/lexical_cast.hpp>
+
+LimeHeaderData::LimeHeaderData(LimeReader* r)
 {
-  numberOfBytes    = limeReaderBytes(r);
-  limeEntryType = (limeReaderType(r));
-  bytes_pad = limeReaderPadBytes(r);
-  MB_flag   = limeReaderMBFlag(r);
-  ME_flag   = limeReaderMEFlag(r);
+    numberOfBytes = limeReaderBytes(r);
+    limeEntryType = (limeReaderType(r));
+    bytes_pad     = limeReaderPadBytes(r);
+    MB_flag       = limeReaderMBFlag(r);
+    ME_flag       = limeReaderMEFlag(r);
 }
 
-LimeFileProperties::LimeFileProperties() :
-	numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0), readMetaData(false)
-{}
+LimeFileProperties::LimeFileProperties()
+    : numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0), readMetaData(false)
+{
+}
 
-LimeFileProperties::LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) :
-                                       numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries)
-{}
+LimeFileProperties::LimeFileProperties(int numberOfEntries, int numberOfBinaryDataEntries)
+    : numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries)
+{
+}
 
 void LimeFileProperties::operator+=(LimeFileProperties other)
 {
-  this->numberOfEntries += other.numberOfEntries;
-  this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
-	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
+    this->numberOfEntries += other.numberOfEntries;
+    this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
+    this->numberOfFermionicEntries += other.numberOfFermionicEntries;
 }
 
-LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
+LimeFilePropertiesCollector::~LimeFilePropertiesCollector()
 {
-	logger.trace() << "Found " << numberOfEntries << " LIME records.";
-	logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
-	if (numberOfFermionicEntries > 0)
-	{
-		logger.trace() << "\tfile contains " << numberOfFermionicEntries << " fermion entries." ;
-	}
-	else
-	{
-		logger.trace() << "\tfile does not contain informations about fermions";
-	}
+    logger.trace() << "Found " << numberOfEntries << " LIME records.";
+    logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
+    if (numberOfFermionicEntries > 0) {
+        logger.trace() << "\tfile contains " << numberOfFermionicEntries << " fermion entries.";
+    } else {
+        logger.trace() << "\tfile does not contain informations about fermions";
+    }
 }
 
-LimeEntryTypes::Mapper LimeEntryTypes::mapper = { {"propagator", "propagator-info"}, {"xlf", "xlf-info"} , {"inverter", "inverter-info"}, {"gauge-checksum-copy", "gauge-scidac-checksum-copy"}, {"etmc-propagator", "etmc-propagator-format"},  { "scidac binary data", "scidac-binary-data"}, {"scidac checksum", "scidac-checksum"}, {"ildg", "ildg-format"}, {"ildg binary data", "ildg-binary-data"}  };
-
+LimeEntryTypes::Mapper LimeEntryTypes::mapper = {{"propagator", "propagator-info"},
+                                                 {"xlf", "xlf-info"},
+                                                 {"inverter", "inverter-info"},
+                                                 {"gauge-checksum-copy", "gauge-scidac-checksum-copy"},
+                                                 {"etmc-propagator", "etmc-propagator-format"},
+                                                 {"scidac binary data", "scidac-binary-data"},
+                                                 {"scidac checksum", "scidac-checksum"},
+                                                 {"ildg", "ildg-format"},
+                                                 {"ildg binary data", "ildg-binary-data"}};
 
 void LimeFileReader_basic::openFile()
 {
-	outputfile = fopen (filename.c_str(), "r");
-	limeReader = limeCreateReader(outputfile);
+    outputfile = fopen(filename.c_str(), "r");
+    limeReader = limeCreateReader(outputfile);
 }
 
 void LimeFileReader_basic::closeFile()
 {
-	limeDestroyReader(limeReader);
-	fclose(outputfile);
+    limeDestroyReader(limeReader);
+    fclose(outputfile);
 }

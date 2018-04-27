@@ -27,23 +27,22 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::Matrix3x3
-#include <boost/test/unit_test.hpp>
-
-#include "../system.hpp"
 #include "../interfaceMockups.hpp"
+#include "../system.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	using namespace hardware;
+    using namespace hardware;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
-	for(Device * device : system.get_devices())
-	{
-		hardware::buffers::Matrix3x3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
-		const cl_mem * tmp = dummy;
-		BOOST_CHECK(tmp);
-		BOOST_CHECK(*tmp);
-	}
+    const hardware::HardwareParametersMockup hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
+    for (Device* device : system.get_devices()) {
+        hardware::buffers::Matrix3x3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
+        const cl_mem* tmp = dummy;
+        BOOST_CHECK(tmp);
+        BOOST_CHECK(*tmp);
+    }
 }

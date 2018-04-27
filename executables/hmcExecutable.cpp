@@ -23,8 +23,7 @@
 
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 
-hmcExecutable::hmcExecutable(int argc, const char* argv[])
-        : generationExecutable(argc, argv, "hmc")
+hmcExecutable::hmcExecutable(int argc, const char* argv[]) : generationExecutable(argc, argv, "hmc")
 {
     initializationTimer.reset();
     printParametersToScreenAndFile();
@@ -35,7 +34,8 @@ hmcExecutable::hmcExecutable(int argc, const char* argv[])
 hmcExecutable::~hmcExecutable()
 {
     using namespace std;
-    logger.info() << "Acceptance rate: " << fixed << setprecision(1) << percent(acceptanceRate, parameters.get_hmcsteps()) << "%";
+    logger.info() << "Acceptance rate: " << fixed << setprecision(1)
+                  << percent(acceptanceRate, parameters.get_hmcsteps()) << "%";
 }
 
 void hmcExecutable::printParametersToScreenAndFile()
@@ -47,7 +47,7 @@ void hmcExecutable::printParametersToScreenAndFile()
 void hmcExecutable::writeHmcLogfile()
 {
     outputToFile.open(filenameForLogfile, std::ios::out | std::ios::app);
-    if(outputToFile.is_open()) {
+    if (outputToFile.is_open()) {
         meta::print_info_hmc(&outputToFile, parameters);
         outputToFile.close();
     } else {
@@ -69,17 +69,19 @@ void hmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 void hmcExecutable::generateAccordingToSpecificAlgorithm()
 {
     const double randomNumber = prng->get_double();
-    observables = physics::algorithms::perform_hmc_step(gaugefield, iteration, randomNumber, *prng, *system, *interfacesHandler);
+    observables = physics::algorithms::perform_hmc_step(gaugefield, iteration, randomNumber, *prng, *system,
+                                                        *interfacesHandler);
     acceptanceRate += observables.accept;
 }
 
 void hmcExecutable::performOnlineMeasurements()
 {
-    if(((iteration + 1) % writeFrequency) == 0) {
+    if (((iteration + 1) % writeFrequency) == 0) {
         std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
         printHmcObservables(gaugeout_name);
-        if(parameters.get_measure_pbp()) {
-            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, iteration, *interfacesHandler);
+        if (parameters.get_measure_pbp()) {
+            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, iteration,
+                                                                                          *interfacesHandler);
         }
     }
 }
@@ -93,21 +95,23 @@ void hmcExecutable::printHmcObservables(const std::string& filename)
 void hmcExecutable::printHmcObservablesToFile(const std::string& filename)
 {
     outputToFile.open(filename.c_str(), std::ios::out | std::ios::app);
-    if(!outputToFile.is_open())
+    if (!outputToFile.is_open())
         throw File_Exception(filename);
     const std::streamsize shortPrecision = 4, longPrecision = 15;
-    const std::streamsize shortWidth = shortPrecision + 6, longWidth = longPrecision + 10; //+1 is always needed for the period, +4 is for e+XX in case of extreme values, +10 to give some breath
+    const std::streamsize shortWidth = shortPrecision + 6,
+                          longWidth  = longPrecision + 10;  //+1 is always needed for the period, +4 is for e+XX in case
+                                                            // of extreme values, +10 to give some breath
     outputToFile.precision(longPrecision);
-    outputToFile << std::setw(8) << iteration //statistics up to 1e8-1
-                 << ' ' << std::setw(longWidth) << observables.plaq
-                 << ' ' << std::setw(longWidth) << observables.tplaq
-                 << ' ' << std::setw(longWidth) << observables.splaq
-                 << ' ' << std::setw(longWidth) << observables.poly.re
-                 << ' ' << std::setw(longWidth) << observables.poly.im
-                 << ' ' << std::setw(longWidth) << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im)
-                 << ' ' << std::setw(longWidth) << observables.deltaH;
+    outputToFile << std::setw(8) << iteration  // statistics up to 1e8-1
+                 << ' ' << std::setw(longWidth) << observables.plaq << ' ' << std::setw(longWidth) << observables.tplaq
+                 << ' ' << std::setw(longWidth) << observables.splaq << ' ' << std::setw(longWidth)
+                 << observables.poly.re << ' ' << std::setw(longWidth) << observables.poly.im << ' '
+                 << std::setw(longWidth)
+                 << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im) << ' '
+                 << std::setw(longWidth) << observables.deltaH;
     outputToFile.precision(shortPrecision);
-    outputToFile << ' ' << std::setw(6) << observables.accept //we print 0 or 1 with some space around, but not too much
+    outputToFile << ' ' << std::setw(6)
+                 << observables.accept  // we print 0 or 1 with some space around, but not too much
                  << ' ' << std::setw(shortWidth) << observables.timeTrajectory;
 
     /**
@@ -120,7 +124,7 @@ void hmcExecutable::printHmcObservablesToFile(const std::string& filename)
      *                outputToFile << "\t" << iter0 << "\t" << iter1;
      *            }
      */
-    if(meta::get_use_rectangles(parameters)) {
+    if (meta::get_use_rectangles(parameters)) {
         outputToFile.precision(longPrecision);
         outputToFile << ' ' << std::setw(longWidth) << observables.rectangles;
     }
@@ -130,6 +134,6 @@ void hmcExecutable::printHmcObservablesToFile(const std::string& filename)
 
 void hmcExecutable::printHmcObservablesToScreen()
 {
-    logger.info() << "\tHMC [OBS]:\t" << iteration << std::setw(8) << std::setfill(' ') << "\t" << std::setprecision(15) << observables.plaq << "\t"
-            << observables.poly.re << "\t" << observables.poly.im;
+    logger.info() << "\tHMC [OBS]:\t" << iteration << std::setw(8) << std::setfill(' ') << "\t" << std::setprecision(15)
+                  << observables.plaq << "\t" << observables.poly.re << "\t" << observables.poly.im;
 }

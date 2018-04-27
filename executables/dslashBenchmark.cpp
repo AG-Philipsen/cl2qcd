@@ -29,37 +29,40 @@
 
 #include "dslashBenchmark.hpp"
 
-dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
-  benchmarkExecutable(argc, argv)
+dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) : benchmarkExecutable(argc, argv)
 {
-  spinorfield1 = new physics::lattices::Spinorfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Spinorfield_eo>());
-  spinorfield2 = new physics::lattices::Spinorfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Spinorfield_eo>());
+    spinorfield1 = new physics::lattices::Spinorfield_eo(*system,
+                                                         interfacesHandler
+                                                             ->getInterface<physics::lattices::Spinorfield_eo>());
+    spinorfield2 = new physics::lattices::Spinorfield_eo(*system,
+                                                         interfacesHandler
+                                                             ->getInterface<physics::lattices::Spinorfield_eo>());
 }
 
 void dslashBenchmark::performBenchmarkForSpecificKernels()
 {
-  auto gaugefield_buffer = gaugefield->get_buffers().at(0);
-  auto spinorfield1_buffer = spinorfield1->get_buffers().at(0);
-  auto spinorfield2_buffer = spinorfield2->get_buffers().at(0);
-  auto fermion_code = device->getFermionCode();
-  fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, EVEN);
-  fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, ODD);
-  device->synchronize();
+    auto gaugefield_buffer   = gaugefield->get_buffers().at(0);
+    auto spinorfield1_buffer = spinorfield1->get_buffers().at(0);
+    auto spinorfield2_buffer = spinorfield2->get_buffers().at(0);
+    auto fermion_code        = device->getFermionCode();
+    fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, EVEN);
+    fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, ODD);
+    device->synchronize();
 }
 
 void dslashBenchmark::enqueueSpecificKernelForBenchmarkingMultipleDevices()
 {
-  physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN, parameters.get_kappa());
-  physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD, parameters.get_kappa());
+    physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN, parameters.get_kappa());
+    physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD, parameters.get_kappa());
 }
 
 void dslashBenchmark::printProfilingDataToScreen()
 {
-  auto fermion_code = system->get_devices()[0]->getFermionCode();
-  size_t flop_count = fermion_code->get_flop_size("dslash_eo");
-  size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
-  double gflops = static_cast<double>(flop_count) * 2 * benchmarkSteps / executionTime / 1e3;
-  double gbytes = static_cast<double>(byte_count) * 2 * benchmarkSteps / executionTime / 1e3;
-  logger.info() << "Dslash performance: " << gflops << " GFLOPS";
-  logger.info() << "Dslash memory: " << gbytes << " GB/S";
+    auto fermion_code = system->get_devices()[0]->getFermionCode();
+    size_t flop_count = fermion_code->get_flop_size("dslash_eo");
+    size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
+    double gflops     = static_cast<double>(flop_count) * 2 * benchmarkSteps / executionTime / 1e3;
+    double gbytes     = static_cast<double>(byte_count) * 2 * benchmarkSteps / executionTime / 1e3;
+    logger.info() << "Dslash performance: " << gflops << " GFLOPS";
+    logger.info() << "Dslash memory: " << gbytes << " GB/S";
 }

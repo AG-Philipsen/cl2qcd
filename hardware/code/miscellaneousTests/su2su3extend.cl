@@ -18,10 +18,11 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-__kernel void extendKernel(__global Matrixsu3 * out, __global Matrixsu2 * in, __global int * rand, const ulong num_elems) {
-	const size_t id = get_global_id(0);
-	if( id >= num_elems )
-		return;
+__kernel void extendKernel(__global Matrixsu3* out, __global Matrixsu2* in, __global int* rand, const ulong num_elems)
+{
+    const size_t id = get_global_id(0);
+    if (id >= num_elems)
+        return;
 
-	out[id] = extend(rand[id], in[id]);
+    out[id] = extend(rand[id], in[id]);
 }

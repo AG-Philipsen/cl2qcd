@@ -78,66 +78,72 @@
  *       (1+\delta_{\mu,4}*(exp(\imath \mu_I)-1)) is added just before the TA operation.
  */
 
-ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, const st_index pos, const dir_idx dir)
+ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType* const restrict field,
+                                            __global const staggeredStorageType* const restrict A,
+                                            __global const staggeredStorageType* const restrict B, const st_index pos,
+                                            const dir_idx dir)
 {
-	Matrix3x3 tmp;
-	Matrixsu3 U, aux;
-	su3vec a, b;
-	int n = pos.space;
-	int t = pos.time;
-	int nn_eo;
-	st_index nn;
-	//this is used to take into account the staggered phase and the BC-conditions
-	hmc_complex eta_mod;
+    Matrix3x3 tmp;
+    Matrixsu3 U, aux;
+    su3vec a, b;
+    int n = pos.space;
+    int t = pos.time;
+    int nn_eo;
+    st_index nn;
+    // this is used to take into account the staggered phase and the BC-conditions
+    hmc_complex eta_mod;
 
-	////////////////////////////////////////////////
-	nn = get_neighbor_from_st_idx(pos, dir);
-	nn_eo = get_eo_site_idx_from_st_idx(nn); //transform normal indices to eoprec index
-	U = get_matrixsu3(field, n, t, dir);
-	a = get_su3vec_from_field_eo(A, nn_eo);
+    ////////////////////////////////////////////////
+    nn    = get_neighbor_from_st_idx(pos, dir);
+    nn_eo = get_eo_site_idx_from_st_idx(nn);  // transform normal indices to eoprec index
+    U     = get_matrixsu3(field, n, t, dir);
+    a     = get_su3vec_from_field_eo(A, nn_eo);
 
-	eta_mod = get_modified_stagg_phase(n, dir);
-	a = su3vec_times_complex(a, eta_mod);
+    eta_mod = get_modified_stagg_phase(n, dir);
+    a       = su3vec_times_complex(a, eta_mod);
 
-	b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-	tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
+    b   = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
+    tmp = multiply_matrix3x3(matrix_su3to3x3(U), u_times_v_dagger(a, b));
 #ifdef _CP_IMAG_
-	//Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid the if.
-	//Actually one could also think to include the imaginary chemical potential
-	//in the staggered phases as done for the boundary conditions. In this case one
-	//should move cpi_tmp to the file operations_staggered.cl
-	if(dir == TDIR){
-	  hmc_complex cpi_tmp = {COSCPI, SINCPI};
-	  tmp = multiply_matrix3x3_by_complex(tmp, cpi_tmp);
-	}
+    // Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid the if.
+    // Actually one could also think to include the imaginary chemical potential
+    // in the staggered phases as done for the boundary conditions. In this case one
+    // should move cpi_tmp to the file operations_staggered.cl
+    if (dir == TDIR) {
+        hmc_complex cpi_tmp = {COSCPI, SINCPI};
+        tmp                 = multiply_matrix3x3_by_complex(tmp, cpi_tmp);
+    }
 #endif
-	tmp = traceless_antihermitian_part(tmp);
-	aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
-	////////////////////////////////////////////////
+    tmp = traceless_antihermitian_part(tmp);
+    aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
+    ////////////////////////////////////////////////
 
-	return build_ae_from_su3(aux);
+    return build_ae_from_su3(aux);
 }
 
 ////////////////////////////////////////////////////////////////////
-//HERE, BOUNDARY CONDITIONS ARE INCLUDED IN STAGGERED PHASES!!!!! //
+// HERE, BOUNDARY CONDITIONS ARE INCLUDED IN STAGGERED PHASES!!!!! //
 ////////////////////////////////////////////////////////////////////
-__kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, __global aeStorageType * const restrict out, int evenodd)
+__kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3StorageType* const restrict field,
+                                                 __global const staggeredStorageType* const restrict A,
+                                                 __global const staggeredStorageType* const restrict B,
+                                                 __global aeStorageType* const restrict out, int evenodd)
 {
-	//The following 2 lines were about the Wilson kernel. I do not know if they are still valid.
-	// must include HALO, as we are updating neighbouring sites
-	// -> not all local sites will fully updated if we don't calculate on halo indices, too
-	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
-		//caculate (pos,time) out of id_local depending on evenodd
-		st_index pos = (evenodd == EVEN) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
+    // The following 2 lines were about the Wilson kernel. I do not know if they are still valid.
+    // must include HALO, as we are updating neighbouring sites
+    // -> not all local sites will fully updated if we don't calculate on halo indices, too
+    PARALLEL_FOR (id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
+        // caculate (pos,time) out of id_local depending on evenodd
+        st_index pos = (evenodd == EVEN) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
 
-		ae tmp;
-		for(dir_idx dir = 0; dir < 4; ++dir) {
-			tmp = fermion_staggered_partial_force_eo_local(field, A, B, pos, dir);
-			//Depending on evenodd the sign in front of Q^i_\mu(n) is here taken into account
-			if(evenodd == EVEN)
-			  update_gaugemomentum(tmp, 1., get_link_idx(dir, pos), out);
-			else
-			  update_gaugemomentum(tmp, -1., get_link_idx(dir, pos), out);
-		}
-	}
+        ae tmp;
+        for (dir_idx dir = 0; dir < 4; ++dir) {
+            tmp = fermion_staggered_partial_force_eo_local(field, A, B, pos, dir);
+            // Depending on evenodd the sign in front of Q^i_\mu(n) is here taken into account
+            if (evenodd == EVEN)
+                update_gaugemomentum(tmp, 1., get_link_idx(dir, pos), out);
+            else
+                update_gaugemomentum(tmp, -1., get_link_idx(dir, pos), out);
+        }
+    }
 }

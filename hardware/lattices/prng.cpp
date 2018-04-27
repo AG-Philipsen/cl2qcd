@@ -19,36 +19,36 @@
  */
 
 #include "prng.hpp"
-#include "../code/prng.hpp"
+
 #include "../../host_functionality/host_random.hpp"
+#include "../code/prng.hpp"
 
-hardware::lattices::PRNG::PRNG(const hardware::System& system, uint32_t seed, bool useSameRandomNumbers) :
-	system(system)
+hardware::lattices::PRNG::PRNG(const hardware::System& system, uint32_t seed, bool useSameRandomNumbers)
+    : system(system)
 {
-	using hardware::buffers::PRNGBuffer;
+    using hardware::buffers::PRNGBuffer;
 
-	// initialize host prng
-	prng_init(seed);
+    // initialize host prng
+    prng_init(seed);
 
-	// initialize devices
-	for(hardware::Device * device : system.get_devices()) {
-		// create a buffer for each device
-		const PRNGBuffer * buffer = new PRNGBuffer(device, useSameRandomNumbers);
-		auto code = device->getPrngCode();
-		code->initialize(buffer, ++seed);
-		buffers.push_back(buffer);
-	}
+    // initialize devices
+    for (hardware::Device* device : system.get_devices()) {
+        // create a buffer for each device
+        const PRNGBuffer* buffer = new PRNGBuffer(device, useSameRandomNumbers);
+        auto code                = device->getPrngCode();
+        code->initialize(buffer, ++seed);
+        buffers.push_back(buffer);
+    }
 }
 
 hardware::lattices::PRNG::~PRNG()
 {
-	for(const hardware::buffers::PRNGBuffer * buffer : buffers)
-	{
-		delete buffer;
-	}
+    for (const hardware::buffers::PRNGBuffer* buffer : buffers) {
+        delete buffer;
+    }
 }
 
 const std::vector<const hardware::buffers::PRNGBuffer*> hardware::lattices::PRNG::get_buffers() const noexcept
 {
-	return buffers;
+    return buffers;
 }

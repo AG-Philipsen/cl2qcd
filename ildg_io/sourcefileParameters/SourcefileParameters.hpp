@@ -26,34 +26,33 @@
 #include "../checksum.hpp"
 #include "../ildgIoParameters.hpp"
 
-//TODO: it may be advantageous to separate between gaugefield and fermion field parameters
+// TODO: it may be advantageous to separate between gaugefield and fermion field parameters
 class Sourcefileparameters {
-public:
-  Sourcefileparameters();
-	Sourcefileparameters(const IldgIoParameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion);
+  public:
+    Sourcefileparameters();
+    Sourcefileparameters(const IldgIoParameters* parameters, int trajectoryNumber, double plaquette,
+                         Checksum checksumIn, std::string hmcVersion);
 
-	std::string getInfo_ildgFormat_gaugefield();
-	std::string getInfo_scidacChecksum();
-	std::string getInfo_xlfInfo();
+    std::string getInfo_ildgFormat_gaugefield();
+    std::string getInfo_scidacChecksum();
+    std::string getInfo_xlfInfo();
 
-	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
-	double plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
-	Checksum checksum;
-	std::string field, date, hmcversion, solvertype, hmcversion_solver, date_solver;
+    int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
+    double plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
+    Checksum checksum;
+    std::string field, date, hmcversion, solvertype, hmcversion_solver, date_solver;
 
-	int numberOfFermionFieldsRead;
+    int numberOfFermionFieldsRead;
 
-	void printMetaDataToScreen(std::string sourceFilename);
+    void printMetaDataToScreen(std::string sourceFilename);
 
-	void checkAgainstInputparameters(const IldgIoParameters * toCheck);
-	void checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors = false, std::string filename = "");
+    void checkAgainstInputparameters(const IldgIoParameters* toCheck);
+    void checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors = false, std::string filename = "");
 
-	size_t getSizeInBytes() noexcept;
+    size_t getSizeInBytes() noexcept;
 
-private:
-	void set_defaults();
+  private:
+    void set_defaults();
 };
-
-
 
 #endif

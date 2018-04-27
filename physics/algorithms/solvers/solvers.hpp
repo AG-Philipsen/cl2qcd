@@ -24,32 +24,29 @@
 #define _PHYSICS_ALGORITHMS_SOLVERS_
 
 #include "../../fermionmatrix/fermionmatrix.hpp"
-#include "exceptions.hpp"
-#include "../../lattices/util.hpp"
 #include "../../lattices/scalar_complex.hpp"
-
-#include "cg.hpp"
+#include "../../lattices/util.hpp"
 #include "bicgstab.hpp"
+#include "cg.hpp"
+#include "exceptions.hpp"
 
 namespace physics {
-namespace algorithms {
+    namespace algorithms {
 
-/**
- * this namespace contains methods to solve linear systems either like \n
- * <pre>
- * A * x = b       (for x, so far only for Wilson fermions)  </pre>
- * or like
- * <pre>
- * (A + sigma) * x = b       (for x, so far only with even-odd preconditioned Staggered fields)
- * </pre>
- * @note In the latter case, the problem is solved simultaneously for an entire
- *       set of values of sigma thanks to a multi-shifted inverter
- */
-namespace solvers {
-
-
-}
-}
-}
+        /**
+         * this namespace contains methods to solve linear systems either like \n
+         * <pre>
+         * A * x = b       (for x, so far only for Wilson fermions)  </pre>
+         * or like
+         * <pre>
+         * (A + sigma) * x = b       (for x, so far only with even-odd preconditioned Staggered fields)
+         * </pre>
+         * @note In the latter case, the problem is solved simultaneously for an entire
+         *       set of values of sigma thanks to a multi-shifted inverter
+         */
+        namespace solvers {
+        }
+    }  // namespace algorithms
+}  // namespace physics
 
 #endif

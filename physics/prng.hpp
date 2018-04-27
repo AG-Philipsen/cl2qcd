@@ -25,9 +25,9 @@
 #ifndef _PHYSICS_PRNG_
 #define _PHYSICS_PRNG_
 
-#include "../hardware/system.hpp"
 #include "../hardware/buffers/prng_buffer.hpp"
 #include "../hardware/lattices/prng.hpp"
+#include "../hardware/system.hpp"
 #include "prngInterface.hpp"
 
 /**
@@ -35,71 +35,71 @@
  */
 namespace physics {
 
-	/**
-	 * The PRNG PRNG for host and device.
-	 *
-	 * WARNING: Must only be used as a singleton!
-	 */
-	class PRNG {
-		public:
-			/**
-			 * Initialize the ranlux instance
-			 */
-			PRNG(const hardware::System& system, const physics::PrngParametersInterface * parametersIn);
+    /**
+     * The PRNG PRNG for host and device.
+     *
+     * WARNING: Must only be used as a singleton!
+     */
+    class PRNG {
+      public:
+        /**
+         * Initialize the ranlux instance
+         */
+        PRNG(const hardware::System& system, const physics::PrngParametersInterface* parametersIn);
 
-			~PRNG();
+        ~PRNG();
 
-			/*
-			 * non-copyable
-			 */
-			PRNG& operator=(const PRNG&) = delete;
-			PRNG(const PRNG&) = delete;
-			PRNG() = delete;
+        /*
+         * non-copyable
+         */
+        PRNG& operator=(const PRNG&) = delete;
+        PRNG(const PRNG&)            = delete;
+        PRNG()                       = delete;
 
-			/**
-			 * Get random numbers
-			 */
-			double get_double() const noexcept;
+        /**
+         * Get random numbers
+         */
+        double get_double() const noexcept;
 
-			/**
-			 * Get the buffers containing the random state on the device.
-			 */
-			const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers() const noexcept;
+        /**
+         * Get the buffers containing the random state on the device.
+         */
+        const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers() const noexcept;
 
-			/**
-			 * Store the current PRNG state to a file of the given name.
-			 *
-			 * \param filename The name of the file to store the random state in
-			 */
-			void store(const std::string filename) const;
+        /**
+         * Store the current PRNG state to a file of the given name.
+         *
+         * \param filename The name of the file to store the random state in
+         */
+        void store(const std::string filename) const;
 
-			/**
-			 * Save current PRNG state to a file with name prng_prefix + 'save' + prng_postfix
-			 * @param[in] number The trajectory number to be stored in the file
-			 */
-			void save();
-			/**
-			 * Save current PRNG state to a file with specific name based on
-			 * current trajectory number.
-			 * @param[in] number The trajectory number to be stored in the file
-			 */
-			void saveToSpecificFile(int number);
+        /**
+         * Save current PRNG state to a file with name prng_prefix + 'save' + prng_postfix
+         * @param[in] number The trajectory number to be stored in the file
+         */
+        void save();
+        /**
+         * Save current PRNG state to a file with specific name based on
+         * current trajectory number.
+         * @param[in] number The trajectory number to be stored in the file
+         */
+        void saveToSpecificFile(int number);
 
-			void verifyWritingWasSuccessful(const std::string filename) const;
+        void verifyWritingWasSuccessful(const std::string filename) const;
 
-			bool operator == (const physics::PRNG & prng) const;
-			bool operator != (const physics::PRNG & prng) const;
+        bool operator==(const physics::PRNG& prng) const;
+        bool operator!=(const physics::PRNG& prng) const;
 
-			std::string getName(int = -1) const noexcept;
-		private:
+        std::string getName(int = -1) const noexcept;
 
-			/**
-			 * Reference to the system this PRNG is for.
-			 */
-			const hardware::System& system;
-			const physics::PrngParametersInterface * parameters;
-			hardware::lattices::PRNG const hPrng;
-	};
-}
+      private:
+        /**
+         * Reference to the system this PRNG is for.
+         */
+        const hardware::System& system;
+        const physics::PrngParametersInterface* parameters;
+        hardware::lattices::PRNG const hPrng;
+    };
+}  // namespace physics
 
 #endif /* _PHYSICS_PRNG_ */

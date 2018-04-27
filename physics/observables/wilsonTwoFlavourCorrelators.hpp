@@ -24,22 +24,24 @@
 #ifndef WILSONTWOFLAVOURCORRELATORS_HPP_
 #define WILSONTWOFLAVOURCORRELATORS_HPP_
 
+#include "../interfacesHandler.hpp"
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/spinorfield.hpp"
 #include "observablesInterfaces.hpp"
-#include "../interfacesHandler.hpp"
 
 namespace physics {
     namespace observables {
         namespace wilson {
 
-            std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
-                                                        const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
-                                                        physics::InterfacesHandler& interfacesHandler);
-            void measureTwoFlavourDoubletCorrelatorsOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName,
-                                                                 physics::InterfacesHandler & interfacesHandler);
+            std::vector<hmc_float>
+            calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
+                                 const std::vector<physics::lattices::Spinorfield*>& sources,
+                                 const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
+            void measureTwoFlavourDoubletCorrelatorsOnGaugefieldAndWriteToFile(
+                const physics::lattices::Gaugefield* gaugefield, std::string currentConfigurationName,
+                physics::InterfacesHandler& interfacesHandler);
 
-        }
-    }
-}
+        }  // namespace wilson
+    }      // namespace observables
+}  // namespace physics
 #endif

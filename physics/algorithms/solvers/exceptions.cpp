@@ -25,11 +25,14 @@
 #include <sstream>
 
 static std::string create_solver_stuck_message(int iterations);
-physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { }
+physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber)
+    : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber)
+{
+}
 
 static std::string create_solver_stuck_message(int iterations)
 {
-	std::ostringstream tmp;
-	tmp << "Solver got stuck after " << iterations << " iterations";
-	return tmp.str();
+    std::ostringstream tmp;
+    tmp << "Solver got stuck after " << iterations << " iterations";
+    return tmp.str();
 }

@@ -26,113 +26,114 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::PRNG
-#include <boost/test/unit_test.hpp>
-
-#include "../interfaceImplementations/physicsParameters.hpp"
 #include "../interfaceImplementations/hardwareParameters.hpp"
 #include "../interfaceImplementations/openClKernelParameters.hpp"
+#include "../interfaceImplementations/physicsParameters.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 using namespace physics;
 
 BOOST_AUTO_TEST_SUITE(build)
 
-	BOOST_AUTO_TEST_CASE(brokenInputFile_brokenTag)
-	{
-		const char * _params[] = {"foo", "--initial_prng_state=prngstate_brokenTag"};
-		meta::Inputparameters parameters(2, _params);
-		physics::PrngParametersImplementation prngParameters(parameters);
-	    hardware::HardwareParametersImplementation hP(&parameters);
-	    hardware::code::OpenClKernelParametersImplementation kP(parameters);
-	    hardware::System system(hP, kP);
-		BOOST_CHECK_THROW( PRNG prng(system, &prngParameters) , std::invalid_argument );
-	}
+    BOOST_AUTO_TEST_CASE(brokenInputFile_brokenTag)
+    {
+        const char* _params[] = {"foo", "--initial_prng_state=prngstate_brokenTag"};
+        meta::Inputparameters parameters(2, _params);
+        physics::PrngParametersImplementation prngParameters(parameters);
+        hardware::HardwareParametersImplementation hP(&parameters);
+        hardware::code::OpenClKernelParametersImplementation kP(parameters);
+        hardware::System system(hP, kP);
+        BOOST_CHECK_THROW(PRNG prng(system, &prngParameters), std::invalid_argument);
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-void verifyBothBuffersAreEquallyLarge( const hardware::buffers::PRNGBuffer* buf1, const hardware::buffers::PRNGBuffer* buf2 )
+void verifyBothBuffersAreEquallyLarge(const hardware::buffers::PRNGBuffer* buf1,
+                                      const hardware::buffers::PRNGBuffer* buf2)
 {
-	size_t const buf1_bytes = buf1->get_bytes();
-	size_t const buf2_bytes = buf2->get_bytes();
-	BOOST_REQUIRE_EQUAL(buf1_bytes, buf2_bytes);
+    size_t const buf1_bytes = buf1->get_bytes();
+    size_t const buf2_bytes = buf2->get_bytes();
+    BOOST_REQUIRE_EQUAL(buf1_bytes, buf2_bytes);
 }
 
-hardware::buffers::PRNGBuffer::prng_state_t * createPrngState( const size_t buffer_size)
+hardware::buffers::PRNGBuffer::prng_state_t* createPrngState(const size_t buffer_size)
 {
-	return new hardware::buffers::PRNGBuffer::prng_state_t[buffer_size];
+    return new hardware::buffers::PRNGBuffer::prng_state_t[buffer_size];
 }
 
-void verifyBuffersAreDifferent( const hardware::buffers::PRNGBuffer* buf1, const hardware::buffers::PRNGBuffer* buf2 )
+void verifyBuffersAreDifferent(const hardware::buffers::PRNGBuffer* buf1, const hardware::buffers::PRNGBuffer* buf2)
 {
-	size_t const buf_size = buf1->get_bytes() / sizeof(hardware::buffers::PRNGBuffer::prng_state_t);
+    size_t const buf_size = buf1->get_bytes() / sizeof(hardware::buffers::PRNGBuffer::prng_state_t);
 
-	auto prng1_state = createPrngState( buf_size);
-	auto prng2_state = createPrngState( buf_size);
+    auto prng1_state = createPrngState(buf_size);
+    auto prng2_state = createPrngState(buf_size);
 
-	buf1->dump(prng1_state);
-	buf2->dump(prng2_state);
+    buf1->dump(prng1_state);
+    buf2->dump(prng2_state);
 
-	// check that sufficiently small blocks don't match
-	for(size_t i = 0; i < buf_size; ++i) {
-		BOOST_CHECK_NE(prng1_state[i], prng2_state[i]);
-	}
+    // check that sufficiently small blocks don't match
+    for (size_t i = 0; i < buf_size; ++i) {
+        BOOST_CHECK_NE(prng1_state[i], prng2_state[i]);
+    }
 
-	delete[] prng1_state;
-	delete[] prng2_state;
+    delete[] prng1_state;
+    delete[] prng2_state;
 }
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	const char * _params[] = {"foo", "--host_seed=13"};
-	meta::Inputparameters parameters(2, _params);
-	physics::PrngParametersImplementation prngParameters(parameters);
+    const char* _params[] = {"foo", "--host_seed=13"};
+    meta::Inputparameters parameters(2, _params);
+    physics::PrngParametersImplementation prngParameters(parameters);
     hardware::HardwareParametersImplementation hP(&parameters);
     hardware::code::OpenClKernelParametersImplementation kP(parameters);
     hardware::System system(hP, kP);
-	PRNG prng(system, &prngParameters);
+    PRNG prng(system, &prngParameters);
 
-	const char * _params2[] = {"foo", "--host_seed=14"};
-	meta::Inputparameters parameters2(2, _params2);
-	physics::PrngParametersImplementation prngParameters2(parameters2);
+    const char* _params2[] = {"foo", "--host_seed=14"};
+    meta::Inputparameters parameters2(2, _params2);
+    physics::PrngParametersImplementation prngParameters2(parameters2);
     hardware::HardwareParametersImplementation hP2(&parameters2);
     hardware::code::OpenClKernelParametersImplementation kP2(parameters2);
     hardware::System system2(hP2, kP2);
-	PRNG prng2(system2, &prngParameters2);
+    PRNG prng2(system2, &prngParameters2);
 
-	BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
+    BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
 
-	logger.info() << "Now checking buffers...";
-	for(size_t i = 0; i < prng.get_buffers().size(); ++i) {
-		verifyBothBuffersAreEquallyLarge( prng.get_buffers().at(i), prng2.get_buffers().at(i) );
-		verifyBuffersAreDifferent( prng.get_buffers().at(i), prng2.get_buffers().at(i) );
-		logger.info() << "Checked buffer " << i;
-	}
-	logger.info() << "...done";
+    logger.info() << "Now checking buffers...";
+    for (size_t i = 0; i < prng.get_buffers().size(); ++i) {
+        verifyBothBuffersAreEquallyLarge(prng.get_buffers().at(i), prng2.get_buffers().at(i));
+        verifyBuffersAreDifferent(prng.get_buffers().at(i), prng2.get_buffers().at(i));
+        logger.info() << "Checked buffer " << i;
+    }
+    logger.info() << "...done";
 }
 
 BOOST_AUTO_TEST_CASE(store_and_resume)
 {
-	const char * _params[] = {"foo", "--host_seed=46"};
-	meta::Inputparameters parameters(2, _params);
-	physics::PrngParametersImplementation prngParameters(parameters);
+    const char* _params[] = {"foo", "--host_seed=46"};
+    meta::Inputparameters parameters(2, _params);
+    physics::PrngParametersImplementation prngParameters(parameters);
     hardware::HardwareParametersImplementation hP(&parameters);
     hardware::code::OpenClKernelParametersImplementation kP(parameters);
     hardware::System system(hP, kP);
-	PRNG prng(system, &prngParameters);
-	prng.store("tmp.prngstate");
+    PRNG prng(system, &prngParameters);
+    prng.store("tmp.prngstate");
 
-	double tmp = prng.get_double();
+    double tmp = prng.get_double();
 
-	const char * _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
-	meta::Inputparameters parameters2(2, _params2);
-	physics::PrngParametersImplementation prngParameters2(parameters2);
+    const char* _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
+    meta::Inputparameters parameters2(2, _params2);
+    physics::PrngParametersImplementation prngParameters2(parameters2);
     hardware::HardwareParametersImplementation hP2(&parameters2);
     hardware::code::OpenClKernelParametersImplementation kP2(parameters2);
     hardware::System system2(hP2, kP2);
-	PRNG prng2(system2, &prngParameters2);
+    PRNG prng2(system2, &prngParameters2);
 
-	double tmp2 = prng2.get_double();
+    double tmp2 = prng2.get_double();
 
-	BOOST_CHECK_EQUAL(tmp, tmp2);
+    BOOST_CHECK_EQUAL(tmp, tmp2);
 
-	BOOST_REQUIRE_EQUAL(prng == prng2, true);
+    BOOST_REQUIRE_EQUAL(prng == prng2, true);
 }

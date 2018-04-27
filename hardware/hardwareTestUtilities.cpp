@@ -19,92 +19,92 @@
  */
 
 #include "hardwareTestUtilities.hpp"
+
 #include <boost/test/unit_test.hpp>
 
 std::pair<bool, bool> checkForBoostRuntimeArguments()
 {
-	bool useGpu = false;
-	bool useRec12 = false;
-	int num_par = boost::unit_test::framework::master_test_suite().argc;
-	if(num_par > 1) { //argv[0] is the executable name
-		/*
-		 * Here, if the boost version in use is previous to 1.60 but the user uses a "--" to separate boost arguments
-		 * from user arguments (as it is mandatory from version 1.60 on), there could be an argv[i] set to "--".
-		 * It is harmless now, but maybe not in the future, keep it in mind.
-		 */
-		logger.info() << "Found " << num_par << " runtime arguments, checking for gpu and rec12 options...";
-		for (int i = 1; i < num_par; i++) {
-			std::string currentArgument = boost::unit_test::framework::master_test_suite().argv[i];
-			if (currentArgument.find("--use_gpu") != std::string::npos) {
-				if(currentArgument.find("true") != std::string::npos) {
-					useGpu = true;
-				}
-			}
-			if (currentArgument.find("--use_rec12") != std::string::npos) {
-				if(currentArgument.find("true") != std::string::npos) {
-					useRec12 = true;
-				}
-			}
-		}
-	}
-	return std::pair<bool, bool> {useGpu, useRec12};
+    bool useGpu   = false;
+    bool useRec12 = false;
+    int num_par   = boost::unit_test::framework::master_test_suite().argc;
+    if (num_par > 1) {  // argv[0] is the executable name
+        /*
+         * Here, if the boost version in use is previous to 1.60 but the user uses a "--" to separate boost arguments
+         * from user arguments (as it is mandatory from version 1.60 on), there could be an argv[i] set to "--".
+         * It is harmless now, but maybe not in the future, keep it in mind.
+         */
+        logger.info() << "Found " << num_par << " runtime arguments, checking for gpu and rec12 options...";
+        for (int i = 1; i < num_par; i++) {
+            std::string currentArgument = boost::unit_test::framework::master_test_suite().argv[i];
+            if (currentArgument.find("--use_gpu") != std::string::npos) {
+                if (currentArgument.find("true") != std::string::npos) {
+                    useGpu = true;
+                }
+            }
+            if (currentArgument.find("--use_rec12") != std::string::npos) {
+                if (currentArgument.find("true") != std::string::npos) {
+                    useRec12 = true;
+                }
+            }
+        }
+    }
+    return std::pair<bool, bool>{useGpu, useRec12};
 }
 
 bool checkBoostRuntimeArgumentsForGpuUsage()
 {
-	return checkForBoostRuntimeArguments().first;
+    return checkForBoostRuntimeArguments().first;
 }
 bool checkBoostRuntimeArgumentsForRec12Usage()
 {
-	return checkForBoostRuntimeArguments().second;
+    return checkForBoostRuntimeArguments().second;
 }
 
 void broadcastMessage_warn(const std::string message)
 {
-	logger.warn() << message;
-	BOOST_TEST_MESSAGE( message );
+    logger.warn() << message;
+    BOOST_TEST_MESSAGE(message);
 }
 
 void broadcastMessage_fatal(const std::string message)
 {
-	logger.fatal() << message;
-	BOOST_TEST_MESSAGE( message );
+    logger.fatal() << message;
+    BOOST_TEST_MESSAGE(message);
 }
 
 void failTest()
 {
-	BOOST_CHECK_EQUAL(true, false);
+    BOOST_CHECK_EQUAL(true, false);
 }
 
-void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System * system)
+void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System* system)
 {
-	BOOST_REQUIRE_GE(system->get_devices().size(), 1);
+    BOOST_REQUIRE_GE(system->get_devices().size(), 1);
 }
 
-bool checkIfNoOpenCLDevicesWereFound( const hardware::OpenclException exception)
+bool checkIfNoOpenCLDevicesWereFound(const hardware::OpenclException exception)
 {
-	return exception.errorCode == -1;
+    return exception.errorCode == -1;
 }
 
 void endTestAsNoDevicesWereFound()
 {
-	broadcastMessage_warn( "System does not seem to contain devices of desired type!" );
-	broadcastMessage_warn( "Exiting..." );
-	exit(0);
+    broadcastMessage_warn("System does not seem to contain devices of desired type!");
+    broadcastMessage_warn("Exiting...");
+    exit(0);
 }
 
 void endTestBecauseOfUnknownError()
 {
-	broadcastMessage_fatal( "Got unknown error code. Aborting..." );
-	failTest();
+    broadcastMessage_fatal("Got unknown error code. Aborting...");
+    failTest();
 }
 
-void handleExceptionInTest(hardware::OpenclException & exception)
+void handleExceptionInTest(hardware::OpenclException& exception)
 {
-	if ( checkIfNoOpenCLDevicesWereFound( exception ) ) {
-		endTestAsNoDevicesWereFound();
-	}
-	else {
-		endTestBecauseOfUnknownError();
-	}
+    if (checkIfNoOpenCLDevicesWereFound(exception)) {
+        endTestAsNoDevicesWereFound();
+    } else {
+        endTestBecauseOfUnknownError();
+    }
 }

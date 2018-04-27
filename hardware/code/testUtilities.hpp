@@ -19,16 +19,16 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-# pragma once
+#pragma once
 
 #include <iostream>
 
 void printKernelInformation(std::string name);
 
-const int ns4 = 4;
-const int nt4 = 4;
-const int ns8 = 8;
-const int nt8 = 8;
+const int ns4  = 4;
+const int nt4  = 4;
+const int ns8  = 8;
+const int nt8  = 8;
 const int ns12 = 12;
 const int nt12 = 12;
 const int ns16 = 16;

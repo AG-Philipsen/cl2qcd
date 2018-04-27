@@ -25,12 +25,13 @@
 #ifndef _HARDWARE_SYSTEM_HPP_
 #define _HARDWARE_SYSTEM_HPP_
 
+#include "../common_header_files/types.hpp"
+#include "../geometry/latticeGrid.hpp"
 #include "../meta/inputparameters.hpp"
 #include "hardwareParameters.hpp"
 #include "openClKernelParameters.hpp"
-#include "../common_header_files/types.hpp"
-#include "../geometry/latticeGrid.hpp"
 #include "size_4.hpp"
+
 #include <map>
 #include <memory>
 #include <tuple>
@@ -41,73 +42,75 @@
  */
 namespace hardware {
 
-	/**
-	 * @todo merge with other exceptions
-	 */
-	class OpenclException {
-		public:
-			OpenclException(int clerr);
-			OpenclException(int clerr, std::string clname);
-			OpenclException(int clerr, std::string clname, std::string filename, int linenumber);
-			std::string what();
-			int errorCode;
-		private:
-			std::string error_message;
-	};
+    /**
+     * @todo merge with other exceptions
+     */
+    class OpenclException {
+      public:
+        OpenclException(int clerr);
+        OpenclException(int clerr, std::string clname);
+        OpenclException(int clerr, std::string clname, std::string filename, int linenumber);
+        std::string what();
+        int errorCode;
 
-	class Device;
-	class Transfer;
-	class OpenClCode;
+      private:
+        std::string error_message;
+    };
 
-	class System {
+    class Device;
+    class Transfer;
+    class OpenClCode;
 
-	public:
-		/**
-		 * Create a new system representation.
-		 * You should usually only do this once per application.
-		 */
-		System(const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &);
-		System(meta::Inputparameters&); //@todo: only for compatibility, remove!
+    class System {
+      public:
+        /**
+         * Create a new system representation.
+         * You should usually only do this once per application.
+         */
+        System(const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&);
+        System(meta::Inputparameters&);  //@todo: only for compatibility, remove!
 
-		~System();
+        ~System();
 
-		const std::vector<Device*>& get_devices() const noexcept;
-		const meta::Inputparameters& get_inputparameters() const noexcept; //@todo: remove
-		const hardware::HardwareParametersInterface * getHardwareParameters() const noexcept;
-		const hardware::code::OpenClKernelParametersInterface* getOpenClParameters() const noexcept; //needed only in microbenchmarks -> remove!?
+        const std::vector<Device*>& get_devices() const noexcept;
+        const meta::Inputparameters& get_inputparameters() const noexcept;  //@todo: remove
+        const hardware::HardwareParametersInterface* getHardwareParameters() const noexcept;
+        const hardware::code::OpenClKernelParametersInterface* getOpenClParameters() const
+            noexcept;  // needed only in microbenchmarks -> remove!?
 
-		// non-copyable
-		System& operator=(const System&) = delete;
-		System(const System&) = delete;
-		System() = delete;
-		cl_context getContext() const;
+        // non-copyable
+        System& operator=(const System&) = delete;
+        System(const System&)            = delete;
+        System()                         = delete;
+        cl_context getContext() const;
 
-		Transfer * get_transfer(size_t from, size_t to, unsigned id) const;
-		cl_platform_id get_platform() const;
+        Transfer* get_transfer(size_t from, size_t to, unsigned id) const;
+        cl_platform_id get_platform() const;
 
-	private:
-		std::vector<Device*> devices;
-		cl_context context;
-		cl_platform_id platform;
-		LatticeGrid lG;
+      private:
+        std::vector<Device*> devices;
+        cl_context context;
+        cl_platform_id platform;
+        LatticeGrid lG;
 
-		mutable std::map<std::tuple<size_t,size_t,unsigned>,std::unique_ptr<Transfer>> transfer_links;
+        mutable std::map<std::tuple<size_t, size_t, unsigned>, std::unique_ptr<Transfer>> transfer_links;
 
-		void initOpenCLPlatforms();
-		void initOpenCLContext();
-		void initOpenCLDevices();
-		const hardware::HardwareParametersInterface * hardwareParameters;
-		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
-		const hardware::OpenClCode * kernelBuilder;
-		//Remove when dependence on meta::InputParameters has been removed from physics package, for the moment it is needed in tests in physics!!!!
-		const meta::Inputparameters& inputparameters;
-	};
+        void initOpenCLPlatforms();
+        void initOpenCLContext();
+        void initOpenCLDevices();
+        const hardware::HardwareParametersInterface* hardwareParameters;
+        const hardware::code::OpenClKernelParametersInterface* kernelParameters;
+        const hardware::OpenClCode* kernelBuilder;
+        // Remove when dependence on meta::InputParameters has been removed from physics package, for the moment it is
+        // needed in tests in physics!!!!
+        const meta::Inputparameters& inputparameters;
+    };
 
-	/**
-	 * Print the profiling information of kernels on this system on any device.
-	 */
-	void print_profiling(const System& system, const std::string& filenameToWriteTo);
-	void print_profiling(const System* system, const std::string& filenameToWriteTo);
-}
+    /**
+     * Print the profiling information of kernels on this system on any device.
+     */
+    void print_profiling(const System& system, const std::string& filenameToWriteTo);
+    void print_profiling(const System* system, const std::string& filenameToWriteTo);
+}  // namespace hardware
 
 #endif /* _HARDWARE_SYSTEM_HPP_ */

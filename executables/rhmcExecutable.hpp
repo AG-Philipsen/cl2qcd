@@ -27,50 +27,50 @@
 #ifndef RHMCEXECUTABLE_H_
 #define RHMCEXECUTABLE_H_
 
-#include "../physics/algorithms/rhmc.hpp"
 #include "../physics/algorithms/rational_approximation.hpp"
+#include "../physics/algorithms/rhmc.hpp"
 #include "../physics/observables/staggeredChiralCondensate.hpp"
-#include <cmath>
 #include "generationExecutable.hpp"
 
+#include <cmath>
+
 class rhmcExecutable : public generationExecutable {
-public:
-	rhmcExecutable(int argc, const char* argv[]);
-	~rhmcExecutable();
+  public:
+    rhmcExecutable(int argc, const char* argv[]);
+    ~rhmcExecutable();
 
-protected:
-	double acceptanceRate = 0;
-	hmc_observables observables;
+  protected:
+    double acceptanceRate = 0;
+    hmc_observables observables;
 
-	/*
-	 * Sets member variables that control the iterations during
-	 * the generation of gaugefield configurations.
-	 */
-	void setIterationParameters();
+    /*
+     * Sets member variables that control the iterations during
+     * the generation of gaugefield configurations.
+     */
+    void setIterationParameters();
 
-	void printParametersToScreenAndFile();
+    void printParametersToScreenAndFile();
 
-	void writeRhmcLogfile();
+    void writeRhmcLogfile();
 
-	void thermalizeAccordingToSpecificAlgorithm() override;
+    void thermalizeAccordingToSpecificAlgorithm() override;
 
-	void generateAccordingToSpecificAlgorithm() override;
+    void generateAccordingToSpecificAlgorithm() override;
 
-	/**
-	 * Measures RHMC related observables
-	 */
-	void performOnlineMeasurements() override;
+    /**
+     * Measures RHMC related observables
+     */
+    void performOnlineMeasurements() override;
 
-	void printRhmcObservables(const std::string& filename);
+    void printRhmcObservables(const std::string& filename);
 
-	void printRhmcObservablesToFile(const std::string& filename);
+    void printRhmcObservablesToFile(const std::string& filename);
 
-	void printRhmcObservablesToScreen();
+    void printRhmcObservablesToScreen();
 
-private:
-	physics::algorithms::Rational_Approximation *approx_hb, *approx_md, *approx_met;
-	void checkRhmcParameters(const meta::Inputparameters& p);
-
+  private:
+    physics::algorithms::Rational_Approximation *approx_hb, *approx_md, *approx_met;
+    void checkRhmcParameters(const meta::Inputparameters& p);
 };
 
 #endif /* RHMCEXECUTABLE_H_ */

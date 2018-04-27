@@ -26,81 +26,80 @@
 
 #include "../../hardware/system.hpp"
 #include "../algorithms/rational_approximation.hpp"
-#include "util.hpp" //This is to make the template pseudo_randomize friend of this class
+#include "util.hpp"  //This is to make the template pseudo_randomize friend of this class
 
 /**
  * This namespace contains the lattices of the various kind,
  * that is storage of the lattice values as a whole.
  */
 namespace physics {
-namespace lattices {
+    namespace lattices {
 
-/**
- * Representation of a rooted staggeredfield (with eo preconditioning).
- */
-class Rooted_Staggeredfield_eo {
+        /**
+         * Representation of a rooted staggeredfield (with eo preconditioning).
+         */
+        class Rooted_Staggeredfield_eo {
+          public:
+            /**
+             * Construct a rooted staggeredfield based on the input-files of the system
+             */
+            Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&);
+            Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&,
+                                     const physics::algorithms::Rational_Approximation& approx);
 
-public:
-	/**
-	 * Construct a rooted staggeredfield based on the input-files of the system
-	 */
-	Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&);
-	Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&, const physics::algorithms::Rational_Approximation& approx);
+            virtual ~Rooted_Staggeredfield_eo() {}
 
-	virtual ~Rooted_Staggeredfield_eo(){}
+            /**
+             * Staggeredfield_eo cannot be copied
+             */
+            Rooted_Staggeredfield_eo& operator=(const Rooted_Staggeredfield_eo&) = delete;
+            Rooted_Staggeredfield_eo(const Rooted_Staggeredfield_eo&)            = delete;
+            Rooted_Staggeredfield_eo()                                           = delete;
 
-	/**
-	 * Staggeredfield_eo cannot be copied
-	 */
-	Rooted_Staggeredfield_eo& operator=(const Rooted_Staggeredfield_eo&) = delete;
-	Rooted_Staggeredfield_eo(const Rooted_Staggeredfield_eo&) = delete;
-	Rooted_Staggeredfield_eo() = delete;
+            /**
+             * Rescale coefficients on the basis of a Rational_Approximation objects
+             *  @param minEigenvalue The minimum eigenvalue to be used
+             *  @param maxEigenvalue The maximum eigenvalue to be used
+             */
+            void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx,
+                                      const hmc_float minEigenvalue, const hmc_float maxEigenvalue);
 
-    /**
-	 * Rescale coefficients on the basis of a Rational_Approximation objects
-	 *  @param minEigenvalue The minimum eigenvalue to be used
-	 *  @param maxEigenvalue The maximum eigenvalue to be used
-	 */
-	void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const hmc_float minEigenvalue, const hmc_float maxEigenvalue);
+            /**
+             * This method returns the order of the approximation
+             */
+            unsigned int getOrder() const;
+            /**
+             * Method to get the coefficient a0 of the approximation
+             */
+            hmc_float get_a0() const;
+            /**
+             * Method to get the coefficients a of the approximation
+             */
+            std::vector<hmc_float> get_a() const;
+            /**
+             * Method to get the coefficients b of the approximation
+             */
+            std::vector<hmc_float> get_b() const;
 
-	/**
-	 * This method returns the order of the approximation
-	 */
-	unsigned int getOrder() const;
-	/**
-	 * Method to get the coefficient a0 of the approximation
-	 */
-	hmc_float get_a0() const;
-	/**
-	 * Method to get the coefficients a of the approximation
-	 */
-	std::vector<hmc_float> get_a() const;
-	/**
-	 * Method to get the coefficients b of the approximation
-	 */
-	std::vector<hmc_float> get_b() const;
+            /**
+             * This method returns the asked pseudofermion field
+             */
+            const std::unique_ptr<physics::lattices::Staggeredfield_eo>& operator[](unsigned int) const;
 
+            /*
+             * Methods to be able to make range based for loops on Rooted_Staggeredfield_eo objects
+             */
+            std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo>>::iterator begin();
+            std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo>>::const_iterator begin() const;
+            std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo>>::iterator end();
+            std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo>>::const_iterator end() const;
 
-	/**
-     * This method returns the asked pseudofermion field
-     */
-	const std::unique_ptr<physics::lattices::Staggeredfield_eo>& operator[](unsigned int) const;
+          private:
+            std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo>> pseudofermions;
+            physics::algorithms::Rational_Coefficients rationalCoefficients;
+        };
 
-	/*
-	 * Methods to be able to make range based for loops on Rooted_Staggeredfield_eo objects
-	 */
-	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator begin();
-	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::const_iterator begin() const;
-	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator end();
-	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::const_iterator end() const;
-
-private:
-	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> > pseudofermions;
-	physics::algorithms::Rational_Coefficients rationalCoefficients;
-
-};
-
-}
-}
+    }  // namespace lattices
+}  // namespace physics
 
 #endif /*_PHYSICS_LATTICES_ROOTED_STAGGEREDFIELD_EO_ */

@@ -18,22 +18,19 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "su3heatbathBenchmark.hpp"
 
-su3heatbathBenchmark::su3heatbathBenchmark(int argc, const char* argv[]) :
-  benchmarkExecutable(argc, argv)
+su3heatbathBenchmark::su3heatbathBenchmark(int argc, const char* argv[]) : benchmarkExecutable(argc, argv)
 {
-  if(system->get_devices().size() != 1) {
-    logger.fatal() << "There must be exactly one device chosen for the heatbath benchmark to be performed.";
-  }
-  if(! parameters.get_enable_profiling() )
-    {
-      throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
+    if (system->get_devices().size() != 1) {
+        logger.fatal() << "There must be exactly one device chosen for the heatbath benchmark to be performed.";
+    }
+    if (!parameters.get_enable_profiling()) {
+        throw Print_Error_Message("Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
     }
 }
 
 void su3heatbathBenchmark::performBenchmarkForSpecificKernels()
 {
-  physics::algorithms::su3heatbath(*gaugefield, *prng, 1);
+    physics::algorithms::su3heatbath(*gaugefield, *prng, 1);
 }

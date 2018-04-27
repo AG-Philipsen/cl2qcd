@@ -23,14 +23,14 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::fermionmatrix::parametersInterface
-#include <boost/test/unit_test.hpp>
-
 #include "algorithmsParameters.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {
-    const char * _params[] = {"foo"};
-    return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params) );
+    const char* _params[] = {"foo"};
+    return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params));
 }
 
 BOOST_AUTO_TEST_CASE(testSolversParameters)
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(testIntegratorParameters)
     auto params = createDefaultMetaInputparameters();
     physics::algorithms::IntegratorParametersImplementation test(*params);
 
-    for(int i=0; i<3; i++){
+    for (int i = 0; i < 3; i++) {
         BOOST_CHECK_EQUAL(test.getIntegrationSteps(i), params->get_integrationsteps(i));
         BOOST_CHECK_EQUAL(test.getIntegrator(i), params->get_integrator(i));
         BOOST_CHECK_EQUAL(test.getLambda(i), params->get_lambda(i));

@@ -28,12 +28,13 @@
  */
 #ifndef _OPERATIONS_GAUGEFIELDH_
 #define _OPERATIONS_GAUGEFIELDH_
-#include <iostream>
 #include "../common_header_files/globaldefs.hpp"
 #include "../common_header_files/types.hpp"
 #include "../geometry/index.hpp"
 #include "../meta/inputparameters.hpp"
+
 #include <cmath>
+#include <iostream>
 
 /**
  * Calculate the part of the plaquette local to the given coordinates.
@@ -45,7 +46,8 @@
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
-Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const meta::Inputparameters& parameters);
+Matrixsu3
+local_plaquette(Matrixsu3* field, int coord_in[NDIM], int mu, int nu, const meta::Inputparameters& parameters);
 
 /**
  * Returns an SU3 matrix form the gaugefield
@@ -55,7 +57,7 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
  * @param[in] timepos Temporal index of the matrix to retrieve
  * @param[in] mu Direction of the matrix to retrieve
  */
-Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters);
+Matrixsu3 get_matrixsu3(Matrixsu3* in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters);
 
 Matrixsu3 unit_matrixsu3();
 Matrixsu3 nonTrivialSu3Matrix();

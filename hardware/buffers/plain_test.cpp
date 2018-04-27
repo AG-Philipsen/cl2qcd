@@ -22,88 +22,90 @@
  */
 
 #include "plain.hpp"
-#include "../system.hpp"
-#include "../device.hpp"
+
 #include "../../common_header_files/types.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../device.hpp"
 #include "../interfaceMockups.hpp"
+#include "../system.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::Plain
 #include <boost/test/unit_test.hpp>
 
-template<typename T> void test(size_t elems, hardware::Device * device)
+template<typename T>
+void test(size_t elems, hardware::Device* device)
 {
-	using namespace hardware::buffers;
+    using namespace hardware::buffers;
 
-	Plain<T> dummy(elems, device);
-	BOOST_REQUIRE_EQUAL(dummy.get_elements(), elems);
-	BOOST_REQUIRE_EQUAL(dummy.get_bytes(), elems * sizeof(T));
-	const cl_mem * tmp = dummy;
-	BOOST_REQUIRE(tmp);
-	BOOST_REQUIRE(*tmp);
-	BOOST_REQUIRE_EQUAL(device->get_id(), dummy.get_device()->get_id());
+    Plain<T> dummy(elems, device);
+    BOOST_REQUIRE_EQUAL(dummy.get_elements(), elems);
+    BOOST_REQUIRE_EQUAL(dummy.get_bytes(), elems * sizeof(T));
+    const cl_mem* tmp = dummy;
+    BOOST_REQUIRE(tmp);
+    BOOST_REQUIRE(*tmp);
+    BOOST_REQUIRE_EQUAL(device->get_id(), dummy.get_device()->get_id());
 
-	T* in = new T[elems];
-	T* out = new T[elems];
-	fill(in, elems, 1);
-	fill(out, elems, 2);
+    T* in  = new T[elems];
+    T* out = new T[elems];
+    fill(in, elems, 1);
+    fill(out, elems, 2);
 
-	dummy.load(in);
-	dummy.dump(out);
-	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
+    dummy.load(in);
+    dummy.dump(out);
+    BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
 
-	Plain<T> dummy2(elems, device);
-	fill(in, elems, 3);
-	fill(out, elems, 4);
-	dummy.load(in);
-	copyData(&dummy2, &dummy);
-	dummy2.dump(out);
-	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
+    Plain<T> dummy2(elems, device);
+    fill(in, elems, 3);
+    fill(out, elems, 4);
+    dummy.load(in);
+    copyData(&dummy2, &dummy);
+    dummy2.dump(out);
+    BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
 
-	fill(out, elems, 5);
-	hardware::SynchronizationEvent event = dummy2.dump_async(out);
-	event.wait();
-	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
+    fill(out, elems, 5);
+    hardware::SynchronizationEvent event = dummy2.dump_async(out);
+    event.wait();
+    BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
 
-	delete[] in;
-	delete[] out;
+    delete[] in;
+    delete[] out;
 }
 
-template<typename T> void test(bool requireDouble = false)
+template<typename T>
+void test(bool requireDouble = false)
 {
-	using namespace hardware;
+    using namespace hardware;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
-	const std::vector<Device*>& devices = system.get_devices();
-	for(Device * device : devices)
-	{
-		if(!requireDouble || device->is_double_supported()) {
-			test<T>(1, device);
-			test<T>(1024, device);
-		}
-	}
+    const hardware::HardwareParametersMockup hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
+    const std::vector<Device*>& devices = system.get_devices();
+    for (Device* device : devices) {
+        if (!requireDouble || device->is_double_supported()) {
+            test<T>(1, device);
+            test<T>(1024, device);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE(float_buffer)
 {
-	test<float>();
+    test<float>();
 }
 
 BOOST_AUTO_TEST_CASE(double_buffer)
 {
-	test<double>(true);
+    test<double>(true);
 }
 
 BOOST_AUTO_TEST_CASE(hmc_complex_buffer)
 {
-	test<hmc_complex>(true);
+    test<hmc_complex>(true);
 }
 
 BOOST_AUTO_TEST_CASE(SU3_buffer)
 {
-	test<Matrixsu3>(true);
+    test<Matrixsu3>(true);
 }

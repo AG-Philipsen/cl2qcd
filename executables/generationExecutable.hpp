@@ -18,7 +18,6 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @file
  * Declaration of the generationExecutable class.
@@ -28,66 +27,65 @@
 
 #include "generalExecutable.hpp"
 
-class generationExecutable : public generalExecutable
-{
-public:
-	void generateConfigurations();
-	virtual ~generationExecutable(){};
+class generationExecutable : public generalExecutable {
+  public:
+    void generateConfigurations();
+    virtual ~generationExecutable(){};
 
-protected:
-	//Protected since it makes no sense to allow the user to instatiate this class
-	generationExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
+  protected:
+    // Protected since it makes no sense to allow the user to instatiate this class
+    generationExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
 
-	int writeFrequency;
-	int saveFrequency;
+    int writeFrequency;
+    int saveFrequency;
     int savePointFrequency;
-	int thermalizationSteps;
-	int generationSteps;
-	int iteration;
-// 	std::string filenameForGaugeobservables;
+    int thermalizationSteps;
+    int generationSteps;
+    int iteration;
+    // 	std::string filenameForGaugeobservables;
 
-	/**
-	 * Sets member variables that control the iterations during
-	 * the generation of gaugefield configurations.
-	 **/
-	void setIterationParameters();
+    /**
+     * Sets member variables that control the iterations during
+     * the generation of gaugefield configurations.
+     **/
+    void setIterationParameters();
 
-	/**
-	 * Saves current gaugefield configuration to disk if current iteration
-	 * is a multiple of the inputparameter save_frequency or if it is the
-	 * last iteration.
-	 **/
-	void saveGaugefield();
+    /**
+     * Saves current gaugefield configuration to disk if current iteration
+     * is a multiple of the inputparameter save_frequency or if it is the
+     * last iteration.
+     **/
+    void saveGaugefield();
 
-	/**
-	 * Saves current prng configuration to disk if current iteration
-	 * is a multiple of the inputparameter save_frequency or if it is the
-	 * last iteration.
-	 **/
-	void savePrng();
+    /**
+     * Saves current prng configuration to disk if current iteration
+     * is a multiple of the inputparameter save_frequency or if it is the
+     * last iteration.
+     **/
+    void savePrng();
 
-	/**
-	 * Performs thermalization of the physical system according to the algorithm
-	 * specified in the "thermalizeAccordingToSpecificAlgorithm" function.
-	 **/
-	void thermalize();
+    /**
+     * Performs thermalization of the physical system according to the algorithm
+     * specified in the "thermalizeAccordingToSpecificAlgorithm" function.
+     **/
+    void thermalize();
 
-	/**
-	 * Generates a new gauge configuration according to the algorithm
-	 * specified in the "generateAccordingToSpecificAlgorithm" function.
-	 * Performs measurements on this configuration according to the
-	 * function "performOnlineMeasurements".
-	 **/
-	void generate();
+    /**
+     * Generates a new gauge configuration according to the algorithm
+     * specified in the "generateAccordingToSpecificAlgorithm" function.
+     * Performs measurements on this configuration according to the
+     * function "performOnlineMeasurements".
+     **/
+    void generate();
 
-	void virtual thermalizeAccordingToSpecificAlgorithm() = 0;
+    void virtual thermalizeAccordingToSpecificAlgorithm() = 0;
 
-	void virtual generateAccordingToSpecificAlgorithm() = 0;
+    void virtual generateAccordingToSpecificAlgorithm() = 0;
 
-	/**
-	 * Measurements to be performed after each step of configuration generation.
-	 * By default this measures the gauge observables.
-	 * This function can be replaced by a more specific one for each specific algorithm.
-	 */
-	void virtual performOnlineMeasurements();
+    /**
+     * Measurements to be performed after each step of configuration generation.
+     * By default this measures the gauge observables.
+     * This function can be replaced by a more specific one for each specific algorithm.
+     */
+    void virtual performOnlineMeasurements();
 };

@@ -29,28 +29,27 @@
 /**
  * Inverter executable which measures fermionic observables on gaugefield configurations.
  */
-class inverterExecutable : public measurementExecutable
-{
-public:
-	/**
-	 * Constructor.
-	 * Writes Logfile.
-	 */
-	inverterExecutable(int argc, const char* argv[]);
+class inverterExecutable : public measurementExecutable {
+  public:
+    /**
+     * Constructor.
+     * Writes Logfile.
+     */
+    inverterExecutable(int argc, const char* argv[]);
 
-protected:
-	const std::string 	filenameForInverterLogfile = "inverter.log";
-	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
-	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
+  protected:
+    const std::string filenameForInverterLogfile = "inverter.log";
+    std::string filenameForTwoFlavourDoubletChiralCondensateData;
+    std::string filenameForTwoFlavourDoubletCorrelatorData;
 
-	void writeInverterLogfile();
+    void writeInverterLogfile();
 
-	void printParametersToScreenAndFile();
+    void printParametersToScreenAndFile();
 
-	/**
-	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
-	 */
-	void performApplicationSpecificMeasurements();
+    /**
+     * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
+     */
+    void performApplicationSpecificMeasurements();
 };
 
 #endif /* _INVERTERH_ */

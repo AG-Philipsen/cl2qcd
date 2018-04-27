@@ -21,43 +21,42 @@
 #ifndef _HARDWARE_LATTICES_STAGGEREDFIELD_EO_
 #define _HARDWARE_LATTICES_STAGGEREDFIELD_EO_
 
-#include "../system.hpp"
-#include "../buffers/su3vec.hpp"
 #include "../../common_header_files/types_fermions.hpp"
+#include "../buffers/su3vec.hpp"
+#include "../system.hpp"
 
 namespace hardware {
 
-namespace lattices {
+    namespace lattices {
 
-class Staggeredfield_eo {
+        class Staggeredfield_eo {
+          public:
+            Staggeredfield_eo(const hardware::System&);
 
-public:
-	Staggeredfield_eo(const hardware::System&);
+            virtual ~Staggeredfield_eo();
 
-	virtual ~Staggeredfield_eo();
+            /**
+             * Staggeredfield_eo cannot be copied but only move-constructed
+             */
+            Staggeredfield_eo()                         = delete;
+            Staggeredfield_eo(const Staggeredfield_eo&) = delete;
+            Staggeredfield_eo& operator=(const Staggeredfield_eo&) = delete;
+            Staggeredfield_eo(Staggeredfield_eo&&);  // own implementation since class own resources
+            Staggeredfield_eo& operator=(Staggeredfield_eo&&) = delete;
 
-    /**
-     * Staggeredfield_eo cannot be copied but only move-constructed
-     */
-    Staggeredfield_eo() = delete;
-    Staggeredfield_eo(const Staggeredfield_eo&) = delete;
-    Staggeredfield_eo& operator=(const Staggeredfield_eo&) = delete;
-    Staggeredfield_eo(Staggeredfield_eo&&); //own implementation since class own resources
-    Staggeredfield_eo& operator=(Staggeredfield_eo&&) = delete;
+            std::vector<const hardware::buffers::SU3vec*> allocate_buffers();
 
-	std::vector<const hardware::buffers::SU3vec *> allocate_buffers();
+            const std::vector<const hardware::buffers::SU3vec*> get_buffers() const noexcept;
 
-	const std::vector<const hardware::buffers::SU3vec *> get_buffers() const noexcept;
+            void update_halo() const;
 
-	void update_halo() const;
+            void import(const su3vec* const host) const;
 
-	void import(const su3vec * const host) const;
+          private:
+            hardware::System const& system;
+            const std::vector<const hardware::buffers::SU3vec*> buffers;
+        };
 
-private:
-	hardware::System const& system;
-	const std::vector<const hardware::buffers::SU3vec *> buffers;
-};
-
-}
-}
+    }  // namespace lattices
+}  // namespace hardware
 #endif /*_HARDWARE_LATTICES_SPINORFIELD_EO_ */

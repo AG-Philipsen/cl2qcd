@@ -22,27 +22,28 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::parameters
-#include <boost/test/unit_test.hpp>
-
 #include "hardwareParameters.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 {
-	const char * argv []  = {"foo"};
-	meta::Inputparameters fullParameters{1, argv};
-	hardware::HardwareParametersImplementation hardwareParameters( &fullParameters );
+    const char* argv[] = {"foo"};
+    meta::Inputparameters fullParameters{1, argv};
+    hardware::HardwareParametersImplementation hardwareParameters(&fullParameters);
 
-	BOOST_REQUIRE_EQUAL( hardwareParameters.useGpu(), fullParameters.get_use_gpu() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.useCpu() , fullParameters.get_use_cpu() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.splitCpu() , fullParameters.get_split_cpu() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.getMaximalNumberOfDevices() , fullParameters.get_device_count() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.getSelectedDevices().size() , fullParameters.get_selected_devices().size() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.enableProfiling() , fullParameters.get_enable_profiling());
-	BOOST_REQUIRE_EQUAL( hardwareParameters.getNs() , fullParameters.get_nspace() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.getNt() , fullParameters.get_ntime() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.disableOpenCLCompilerOptimizations() , fullParameters.is_ocl_compiler_opt_disabled() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.useSameRandomNumbers() , fullParameters.get_use_same_rnd_numbers() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.useEvenOddPreconditioning() , fullParameters.get_use_eo() );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.getSpatialLatticeVolume(), meta::get_volspace( fullParameters ) );
-	BOOST_REQUIRE_EQUAL( hardwareParameters.getLatticeVolume(), meta::get_vol4d( fullParameters ) );
+    BOOST_REQUIRE_EQUAL(hardwareParameters.useGpu(), fullParameters.get_use_gpu());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.useCpu(), fullParameters.get_use_cpu());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.splitCpu(), fullParameters.get_split_cpu());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.getMaximalNumberOfDevices(), fullParameters.get_device_count());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.getSelectedDevices().size(), fullParameters.get_selected_devices().size());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.enableProfiling(), fullParameters.get_enable_profiling());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.getNs(), fullParameters.get_nspace());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.getNt(), fullParameters.get_ntime());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.disableOpenCLCompilerOptimizations(),
+                        fullParameters.is_ocl_compiler_opt_disabled());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.useSameRandomNumbers(), fullParameters.get_use_same_rnd_numbers());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.useEvenOddPreconditioning(), fullParameters.get_use_eo());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.getSpatialLatticeVolume(), meta::get_volspace(fullParameters));
+    BOOST_REQUIRE_EQUAL(hardwareParameters.getLatticeVolume(), meta::get_vol4d(fullParameters));
 }

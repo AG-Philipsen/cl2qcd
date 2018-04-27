@@ -22,29 +22,30 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /*Right now this file was just created for reasons of general clarity, the full content will follow soon*/
 
 #ifndef STAGGEREDTWOFLAVOURCORRELATORS_HPP_
 #define STAGGEREDTWOFLAVOURCORRELATORS_HPP_
 
-
+#include "../interfacesHandler.hpp"
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
 #include "observablesInterfaces.hpp"
-#include "../interfacesHandler.hpp"
 
-namespace physics{
-	namespace observables{
-		namespace staggered{
+namespace physics {
+    namespace observables {
+        namespace staggered {
 
-		    std::vector<hmc_float> calculatePseudoscalarCorrelator(const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >&,
-		                                                           physics::InterfacesHandler&);
+            std::vector<hmc_float>
+            calculatePseudoscalarCorrelator(const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>,
+                                                            std::vector<physics::lattices::Staggeredfield_eo*>>&,
+                                            physics::InterfacesHandler&);
 
-		    void measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield&, std::string, physics::InterfacesHandler&);
+            void measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield&,
+                                                                         std::string, physics::InterfacesHandler&);
 
-		}
-	}
-}
+        }  // namespace staggered
+    }      // namespace observables
+}  // namespace physics
 
 #endif /* STAGGEREDTWOFLAVOURCORRELATORS_HPP_ */

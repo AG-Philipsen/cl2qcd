@@ -18,21 +18,19 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-# pragma once
+#pragma once
 
-namespace physics
-{
-	class PrngParametersInterface
-	{
-	public:
-		PrngParametersInterface(){};
-		virtual ~PrngParametersInterface(){};
-		virtual uint32_t getHostSeed() const = 0;
-		virtual std::string getInitialPrngStateFilename() const = 0;
-		virtual bool useSameRandomNumbers() const = 0;
-		virtual std::string getNamePrefix() const = 0;
-		virtual std::string getNamePostfix() const = 0;
-		virtual int getNumberOfDigitsInName() const = 0;
-	};
+namespace physics {
+    class PrngParametersInterface {
+      public:
+        PrngParametersInterface(){};
+        virtual ~PrngParametersInterface(){};
+        virtual uint32_t getHostSeed() const                    = 0;
+        virtual std::string getInitialPrngStateFilename() const = 0;
+        virtual bool useSameRandomNumbers() const               = 0;
+        virtual std::string getNamePrefix() const               = 0;
+        virtual std::string getNamePostfix() const              = 0;
+        virtual int getNumberOfDigitsInName() const             = 0;
+    };
 
-}
+}  // namespace physics

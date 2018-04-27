@@ -25,58 +25,57 @@
 
 int meta::ParametersSolver::get_cgmax() const noexcept
 {
-	return cgmax;
+    return cgmax;
 }
 int meta::ParametersSolver::get_cgmax_mp() const noexcept
 {
-	return cgmax_mp;
+    return cgmax_mp;
 }
 
 double meta::ParametersSolver::get_solver_prec() const noexcept
 {
-	return solver_prec;
+    return solver_prec;
 }
 double meta::ParametersSolver::get_force_prec() const noexcept
 {
-	return force_prec;
+    return force_prec;
 }
 int meta::ParametersSolver::get_iter_refresh() const noexcept
 {
-	return iter_refresh;
+    return iter_refresh;
 }
 int meta::ParametersSolver::get_iter_refresh_mp() const noexcept
 {
-	return iter_refresh_mp;
+    return iter_refresh_mp;
 }
 common::solver meta::ParametersSolver::get_solver() const noexcept
 {
-	return _solver;
+    return _solver;
 }
 common::solver meta::ParametersSolver::get_solver_mp() const noexcept
 {
-	return _solver_mp;
+    return _solver_mp;
 }
 
 int meta::ParametersSolver::get_cg_iteration_block_size() const noexcept
 {
-	return cg_iteration_block_size;
+    return cg_iteration_block_size;
 }
 bool meta::ParametersSolver::get_cg_use_async_copy() const noexcept
 {
-	return cg_use_async_copy;
+    return cg_use_async_copy;
 }
 int meta::ParametersSolver::get_cg_minimum_iteration_count() const noexcept
 {
-	return cg_minimum_iteration_count;
+    return cg_minimum_iteration_count;
 }
 
 bool meta::ParametersSolver::get_profile_solver() const noexcept
 {
-	return profile_solver;
+    return profile_solver;
 }
 
-meta::ParametersSolver::ParametersSolver()
-	: options("Solver options")
+meta::ParametersSolver::ParametersSolver() : options("Solver options")
 {
     // clang-format off
 	options.add_options()
@@ -98,12 +97,12 @@ meta::ParametersSolver::ParametersSolver()
 	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
 	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
 	("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!");
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersSolver::~ParametersSolver() = default;
 
-po::options_description & meta::ParametersSolver::getOptions()
+po::options_description& meta::ParametersSolver::getOptions()
 {
-	return options;
+    return options;
 }

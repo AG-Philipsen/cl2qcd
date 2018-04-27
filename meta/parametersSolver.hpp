@@ -27,48 +27,47 @@
 #include "parametersBasic.hpp"
 
 namespace meta {
-class ParametersSolver {
-public:
+    class ParametersSolver {
+      public:
+        common::solver get_solver() const noexcept;
+        common::solver get_solver_mp() const noexcept;
+        double get_solver_prec() const noexcept;
+        double get_force_prec() const noexcept;
+        int get_iter_refresh() const noexcept;
+        int get_iter_refresh_mp() const noexcept;
+        int get_cg_iteration_block_size() const noexcept;
+        bool get_cg_use_async_copy() const noexcept;
+        int get_cg_minimum_iteration_count() const noexcept;
+        int get_cgmax() const noexcept;
+        int get_cgmax_mp() const noexcept;
+        bool get_profile_solver() const noexcept;
 
-	common::solver get_solver() const noexcept;
-	common::solver get_solver_mp() const noexcept;
-	double get_solver_prec() const noexcept;
-	double get_force_prec() const noexcept;
-	int get_iter_refresh() const noexcept;
-	int get_iter_refresh_mp() const noexcept;
-	int get_cg_iteration_block_size() const noexcept;
-	bool get_cg_use_async_copy() const noexcept;
-	int get_cg_minimum_iteration_count() const noexcept;
-	int get_cgmax() const noexcept;
-	int get_cgmax_mp() const noexcept;
-	bool get_profile_solver() const noexcept;
+      private:
+        po::options_description options;
 
-private:
-	po::options_description options;
+        double solver_prec;
+        double force_prec;
+        int iter_refresh;
+        int iter_refresh_mp;
+        int cgmax;
+        int cgmax_mp;
+        int cg_iteration_block_size;
+        bool cg_use_async_copy;
+        int cg_minimum_iteration_count;
+        bool profile_solver;
 
-	double solver_prec;
-	double force_prec;
-	int iter_refresh;
-	int iter_refresh_mp;
-	int cgmax;
-	int cgmax_mp;
-	int cg_iteration_block_size;
-	bool cg_use_async_copy;
-	int cg_minimum_iteration_count;
-	bool profile_solver;
+      protected:
+        ParametersSolver();
+        virtual ~ParametersSolver();
+        ParametersSolver(ParametersSolver const&) = delete;
+        ParametersSolver& operator=(ParametersSolver const&) = delete;
+        po::options_description& getOptions();
 
-protected:
-	ParametersSolver();
-	virtual ~ParametersSolver();
-	ParametersSolver(ParametersSolver const&) = delete;
-	ParametersSolver & operator=(ParametersSolver const&) = delete;
-	po::options_description & getOptions();
+        // at the moment, only 2 solvers are implemented..
+        common::solver _solver;
+        common::solver _solver_mp;
+    };
 
-	//at the moment, only 2 solvers are implemented..
-	common::solver _solver;
-	common::solver _solver_mp;
-};
-
-}
+}  // namespace meta
 
 #endif

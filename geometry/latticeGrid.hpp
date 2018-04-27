@@ -21,25 +21,22 @@
 
 #pragma once
 
-#include "latticeExtents.hpp"
 #include "index.hpp"
+#include "latticeExtents.hpp"
 
-struct LatticeGrid : public LatticeExtents
-{
-	LatticeGrid(const uint numberOfDevices, const LatticeExtents);
+struct LatticeGrid : public LatticeExtents {
+    LatticeGrid(const uint numberOfDevices, const LatticeExtents);
 };
 
-struct LatticeGridIndex : public Index
-{
-	LatticeGridIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeGrid);
+struct LatticeGridIndex : public Index {
+    LatticeGridIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z,
+                     const latticeCoordinate t, const LatticeGrid);
 };
 
-struct LocalLatticeExtents: public LatticeExtents
-{
-	LocalLatticeExtents(const LatticeExtents, const LatticeGrid);
+struct LocalLatticeExtents : public LatticeExtents {
+    LocalLatticeExtents(const LatticeExtents, const LatticeGrid);
 };
 
-struct LocalLatticeMemoryExtents: public LatticeExtents
-{
-	LocalLatticeMemoryExtents(const LatticeGrid, const LocalLatticeExtents, uint);
+struct LocalLatticeMemoryExtents : public LatticeExtents {
+    LocalLatticeMemoryExtents(const LatticeGrid, const LocalLatticeExtents, uint);
 };

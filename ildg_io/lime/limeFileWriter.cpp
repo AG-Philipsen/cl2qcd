@@ -21,86 +21,89 @@
 
 #include "limeFileWriter.hpp"
 
-#include "../../host_functionality/logger.hpp"
-#include <boost/lexical_cast.hpp>
 #include "../../executables/exceptions.hpp"
-//http://www.ridgesolutions.ie/index.php/2013/05/30/boost-link-error-undefined-reference-to-boostfilesystemdetailcopy_file/
+#include "../../host_functionality/logger.hpp"
+
+#include <boost/lexical_cast.hpp>
+// http://www.ridgesolutions.ie/index.php/2013/05/30/boost-link-error-undefined-reference-to-boostfilesystemdetailcopy_file/
 #define BOOST_NO_CXX11_SCOPED_ENUMS
 #include <boost/filesystem.hpp>
 
 LimeFileWriter::LimeFileWriter(std::string filenameIn) : LimeFile_basic(filenameIn)
 {
-	if ( boost::filesystem::exists( filenameIn ) )
-	{
-	  //TODO: It seems that the function boost::filesystem::copy_file gives a linking error in compilation
-	  //      /cm/shared/apps/boost/1.52.0/include/boost/filesystem/operations.hpp:381: undefined reference to `boost::filesystem::detail::copy_file(...)
-	  //      therefore here we rename files and then delete. This should nevertheless fixed!
-	  const std::string backupFilename = filenameIn + "_backup";
-	  if(boost::filesystem::exists(backupFilename))
-	    boost::filesystem::rename(backupFilename, backupFilename + "_tmp");
-	  logger.warn() << "Found existing file of name \"" << filenameIn << "\". Store this to \"" << backupFilename << "\"...";
-	  boost::filesystem::rename( filenameIn, backupFilename);
-	  if(boost::filesystem::exists(backupFilename + "_tmp"))
-	    boost::filesystem::remove(backupFilename + "_tmp");
-	}
+    if (boost::filesystem::exists(filenameIn)) {
+        // TODO: It seems that the function boost::filesystem::copy_file gives a linking error in compilation
+        //      /cm/shared/apps/boost/1.52.0/include/boost/filesystem/operations.hpp:381: undefined reference to
+        //      `boost::filesystem::detail::copy_file(...) therefore here we rename files and then delete. This should
+        //      nevertheless fixed!
+        const std::string backupFilename = filenameIn + "_backup";
+        if (boost::filesystem::exists(backupFilename))
+            boost::filesystem::rename(backupFilename, backupFilename + "_tmp");
+        logger.warn() << "Found existing file of name \"" << filenameIn << "\". Store this to \"" << backupFilename
+                      << "\"...";
+        boost::filesystem::rename(filenameIn, backupFilename);
+        if (boost::filesystem::exists(backupFilename + "_tmp"))
+            boost::filesystem::remove(backupFilename + "_tmp");
+    }
 
-	MB_flag = 1;
-	ME_flag = 1;
-	writtenBytes = 0;
-	writer = NULL;
+    MB_flag      = 1;
+    ME_flag      = 1;
+    writtenBytes = 0;
+    writer       = NULL;
 
-	outputfile = fopen(filename.c_str(), "w");
-	writer = limeCreateWriter(outputfile);
+    outputfile = fopen(filename.c_str(), "w");
+    writer     = limeCreateWriter(outputfile);
 }
 
 void LimeFileWriter::closeLimeFile()
 {
-	fclose(outputfile);
-	limeDestroyWriter(writer);
-	writer = NULL;
-	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
+    fclose(outputfile);
+    limeDestroyWriter(writer);
+    writer = NULL;
+    logger.info() << "  " << (float)((float)(writtenBytes) / 1024 / 1024) << " MBytes were written to the lime file "
+                  << filename;
 }
 
 LimeFileWriter::~LimeFileWriter()
 {
-	if (writer != NULL)
-	{
-		closeLimeFile();
-	}
+    if (writer != NULL) {
+        closeLimeFile();
+    }
 }
 
-void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)
+void writeLimeHeaderToLimeFile(LimeRecordHeader* header, LimeWriter* writer)
 {
-	int returnCode = 0;
+    int returnCode = 0;
 
-	returnCode = limeWriteRecordHeader(header, writer);
-	if ( returnCode != LIME_SUCCESS )
-	{
-		throw Print_Error_Message( "Could not write header to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
-	}
+    returnCode = limeWriteRecordHeader(header, writer);
+    if (returnCode != LIME_SUCCESS) {
+        throw Print_Error_Message("Could not write header to LIME file. Return code: " +
+                                      boost::lexical_cast<std::string>(returnCode),
+                                  __FILE__, __LINE__);
+    }
 }
 
-void LimeFileWriter::writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes, std::string description)
+void LimeFileWriter::writeMemoryToLimeFile(void* memoryPointer, n_uint64_t bytes, std::string description)
 {
-	logger.debug() << "writing \"" + description + "\" to lime file...";
+    logger.debug() << "writing \"" + description + "\" to lime file...";
 
-	n_uint64_t bytesToBeWritten = bytes;
-	int returnCode = 0;
+    n_uint64_t bytesToBeWritten = bytes;
+    int returnCode              = 0;
 
-	LimeRecordHeader * header = limeCreateHeader(this->MB_flag, this->ME_flag, (char*) description.c_str(), bytesToBeWritten);
-	this->ME_flag++;
-	writeLimeHeaderToLimeFile(header, this->writer);
-	limeDestroyHeader(header);
+    LimeRecordHeader* header = limeCreateHeader(this->MB_flag, this->ME_flag, (char*)description.c_str(),
+                                                bytesToBeWritten);
+    this->ME_flag++;
+    writeLimeHeaderToLimeFile(header, this->writer);
+    limeDestroyHeader(header);
 
-	returnCode = limeWriteRecordData( memoryPointer, &bytesToBeWritten, this->writer);
-	if ( returnCode != LIME_SUCCESS )
-	{
-		throw Print_Error_Message( "Could not write to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
-	}
-	else if ( bytesToBeWritten != bytes )
-	{
-		throw Print_Error_Message( "There was an error writing to Lime file...", __FILE__, __LINE__);
-	}
+    returnCode = limeWriteRecordData(memoryPointer, &bytesToBeWritten, this->writer);
+    if (returnCode != LIME_SUCCESS) {
+        throw Print_Error_Message("Could not write to LIME file. Return code: " +
+                                      boost::lexical_cast<std::string>(returnCode),
+                                  __FILE__, __LINE__);
+    } else if (bytesToBeWritten != bytes) {
+        throw Print_Error_Message("There was an error writing to Lime file...", __FILE__, __LINE__);
+    }
 
-	this->writtenBytes += bytesToBeWritten;
+    this->writtenBytes += bytesToBeWritten;
 }

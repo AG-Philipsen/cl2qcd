@@ -26,16 +26,19 @@
 //  - index_alpha: Constant alpha to be used
 //  - out: The output staggered field: alpha*x+y (site by site)
 
-__kernel void saxpy_real_vec_staggered_eoprec(__global const staggeredStorageType * const x, __global const staggeredStorageType * const y, __global const hmc_float * const alpha, const int index_alpha, __global staggeredStorageType * const out)
+__kernel void saxpy_real_vec_staggered_eoprec(__global const staggeredStorageType* const x,
+                                              __global const staggeredStorageType* const y,
+                                              __global const hmc_float* const alpha, const int index_alpha,
+                                              __global staggeredStorageType* const out)
 {
-	int id = get_global_id(0);
-	int global_size = get_global_size(0);
+    int id          = get_global_id(0);
+    int global_size = get_global_size(0);
 
-	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
-		su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
-		su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
-		x_tmp = su3vec_times_real(x_tmp, alpha[index_alpha]);
-		x_tmp = su3vec_acc(y_tmp, x_tmp);
-		put_su3vec_to_field_eo(out, id_mem, x_tmp);
-	}
+    for (int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
+        su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
+        su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
+        x_tmp        = su3vec_times_real(x_tmp, alpha[index_alpha]);
+        x_tmp        = su3vec_acc(y_tmp, x_tmp);
+        put_su3vec_to_field_eo(out, id_mem, x_tmp);
+    }
 }

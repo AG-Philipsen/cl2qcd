@@ -21,92 +21,92 @@
 #ifndef _HARDWARE_LATTICES_SPINORFIELD_EO_
 #define _HARDWARE_LATTICES_SPINORFIELD_EO_
 
-#include "../system.hpp"
-#include "../buffers/spinor.hpp"
-#include "spinorfield.hpp"
-#include "scalar.hpp"
 #include "../../common_header_files/types_fermions.hpp"
-
+#include "../buffers/spinor.hpp"
+#include "../system.hpp"
+#include "scalar.hpp"
+#include "spinorfield.hpp"
 
 namespace hardware {
 
-namespace lattices {
+    namespace lattices {
 
-class Spinorfield_eoHaloUpdate;
+        class Spinorfield_eoHaloUpdate;
 
-class Spinorfield_eo
-{
-	friend Spinorfield_eoHaloUpdate;
+        class Spinorfield_eo {
+            friend Spinorfield_eoHaloUpdate;
 
-public:
+          public:
+            Spinorfield_eo(const hardware::System&);
 
-	Spinorfield_eo(const hardware::System&);
+            Spinorfield_eo& operator=(const Spinorfield_eo&) = delete;
+            Spinorfield_eo(const Spinorfield_eo&)            = delete;
+            Spinorfield_eo()                                 = delete;
 
-	Spinorfield_eo& operator=(const Spinorfield_eo&) = delete;
-	Spinorfield_eo(const Spinorfield_eo&) = delete;
-	Spinorfield_eo() = delete;
+            virtual ~Spinorfield_eo();
 
-	virtual ~Spinorfield_eo();
+            std::vector<const hardware::buffers::Spinor*> allocate_buffers();
+            const std::vector<const hardware::buffers::Spinor*> get_buffers() const noexcept;
 
-	std::vector<const hardware::buffers::Spinor *> allocate_buffers();
-	const std::vector<const hardware::buffers::Spinor *> get_buffers() const noexcept;
+            void mark_halo_dirty() const;
 
-	void mark_halo_dirty() const;
+            void require_halo(unsigned width = 0) const;
 
-	void require_halo(unsigned width = 0) const;
+            Spinorfield_eoHaloUpdate require_halo_async(unsigned width = 0) const;
 
-	Spinorfield_eoHaloUpdate require_halo_async(unsigned width = 0) const;
+            void mark_halo_clean(unsigned width = 0) const;
 
-	void mark_halo_clean(unsigned width = 0) const;
-
-private:
-	hardware::System const& system;
-	const std::vector<const hardware::buffers::Spinor *> buffers;
-	/**
-	 * Unconditionally update the halo.
-	 *
-	 * \param widh Up to which thickness to update the halo. Use 0 to indicate the full halo shall be updated.
-	 */
-	void update_halo(unsigned width = 0) const;
-	Spinorfield_eoHaloUpdate update_halo_async(unsigned width = 0) const;
-	void update_halo_finalize(unsigned width = 0) const;
-	void update_halo_soa(const unsigned width) const;
-	void update_halo_soa_async(const unsigned width) const;
-	void update_halo_soa_finalize(const unsigned width) const;
-	void update_halo_aos() const;
+          private:
+            hardware::System const& system;
+            const std::vector<const hardware::buffers::Spinor*> buffers;
+            /**
+             * Unconditionally update the halo.
+             *
+             * \param widh Up to which thickness to update the halo. Use 0 to indicate the full halo shall be updated.
+             */
+            void update_halo(unsigned width = 0) const;
+            Spinorfield_eoHaloUpdate update_halo_async(unsigned width = 0) const;
+            void update_halo_finalize(unsigned width = 0) const;
+            void update_halo_soa(const unsigned width) const;
+            void update_halo_soa_async(const unsigned width) const;
+            void update_halo_soa_finalize(const unsigned width) const;
+            void update_halo_aos() const;
 #ifdef LAZY_HALO_UPDATES
-	mutable unsigned valid_halo_width;
+            mutable unsigned valid_halo_width;
 #endif
-};
+        };
 
-class Spinorfield_eoHaloUpdate {
-		friend Spinorfield_eo;
-	public:
-		/**
-		 * Complete the halo update.
-		 *
-		 * Access the the halo data happens synchroneous to the default queue of each buffer.
-		 * Therefore commands using the default queue of this buffer can safely operate the halo elements if queued after this call.
-		 *
-		 * Note that depending on the exact transfer methods this might cause data transfer between devices.
-		 */
-		void finalize();
-	private:
-		/**
-		 * Construct the handler object. Only done by Spinorfield_eo.
-		 *
-		 * \param target The Spinorfield_eo on which the update is performed.
-		 * \param reqd_halo_width Width of the updated halo segment.
-		 *        0 indicates that update is finished / has alredy been completed and makes finish() a NOOP.
-		 */
-		Spinorfield_eoHaloUpdate(Spinorfield_eo const & target, unsigned const & reqd_halo_width = 0)
-		 : target(target), reqd_halo_width(reqd_halo_width) {  };
+        class Spinorfield_eoHaloUpdate {
+            friend Spinorfield_eo;
 
-		Spinorfield_eo const & target;
-		unsigned reqd_halo_width;
-};
+          public:
+            /**
+             * Complete the halo update.
+             *
+             * Access the the halo data happens synchroneous to the default queue of each buffer.
+             * Therefore commands using the default queue of this buffer can safely operate the halo elements if queued
+             * after this call.
+             *
+             * Note that depending on the exact transfer methods this might cause data transfer between devices.
+             */
+            void finalize();
 
-}
+          private:
+            /**
+             * Construct the handler object. Only done by Spinorfield_eo.
+             *
+             * \param target The Spinorfield_eo on which the update is performed.
+             * \param reqd_halo_width Width of the updated halo segment.
+             *        0 indicates that update is finished / has alredy been completed and makes finish() a NOOP.
+             */
+            Spinorfield_eoHaloUpdate(Spinorfield_eo const& target, unsigned const& reqd_halo_width = 0)
+                : target(target), reqd_halo_width(reqd_halo_width){};
 
-}
+            Spinorfield_eo const& target;
+            unsigned reqd_halo_width;
+        };
+
+    }  // namespace lattices
+
+}  // namespace hardware
 #endif /* _HARDWARE_LATTICES_SPINORFIELD_EO_ */

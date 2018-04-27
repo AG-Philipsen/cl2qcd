@@ -47,22 +47,23 @@
  *       VOL4D/2 components.
  */
 
-__kernel void D_KS_eo(__global const staggeredStorageType * const restrict in, __global staggeredStorageType * const restrict out, __global const Matrixsu3StorageType * const restrict field, const int evenodd)
+__kernel void D_KS_eo(__global const staggeredStorageType* const restrict in,
+                      __global staggeredStorageType* const restrict out,
+                      __global const Matrixsu3StorageType* const restrict field, const int evenodd)
 {
-	PARALLEL_FOR(id_local, EOPREC_SPINORFIELDSIZE_LOCAL) {
-		st_idx pos = (evenodd == EVEN) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
+    PARALLEL_FOR (id_local, EOPREC_SPINORFIELDSIZE_LOCAL) {
+        st_idx pos = (evenodd == EVEN) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
 
-		su3vec out_tmp = set_su3vec_zero();
-		su3vec out_tmp2;
+        su3vec out_tmp = set_su3vec_zero();
+        su3vec out_tmp2;
 
-		//Non-diagonal part: calc D_KS (here if it is Doe or Deo is automatic
-		//                              thanks to the if above to set pos)
-		for(dir_idx dir = 0; dir < 4; ++dir) {
-			out_tmp2 = D_KS_eo_local(in, field, pos, dir);
-			out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		}
+        // Non-diagonal part: calc D_KS (here if it is Doe or Deo is automatic
+        //                              thanks to the if above to set pos)
+        for (dir_idx dir = 0; dir < 4; ++dir) {
+            out_tmp2 = D_KS_eo_local(in, field, pos, dir);
+            out_tmp  = su3vec_acc(out_tmp, out_tmp2);
+        }
 
-
-		put_su3vec_to_field_eo(out, get_eo_site_idx_from_st_idx(pos), out_tmp);
-	}
+        put_su3vec_to_field_eo(out, get_eo_site_idx_from_st_idx(pos), out_tmp);
+    }
 }

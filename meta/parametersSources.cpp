@@ -25,40 +25,39 @@
 
 int meta::ParametersSources::get_num_sources() const noexcept
 {
-	return num_sources;
+    return num_sources;
 }
 int meta::ParametersSources::get_source_x() const noexcept
 {
-	return source_x;
+    return source_x;
 }
 int meta::ParametersSources::get_source_y() const noexcept
 {
-	return source_y;
+    return source_y;
 }
 int meta::ParametersSources::get_source_z() const noexcept
 {
-	return source_z;
+    return source_z;
 }
 int meta::ParametersSources::get_source_t() const noexcept
 {
-	return source_t;
+    return source_t;
 }
 bool meta::ParametersSources::get_place_sources_on_host() const noexcept
 {
-	return place_sources_on_host;
+    return place_sources_on_host;
 }
 
 common::sourcetypes meta::ParametersSources::get_sourcetype() const noexcept
 {
-	return sourcetype;
+    return sourcetype;
 }
 common::sourcecontents meta::ParametersSources::get_sourcecontent() const noexcept
 {
-	return sourcecontent;
+    return sourcecontent;
 }
 
-meta::ParametersSources::ParametersSources()
-	: options("Source options")
+meta::ParametersSources::ParametersSources() : options("Source options")
 {
     // clang-format off
 	options.add_options()
@@ -70,12 +69,12 @@ meta::ParametersSources::ParametersSources()
 	("source_z", po::value<int>(&source_z)->default_value(0))
 	("source_t", po::value<int>(&source_t)->default_value(0))
 	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersSources::~ParametersSources() = default;
 
-po::options_description & meta::ParametersSources::getOptions()
+po::options_description& meta::ParametersSources::getOptions()
 {
-	return options;
+    return options;
 }

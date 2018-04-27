@@ -27,8 +27,8 @@
 void broadcastMessage_warn(const std::string message);
 void broadcastMessage_fatal(const std::string message);
 void failTest();
-void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System * system);
-bool checkIfNoOpenCLDevicesWereFound( const hardware::OpenclException exception);
+void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System* system);
+bool checkIfNoOpenCLDevicesWereFound(const hardware::OpenclException exception);
 bool checkBoostRuntimeArgumentsForGpuUsage();
 bool checkBoostRuntimeArgumentsForRec12Usage();
-void handleExceptionInTest(hardware::OpenclException & exception);
+void handleExceptionInTest(hardware::OpenclException& exception);

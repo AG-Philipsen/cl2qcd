@@ -23,42 +23,46 @@
 
 #include "prng_buffer.hpp"
 
-hardware::buffers::PRNGBuffer::PRNGBuffer(size_t elems, Device * device)
-	: hardware::buffers::Buffer{elems * sizeof(prng_state_t), device}, elems(elems) {}
+hardware::buffers::PRNGBuffer::PRNGBuffer(size_t elems, Device* device)
+    : hardware::buffers::Buffer{elems * sizeof(prng_state_t), device}, elems(elems)
+{
+}
 
-hardware::buffers::PRNGBuffer::PRNGBuffer(Device * device, const bool useSameRandomNumbers)
-	: hardware::buffers::PRNGBuffer::PRNGBuffer{get_prng_buffer_size(device, useSameRandomNumbers), device} {}
+hardware::buffers::PRNGBuffer::PRNGBuffer(Device* device, const bool useSameRandomNumbers)
+    : hardware::buffers::PRNGBuffer::PRNGBuffer{get_prng_buffer_size(device, useSameRandomNumbers), device}
+{
+}
 
 size_t hardware::buffers::PRNGBuffer::get_elements() const noexcept
 {
-	return elems;
+    return elems;
 }
 
-void hardware::buffers::PRNGBuffer::load(const prng_state_t * array) const
+void hardware::buffers::PRNGBuffer::load(const prng_state_t* array) const
 {
-	Buffer::load(array);
+    Buffer::load(array);
 }
 
-void hardware::buffers::PRNGBuffer::dump(prng_state_t * array) const
+void hardware::buffers::PRNGBuffer::dump(prng_state_t* array) const
 {
-	Buffer::dump(array);
+    Buffer::dump(array);
 }
 
-size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const bool useSameRandomNumbers)
+size_t hardware::buffers::get_prng_buffer_size(const hardware::Device* device, const bool useSameRandomNumbers)
 {
-	if(useSameRandomNumbers) {
-		return 1.;
-	} else {
+    if (useSameRandomNumbers) {
+        return 1.;
+    } else {
 #ifdef USE_PRNG_RANLUX
-		// make num of random states equal to default num of global threads
-		// TODO make this somewhat more automatic (avoid code duplication)
-		if(device->get_device_type() == CL_DEVICE_TYPE_GPU) {
-			return 4 * device->get_preferred_local_thread_num() * device->get_num_compute_units();
-		} else {
-			return device->get_preferred_local_thread_num() * device->get_num_compute_units();
-		}
-#else // USE_PRNG_XXX
-#error No implemented PRNG selected
-#endif // USE_PRNG_XXX
-	}
+        // make num of random states equal to default num of global threads
+        // TODO make this somewhat more automatic (avoid code duplication)
+        if (device->get_device_type() == CL_DEVICE_TYPE_GPU) {
+            return 4 * device->get_preferred_local_thread_num() * device->get_num_compute_units();
+        } else {
+            return device->get_preferred_local_thread_num() * device->get_num_compute_units();
+        }
+#else  // USE_PRNG_XXX
+#    error No implemented PRNG selected
+#endif  // USE_PRNG_XXX
+    }
 }

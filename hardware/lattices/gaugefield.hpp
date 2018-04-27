@@ -21,56 +21,55 @@
 #ifndef _HARDWARE_LATTICES_GAUGEFIELD_
 #define _HARDWARE_LATTICES_GAUGEFIELD_
 
-#include "../system.hpp"
-#include "../buffers/su3.hpp"
 #include "../buffers/plain.hpp"
+#include "../buffers/su3.hpp"
+#include "../system.hpp"
 #include "prng.hpp"
-
 
 namespace hardware {
 
-namespace lattices {
+    namespace lattices {
 
-class Gaugefield
-{
-public:
+        class Gaugefield {
+          public:
+            virtual ~Gaugefield();
 
-	virtual ~Gaugefield();
+            Gaugefield(const hardware::System& system);
 
-	Gaugefield(const hardware::System& system);
+            Gaugefield& operator=(const Gaugefield&) = delete;
+            Gaugefield(const Gaugefield&)            = delete;
+            Gaugefield()                             = delete;
 
-	Gaugefield& operator=(const Gaugefield&) = delete;
-	Gaugefield(const Gaugefield&) = delete;
-	Gaugefield() = delete;
+            const std::vector<const hardware::buffers::SU3*> get_buffers() const noexcept;
+            std::vector<const hardware::buffers::SU3*> allocate_buffers();
+            void release_buffers(std::vector<const hardware::buffers::SU3*>* buffers);
+            void send_gaugefield_to_buffers(const Matrixsu3* const gf_host);
+            void fetch_gaugefield_from_buffers(Matrixsu3* const gf_host);
 
-	const std::vector<const hardware::buffers::SU3 *> get_buffers() const noexcept;
-	std::vector<const hardware::buffers::SU3 *> allocate_buffers();
-	void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers);
-	void send_gaugefield_to_buffers(const Matrixsu3 * const gf_host);
-	void fetch_gaugefield_from_buffers( Matrixsu3 * const gf_host);
+            void update_halo() const;
 
-	void update_halo() const;
+            void set_cold() const;
+            void set_hot() const;
 
-	void set_cold() const;
-	void set_hot() const;
+            void smear(unsigned int smearingSteps);
+            void unsmear();
 
-	void smear(unsigned int smearingSteps);
-	void unsmear();
+          private:
+            hardware::System const& system;
+            std::vector<const hardware::buffers::SU3*> buffers;
+            std::vector<const hardware::buffers::SU3*> unsmeared_buffers;
 
-private:
-	hardware::System const& system;
-	std::vector<const hardware::buffers::SU3 *> buffers;
-	std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
+            void
+            update_halo_soa(std::vector<const hardware::buffers::SU3*> buffers, const hardware::System& system) const;
+            void
+            update_halo_aos(std::vector<const hardware::buffers::SU3*> buffers, const hardware::System& system) const;
 
-	void update_halo_soa(std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system) const;
-	void update_halo_aos(std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system) const;
+            void set_cold(Matrixsu3* field, size_t elems) const;
+            void set_hot(Matrixsu3* field, size_t elems) const;
+        };
 
-	void set_cold(Matrixsu3 * field, size_t elems) const;
-	void set_hot(Matrixsu3 * field, size_t elems) const;
-};
+    }  // namespace lattices
 
-}
-
-}
+}  // namespace hardware
 
 #endif /* _HARDWARE_LATTICES_GAUGEFIELD_ */

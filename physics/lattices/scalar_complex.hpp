@@ -23,22 +23,25 @@
 #ifndef _PHYSICS_LATTICES_SCALAR_COMPLEX_
 #define _PHYSICS_LATTICES_SCALAR_COMPLEX_
 
-#include "scalar.hpp"
 #include "../../common_header_files/types.hpp"
+#include "scalar.hpp"
 
 namespace physics {
 
-namespace lattices {
+    namespace lattices {
 
-void add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right);
-void subtract(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& minuend, const Scalar<hmc_complex>& subtrahend);
-void multiply(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right);
-void divide(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& numerator, const Scalar<hmc_complex>& denominator);
+        void add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right);
+        void subtract(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& minuend,
+                      const Scalar<hmc_complex>& subtrahend);
+        void
+        multiply(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right);
+        void divide(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& numerator,
+                    const Scalar<hmc_complex>& denominator);
 
-void convert(const Scalar<hmc_complex>* dest, const Scalar<hmc_float>& src);
+        void convert(const Scalar<hmc_complex>* dest, const Scalar<hmc_float>& src);
 
-}
+    }  // namespace lattices
 
-}
+}  // namespace physics
 
 #endif /* _PHYSICS_LATTICES_SCALAR_COMPLEX_ */

@@ -18,41 +18,41 @@
  * You should have received a copy of the GNU General Public License
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
-# pragma once
+#pragma once
 
 #include "latticeGrid.hpp"
 
-//todo: introduce similar class which is for Non-Link types (different hypervolume)
-struct TemporalParallelizationHandler
-{
-	TemporalParallelizationHandler(const LatticeGridIndex, const LocalLatticeExtents, const size_t sizeOfElement, const size_t haloSize);
-	latticeIndex getMainPartIndex_destination() const;
-	latticeIndex getFirstHaloIndex_destination() const;
-	latticeIndex getSecondHaloIndex_destination() const;
-	size_t getMainPartSize() const;
-	size_t getHaloPartSize() const ;
-	size_t getMainPartSizeInBytes() const;
-	size_t getHaloPartSizeInBytes() const ;
-	latticeIndex getMainPartIndex_source() const;
-	latticeIndex getFirstHaloPartIndex_source() const;
-	latticeIndex getSecondHaloPartIndex_source() const;
-	virtual latticeSize hyperVolume() const = 0;
-	const LocalLatticeExtents lLE;
-	const LatticeGridIndex lGI;
-	const latticeSize localExtentInSlowestDirection;
-	const latticeSize haloSize;
-	const size_t sizeInBytesPerElement;
-	const Direction slowestDirection;
+// todo: introduce similar class which is for Non-Link types (different hypervolume)
+struct TemporalParallelizationHandler {
+    TemporalParallelizationHandler(const LatticeGridIndex, const LocalLatticeExtents, const size_t sizeOfElement,
+                                   const size_t haloSize);
+    latticeIndex getMainPartIndex_destination() const;
+    latticeIndex getFirstHaloIndex_destination() const;
+    latticeIndex getSecondHaloIndex_destination() const;
+    size_t getMainPartSize() const;
+    size_t getHaloPartSize() const;
+    size_t getMainPartSizeInBytes() const;
+    size_t getHaloPartSizeInBytes() const;
+    latticeIndex getMainPartIndex_source() const;
+    latticeIndex getFirstHaloPartIndex_source() const;
+    latticeIndex getSecondHaloPartIndex_source() const;
+    virtual latticeSize hyperVolume() const = 0;
+    const LocalLatticeExtents lLE;
+    const LatticeGridIndex lGI;
+    const latticeSize localExtentInSlowestDirection;
+    const latticeSize haloSize;
+    const size_t sizeInBytesPerElement;
+    const Direction slowestDirection;
 };
 
-struct TemporalParallelizationHandlerLink : public TemporalParallelizationHandler
-{
-	TemporalParallelizationHandlerLink(const LatticeGridIndex, const LocalLatticeExtents, const size_t sizeOfElement, const size_t haloSize);
-	latticeSize hyperVolume() const override;
+struct TemporalParallelizationHandlerLink : public TemporalParallelizationHandler {
+    TemporalParallelizationHandlerLink(const LatticeGridIndex, const LocalLatticeExtents, const size_t sizeOfElement,
+                                       const size_t haloSize);
+    latticeSize hyperVolume() const override;
 };
 
-struct TemporalParallelizationHandlerNonLink : public TemporalParallelizationHandler
-{
-	TemporalParallelizationHandlerNonLink(const LatticeGridIndex, const LocalLatticeExtents, const size_t sizeOfElement, const size_t haloSize);
-	latticeSize hyperVolume() const override;
+struct TemporalParallelizationHandlerNonLink : public TemporalParallelizationHandler {
+    TemporalParallelizationHandlerNonLink(const LatticeGridIndex, const LocalLatticeExtents, const size_t sizeOfElement,
+                                          const size_t haloSize);
+    latticeSize hyperVolume() const override;
 };

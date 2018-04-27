@@ -23,51 +23,45 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE gaugefield_convert
-#include <boost/test/unit_test.hpp>
-#include "../testUtilities.hpp"
-
-#include "../../../meta/type_ops.hpp" //@todo: move the Matrixsu3 fcts. from here to a different place
-
+#include "../../../meta/type_ops.hpp"  //@todo: move the Matrixsu3 fcts. from here to a different place
 #include "../../interfaceMockups.hpp"
 #include "../GaugefieldTester.hpp"
+#include "../testUtilities.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 void test(const hardware::System& system, const int seed, const LatticeExtents lE)
 {
-	const size_t NUM_ELEMENTS = calculateGaugefieldSize(lE);
-	for(auto device: system.get_devices())
-	{
-		Matrixsu3 * const in = new Matrixsu3[NUM_ELEMENTS];
-		Matrixsu3 * const out = new Matrixsu3[NUM_ELEMENTS];
-		fill(in, NUM_ELEMENTS, seed);
-		fill(out, NUM_ELEMENTS, seed + NUM_ELEMENTS);
-		hardware::buffers::SU3 buffer(NUM_ELEMENTS, device);
+    const size_t NUM_ELEMENTS = calculateGaugefieldSize(lE);
+    for (auto device : system.get_devices()) {
+        Matrixsu3* const in  = new Matrixsu3[NUM_ELEMENTS];
+        Matrixsu3* const out = new Matrixsu3[NUM_ELEMENTS];
+        fill(in, NUM_ELEMENTS, seed);
+        fill(out, NUM_ELEMENTS, seed + NUM_ELEMENTS);
+        hardware::buffers::SU3 buffer(NUM_ELEMENTS, device);
 
-		auto code = device->getGaugefieldCode();
-		code->importGaugefield(&buffer, in);
-		code->exportGaugefield(out, &buffer);
+        auto code = device->getGaugefieldCode();
+        code->importGaugefield(&buffer, in);
+        code->exportGaugefield(out, &buffer);
 
-		BOOST_CHECK_EQUAL_COLLECTIONS(in, in + NUM_ELEMENTS, out, out + NUM_ELEMENTS);
+        BOOST_CHECK_EQUAL_COLLECTIONS(in, in + NUM_ELEMENTS, out, out + NUM_ELEMENTS);
 
-		delete[] in;
-		delete[] out;
-	}
+        delete[] in;
+        delete[] out;
+    }
 }
 
 BOOST_AUTO_TEST_CASE(GAUGEFIELD_CONVERT)
 {
-	LatticeExtents lE{4,4};
-	hardware::HardwareParametersMockup hardwareParameters(lE.getNs(),lE.getNt());
-	hardware::code::OpenClKernelParametersMockup kernelParameters(lE.getNs(),lE.getNt());
-	try
-	{
-		hardware::System system(hardwareParameters, kernelParameters);
-		test(system, 1, lE);
-		test(system, 14, lE);
-		test(system, 21, lE);
-	}
-	catch(hardware::OpenclException & exception)
-	{
-		handleExceptionInTest( exception );
-	}
-
+    LatticeExtents lE{4, 4};
+    hardware::HardwareParametersMockup hardwareParameters(lE.getNs(), lE.getNt());
+    hardware::code::OpenClKernelParametersMockup kernelParameters(lE.getNs(), lE.getNt());
+    try {
+        hardware::System system(hardwareParameters, kernelParameters);
+        test(system, 1, lE);
+        test(system, 14, lE);
+        test(system, 21, lE);
+    } catch (hardware::OpenclException& exception) {
+        handleExceptionInTest(exception);
+    }
 }

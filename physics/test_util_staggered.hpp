@@ -41,8 +41,9 @@
  * class TestGaugefield_stagg {
  *
  *  public:
- *  TestGaugefield_stagg(const hardware::System * system) : system(system), prngParameters( &system->get_inputparameters() ), params(&system->get_inputparameters()),
- *                                                          prng(*system, &prngParameters), gf(*system, params, prng)
+ *  TestGaugefield_stagg(const hardware::System * system) : system(system), prngParameters(
+ * &system->get_inputparameters() ), params(&system->get_inputparameters()), prng(*system, &prngParameters), gf(*system,
+ * params, prng)
  *  {
  *     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
  *     const auto & inputfile = system->get_inputparameters();
@@ -59,7 +60,8 @@
  *   const physics::ParametersPrng_fromMetaInputparameters prngParameters;
  *   const physics::lattices::GaugefieldParametersImplementation params;
  *   physics::PRNG prng;
- *   physics::lattices::Gaugefield gf; //I changed this variable from const to not const to be able to save the conf to a lime file!
+ *   physics::lattices::Gaugefield gf; //I changed this variable from const to not const to be able to save the conf to
+ * a lime file!
  * };
  *
  *
@@ -93,10 +95,10 @@
  * {
  *   std::ostringstream os;
  *   os.precision(16);
- *   os << "(" << m.e00.re << "," << m.e00.im << ") (" << m.e01.re << "," << m.e01.im << ") (" << m.e02.re << "," << m.e02.im << ")\n";
- *   os << "(" << m.e10.re << "," << m.e10.im << ") (" << m.e11.re << "," << m.e11.im << ") (" << m.e12.re << "," << m.e12.im << ")\n";
- *   os << "(" << m.e20.re << "," << m.e20.im << ") (" << m.e21.re << "," << m.e21.im << ") (" << m.e22.re << "," << m.e22.im << ")\n\n";
- *   return os.str();
+ *   os << "(" << m.e00.re << "," << m.e00.im << ") (" << m.e01.re << "," << m.e01.im << ") (" << m.e02.re << "," <<
+ * m.e02.im << ")\n"; os << "(" << m.e10.re << "," << m.e10.im << ") (" << m.e11.re << "," << m.e11.im << ") (" <<
+ * m.e12.re << "," << m.e12.im << ")\n"; os << "(" << m.e20.re << "," << m.e20.im << ") (" << m.e21.re << "," <<
+ * m.e21.im << ") (" << m.e22.re << "," << m.e22.im << ")\n\n"; return os.str();
  * }
  *
  * //
@@ -107,8 +109,8 @@
  * {
  *   std::ostringstream os;
  *   os.precision(16);
- *   os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im << ")\n\n";
- *   return os.str();
+ *   os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im
+ * << ")\n\n"; return os.str();
  * }
  *
  * //Tool to be used in the function print_gaugefield_to_textfile
@@ -184,7 +186,8 @@
  * //
  * //
  * #include "../hardware/code/gaugefield.hpp"
- * void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg * cpu, const meta::Inputparameters & params)
+ * void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg * cpu, const meta::Inputparameters &
+ * params)
  * {
  *   int nt=params.get_ntime();
  *   int ns=params.get_nspace();
@@ -360,16 +363,15 @@
  *   file.close();
  * }
  *
- * void print_staggeredfield_eo_to_textfile(std::string outputfile, const physics::lattices::Staggeredfield_eo* sf, const hardware::System& system)
+ * void print_staggeredfield_eo_to_textfile(std::string outputfile, const physics::lattices::Staggeredfield_eo* sf,
+ * const hardware::System& system)
  * {
  *   const auto & params = system.get_inputparameters();//deprecated
  *   su3vec * out_sf;
- *   size_t NUM_ELEMENTS_SF_EO = 0;//@todo: this does not work anyway because of the fct. above! hardware::code::get_eoprec_spinorfieldsize(params);
- *   out_sf = new su3vec[NUM_ELEMENTS_SF_EO];
- *   auto sf_bufs = sf->get_buffers();
- *   if(sf_bufs.size() > 1){
- *     logger.fatal() << "Print staggeredfield to textfile not implemented for multi device!";
- *     abort();
+ *   size_t NUM_ELEMENTS_SF_EO = 0;//@todo: this does not work anyway because of the fct. above!
+ * hardware::code::get_eoprec_spinorfieldsize(params); out_sf = new su3vec[NUM_ELEMENTS_SF_EO]; auto sf_bufs =
+ * sf->get_buffers(); if(sf_bufs.size() > 1){ logger.fatal() << "Print staggeredfield to textfile not implemented for
+ * multi device!"; abort();
  *   }
  *   sf_bufs[0]->dump(out_sf);
  *   print_staggeredfield_eo_to_textfile(outputfile,out_sf,params);

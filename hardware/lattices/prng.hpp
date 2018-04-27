@@ -21,30 +21,29 @@
 #ifndef _HARDWARE_LATTICES_PRNG_
 #define _HARDWARE_LATTICES_PRNG_
 
-#include "../system.hpp"
 #include "../buffers/prng_buffer.hpp"
+#include "../system.hpp"
 
 namespace hardware {
 
-namespace lattices {
+    namespace lattices {
 
-class PRNG
-{
-public:
-	PRNG(const hardware::System& system, uint32_t seed, bool useSameRandomNumbers);
+        class PRNG {
+          public:
+            PRNG(const hardware::System& system, uint32_t seed, bool useSameRandomNumbers);
 
-	virtual ~PRNG();
-	PRNG& operator=(const PRNG&) = delete;
-	PRNG(const PRNG&) = delete;
-	PRNG() = delete;
+            virtual ~PRNG();
+            PRNG& operator=(const PRNG&) = delete;
+            PRNG(const PRNG&)            = delete;
+            PRNG()                       = delete;
 
-	const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers() const noexcept;
+            const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers() const noexcept;
 
-private:
-	std::vector<const hardware::buffers::PRNGBuffer*> buffers;
-	const hardware::System& system;
-};
-}
+          private:
+            std::vector<const hardware::buffers::PRNGBuffer*> buffers;
+            const hardware::System& system;
+        };
+    }  // namespace lattices
 
-}
+}  // namespace hardware
 #endif /* _HARDWARE_LATTICES_PRNG_ */

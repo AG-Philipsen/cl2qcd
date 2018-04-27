@@ -27,11 +27,11 @@
 
 namespace crypto {
 
-/**
- * Calculate the MD5 of the given string and return its hex representation.
- */
-std::string md5(std::string);
+    /**
+     * Calculate the MD5 of the given string and return its hex representation.
+     */
+    std::string md5(std::string);
 
-}
+}  // namespace crypto
 
 #endif

@@ -17,24 +17,23 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 inline hmc_float update_zeta_cgm_alg(hmc_float a, hmc_float b, hmc_float c, hmc_float d, hmc_float e, hmc_float f)
 {
-	hmc_float out;
-	out = (a * b * c) / (d * e * (b - a) + b * c * (1 - f * d));
-	return out;
+    hmc_float out;
+    out = (a * b * c) / (d * e * (b - a) + b * c * (1 - f * d));
+    return out;
 }
 
 inline hmc_float update_beta_cgm_alg(hmc_float a, hmc_float b, hmc_float c)
 {
-	hmc_float out;
-	out = - a * b / c;
-	return out;
+    hmc_float out;
+    out = -a * b / c;
+    return out;
 }
 
 inline hmc_float update_alpha_cgm_alg(hmc_float a, hmc_float b, hmc_float c, hmc_float d, hmc_float e)
 {
-	hmc_float out;
-	out = - a * b * c / (d * e);
-	return out;
+    hmc_float out;
+    out = -a * b * c / (d * e);
+    return out;
 }

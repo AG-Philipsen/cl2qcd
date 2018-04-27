@@ -27,88 +27,85 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::SU3
-#include <boost/test/unit_test.hpp>
-
-#include "../system.hpp"
-#include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../../meta/util.hpp"
 #include "../interfaceMockups.hpp"
+#include "../system.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	using namespace hardware;
-	using namespace hardware::buffers;
+    using namespace hardware;
+    using namespace hardware::buffers;
 
-	LatticeExtents lE(4,4);
-	const hardware::HardwareParametersMockup hardwareParameters(lE);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-	hardware::System system( hardwareParameters, kernelParameters );
-	for(Device * device : system.get_devices())
-	{
-		SU3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
-		const cl_mem * tmp = dummy;
-		BOOST_CHECK(tmp);
-		BOOST_CHECK(*tmp);
-	}
+    LatticeExtents lE(4, 4);
+    const hardware::HardwareParametersMockup hardwareParameters(lE);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+    hardware::System system(hardwareParameters, kernelParameters);
+    for (Device* device : system.get_devices()) {
+        SU3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
+        const cl_mem* tmp = dummy;
+        BOOST_CHECK(tmp);
+        BOOST_CHECK(*tmp);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(import_export)
 {
-	using namespace hardware;
-	using namespace hardware::buffers;
+    using namespace hardware;
+    using namespace hardware::buffers;
 
-	LatticeExtents lE(4,4);
-	const hardware::HardwareParametersMockup hardwareParameters(lE);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-	hardware::System system( hardwareParameters, kernelParameters );
-	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
-	for(Device * device : system.get_devices())
-	{
-		Matrixsu3* buf(new Matrixsu3[elems]);
-		Matrixsu3* buf2(new Matrixsu3[elems]);
-		SU3 dummy(lE, device);
-		if(dummy.is_soa()) {
-			BOOST_CHECK_THROW(dummy.load(buf), std::logic_error);
-			BOOST_CHECK_THROW(dummy.dump(buf), std::logic_error);
-		} else {
-			fill(buf, elems, 1);
-			fill(buf2, elems, 2);
-			dummy.load(buf);
-			dummy.dump(buf2);
-			BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
-		}
-		delete[] buf;
-		delete[] buf2;
-	}
+    LatticeExtents lE(4, 4);
+    const hardware::HardwareParametersMockup hardwareParameters(lE);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+    hardware::System system(hardwareParameters, kernelParameters);
+    const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
+    for (Device* device : system.get_devices()) {
+        Matrixsu3* buf(new Matrixsu3[elems]);
+        Matrixsu3* buf2(new Matrixsu3[elems]);
+        SU3 dummy(lE, device);
+        if (dummy.is_soa()) {
+            BOOST_CHECK_THROW(dummy.load(buf), std::logic_error);
+            BOOST_CHECK_THROW(dummy.dump(buf), std::logic_error);
+        } else {
+            fill(buf, elems, 1);
+            fill(buf2, elems, 2);
+            dummy.load(buf);
+            dummy.dump(buf2);
+            BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+        }
+        delete[] buf;
+        delete[] buf2;
+    }
 }
 
 BOOST_AUTO_TEST_CASE(copy)
 {
-	using namespace hardware;
-	using namespace hardware::buffers;
+    using namespace hardware;
+    using namespace hardware::buffers;
 
-	LatticeExtents lE(4,4);
-	const hardware::HardwareParametersMockup hardwareParameters(lE);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-	hardware::System system( hardwareParameters, kernelParameters );
-	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
-	for(Device * device : system.get_devices())
-	{
-		if(!check_SU3_for_SOA(device)) {
-			Matrixsu3* buf(new Matrixsu3[elems]);
-			Matrixsu3* buf2(new Matrixsu3[elems]);
-			SU3 dummy(lE, device);
-			SU3 dummy2(lE, device);
+    LatticeExtents lE(4, 4);
+    const hardware::HardwareParametersMockup hardwareParameters(lE);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+    hardware::System system(hardwareParameters, kernelParameters);
+    const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
+    for (Device* device : system.get_devices()) {
+        if (!check_SU3_for_SOA(device)) {
+            Matrixsu3* buf(new Matrixsu3[elems]);
+            Matrixsu3* buf2(new Matrixsu3[elems]);
+            SU3 dummy(lE, device);
+            SU3 dummy2(lE, device);
 
-			fill(buf, elems, 1);
-			fill(buf2, elems, 2);
-			dummy.load(buf);
-			copyData(&dummy2, &dummy);
-			dummy2.dump(buf2);
-			BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+            fill(buf, elems, 1);
+            fill(buf2, elems, 2);
+            dummy.load(buf);
+            copyData(&dummy2, &dummy);
+            dummy2.dump(buf2);
+            BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
 
-			delete[] buf;
-			delete[] buf2;
-		}
-	}
+            delete[] buf;
+            delete[] buf2;
+        }
+    }
 }

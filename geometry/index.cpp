@@ -20,89 +20,108 @@
  */
 
 #include "index.hpp"
+
 #include <stdexcept>
 
-LinkIndex::LinkIndex (const Index indexIn, const Direction dirIn):
-	Index(indexIn), direction(dirIn), globalIndex(direction + NDIM * Index::globalIndex) {}
+LinkIndex::LinkIndex(const Index indexIn, const Direction dirIn)
+    : Index(indexIn), direction(dirIn), globalIndex(direction + NDIM * Index::globalIndex)
+{
+}
 
 LinkIndex::operator uint() const
 {
-	return globalIndex;
+    return globalIndex;
 }
 
 const LinkIndex LinkIndex::up(const Direction dirIn) const
 {
-	return LinkIndex( Index::up(dirIn), direction );
+    return LinkIndex(Index::up(dirIn), direction);
 }
 
 const LinkIndex LinkIndex::down(const Direction dirIn) const
 {
-	return LinkIndex( Index::down(dirIn), direction );
+    return LinkIndex(Index::down(dirIn), direction);
 }
 
 uint LinkIndex::get_su3_idx_ildg_format(const uint n, const uint m)
 {
-	return 2 * n + 2 * m * NC + 2 * NC * NC * globalIndex;
+    return 2 * n + 2 * m * NC + 2 * NC * NC * globalIndex;
 }
 
-Index::Index(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents lE):
-	x(x, lE.xExtent), y(y, lE.yExtent), z(z, lE.zExtent), t(t, lE.tExtent),
-	spatialIndex(x + y*lE.xExtent + z*lE.xExtent*lE.yExtent),
-	globalIndex(spatialIndex + t*lE.getSpatialLatticeVolume()) {}
+Index::Index(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t,
+             const LatticeExtents lE)
+    : x(x, lE.xExtent)
+    , y(y, lE.yExtent)
+    , z(z, lE.zExtent)
+    , t(t, lE.tExtent)
+    , spatialIndex(x + y * lE.xExtent + z * lE.xExtent * lE.yExtent)
+    , globalIndex(spatialIndex + t * lE.getSpatialLatticeVolume())
+{
+}
 
-Index::Index(const size_4 in, const LatticeExtents lE):
-	x(in.x, lE.xExtent), y(in.y, lE.yExtent), z(in.z, lE.zExtent), t(in.t, lE.tExtent),
-	spatialIndex(x + y*lE.xExtent + z*lE.xExtent*lE.yExtent),
-	globalIndex(spatialIndex + t*lE.getSpatialLatticeVolume()) {}
-
+Index::Index(const size_4 in, const LatticeExtents lE)
+    : x(in.x, lE.xExtent)
+    , y(in.y, lE.yExtent)
+    , z(in.z, lE.zExtent)
+    , t(in.t, lE.tExtent)
+    , spatialIndex(x + y * lE.xExtent + z * lE.xExtent * lE.yExtent)
+    , globalIndex(spatialIndex + t * lE.getSpatialLatticeVolume())
+{
+}
 
 Index Index::up(const Direction dir) const
 {
-	LatticeExtents tmp(x.extent, y.extent, z.extent, t.extent);
-	switch(dir)
-	{
-	case XDIR:
-		return Index( x.up(), y, z, t, tmp); break;
+    LatticeExtents tmp(x.extent, y.extent, z.extent, t.extent);
+    switch (dir) {
+        case XDIR:
+            return Index(x.up(), y, z, t, tmp);
+            break;
 
-	case YDIR:
-		return Index( x, y.up(), z, t, tmp); break;
+        case YDIR:
+            return Index(x, y.up(), z, t, tmp);
+            break;
 
-	case ZDIR:
-		return Index( x, y, z.up(), t, tmp); break;
+        case ZDIR:
+            return Index(x, y, z.up(), t, tmp);
+            break;
 
-	case TDIR:
-		return Index( x, y, z, t.up(), tmp); break;
+        case TDIR:
+            return Index(x, y, z, t.up(), tmp);
+            break;
 
-	default:
-		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
-		break;
-	}
+        default:
+            throw std::invalid_argument("Lattice direction must be between 0 and 3!");
+            break;
+    }
 }
 
 Index Index::down(const Direction dir) const
 {
-	LatticeExtents tmp(x.extent, y.extent, z.extent, t.extent);
-	switch(dir)
-	{
-	case XDIR:
-		return Index( x.down(), y, z, t, tmp); break;
+    LatticeExtents tmp(x.extent, y.extent, z.extent, t.extent);
+    switch (dir) {
+        case XDIR:
+            return Index(x.down(), y, z, t, tmp);
+            break;
 
-	case YDIR:
-		return Index( x, y.down(), z, t, tmp); break;
+        case YDIR:
+            return Index(x, y.down(), z, t, tmp);
+            break;
 
-	case ZDIR:
-		return Index( x, y, z.down(), t, tmp); break;
+        case ZDIR:
+            return Index(x, y, z.down(), t, tmp);
+            break;
 
-	case TDIR:
-		return Index( x, y, z, t.down(), tmp); break;
+        case TDIR:
+            return Index(x, y, z, t.down(), tmp);
+            break;
 
-	default:
-		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
-		break;
-	}
+        default:
+            throw std::invalid_argument("Lattice direction must be between 0 and 3!");
+            break;
+    }
 }
 
 Index::operator latticeSize() const
 {
-	return globalIndex;
+    return globalIndex;
 }

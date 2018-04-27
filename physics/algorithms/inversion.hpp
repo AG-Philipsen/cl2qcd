@@ -37,12 +37,13 @@ namespace physics {
          * @param[in] gaugefield Gaugefield on which to base the inversion
          * @param[in] sources Spinorfields from which to start the inversion
          */
-        void perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, const physics::lattices::Gaugefield* gaugefield,
-                               const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
-                               physics::InterfacesHandler& interfacesHandler);
+        void perform_inversion(const std::vector<physics::lattices::Spinorfield*>* result,
+                               const physics::lattices::Gaugefield* gaugefield,
+                               const std::vector<physics::lattices::Spinorfield*>& sources,
+                               const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
 
-    }
+    }  // namespace algorithms
 
-}
+}  // namespace physics
 
 #endif /* _PHYSICS_ALGORITHMS_INVERSION_ */

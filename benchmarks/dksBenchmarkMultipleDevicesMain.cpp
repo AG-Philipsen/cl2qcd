@@ -21,27 +21,27 @@
 #include "../meta/util.hpp"
 int main(int argc, const char* argv[])
 {
-	try {
-	  std::pair<int,std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv, {"--fermact=rooted_stagg"});
-	  dksBenchmark dksBenchmarkInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
-	  dksBenchmarkInstance.benchmarkMultipleDevices();
-	} //try
-	//exceptions from Opencl classes
-	catch (Opencl_Error& e) {
-		logger.fatal() << e.what();
-		exit(1);
-	} catch (File_Exception& fe) {
-		logger.fatal() << "Could not open file: " << fe.get_filename();
-		logger.fatal() << "Aborting.";
-		exit(1);
-	} catch (Print_Error_Message& em) {
-		logger.fatal() << em.what();
-		exit(1);
-	} catch (Invalid_Parameters& es) {
-		logger.fatal() << es.what();
-		exit(1);
-	}
+    try {
+        std::pair<int, std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv,
+                                                                                        {"--fermact=rooted_stagg"});
+        dksBenchmark dksBenchmarkInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
+        dksBenchmarkInstance.benchmarkMultipleDevices();
+    }  // try
+    // exceptions from Opencl classes
+    catch (Opencl_Error& e) {
+        logger.fatal() << e.what();
+        exit(1);
+    } catch (File_Exception& fe) {
+        logger.fatal() << "Could not open file: " << fe.get_filename();
+        logger.fatal() << "Aborting.";
+        exit(1);
+    } catch (Print_Error_Message& em) {
+        logger.fatal() << em.what();
+        exit(1);
+    } catch (Invalid_Parameters& es) {
+        logger.fatal() << es.what();
+        exit(1);
+    }
 
-	return 0;
-
+    return 0;
 }

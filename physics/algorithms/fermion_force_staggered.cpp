@@ -23,8 +23,8 @@
 
 #include "fermion_force_staggered.hpp"
 
-#include "solver_shifted.hpp"
 #include "../../hardware/code/molecular_dynamics.hpp"
+#include "solver_shifted.hpp"
 
 /**
  * This function reconstructs the fermionic contribution to the force (in the RHMC). Now, here
@@ -80,36 +80,46 @@
  *            because chem_pot_im is included in the kernel. See force_staggered_fermion_eo.cl
  *            file documentation for further information.
  */
-void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-        const physics::AdditionalParameters& additionalParameters)
+void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta* force,
+                                             const physics::lattices::Gaugefield& gf,
+                                             const physics::lattices::Rooted_Staggeredfield_eo& phi,
+                                             const hardware::System& system,
+                                             physics::InterfacesHandler& interfacesHandler,
+                                             const physics::AdditionalParameters& additionalParameters)
 {
     using physics::lattices::Staggeredfield_eo;
     using namespace physics::algorithms::solvers;
     using namespace physics::fermionmatrix;
 
-    const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
+    const physics::algorithms::ForcesParametersInterface& parametersInterface = interfacesHandler
+                                                                                    .getForcesParametersInterface();
     logger.debug() << "\t\tcalc_fermion_force...";
 
-    for(const auto& phi_j : phi){
+    for (const auto& phi_j : phi) {
         logger.debug() << "\t\t\tstart solver";
-        std::vector<std::shared_ptr<Staggeredfield_eo> > X;
-        std::vector<std::shared_ptr<Staggeredfield_eo> > Y;
-        for(unsigned int i = 0; i < phi.getOrder(); i++) {
-            X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-            Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+        std::vector<std::shared_ptr<Staggeredfield_eo>> X;
+        std::vector<std::shared_ptr<Staggeredfield_eo>> Y;
+        for (unsigned int i = 0; i < phi.getOrder(); i++) {
+            X.emplace_back(
+                std::make_shared<Staggeredfield_eo>(system, interfacesHandler
+                                                                .getInterface<physics::lattices::Staggeredfield_eo>()));
+            Y.emplace_back(
+                std::make_shared<Staggeredfield_eo>(system, interfacesHandler
+                                                                .getInterface<physics::lattices::Staggeredfield_eo>()));
         }
         const MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-        cg_m(X, fm, gf, phi.get_b(), *phi_j, system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
+        cg_m(X, fm, gf, phi.get_b(), *phi_j, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+             additionalParameters);
         logger.debug() << "\t\t\t  end solver";
 
-        //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
-        //reconstruct the force. I will use a temporary Gaugemomenta to calculate the
-        //partial force (on the whole lattice) that will be later added to "force"
-        const D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
+        // Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
+        // reconstruct the force. I will use a temporary Gaugemomenta to calculate the
+        // partial force (on the whole lattice) that will be later added to "force"
+        const D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(),
+                          ODD);  // with ODD it is the Doe operator
         physics::lattices::Gaugemomenta tmp(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
-        for(unsigned int i = 0; i < phi.getOrder(); i++) {
+        for (unsigned int i = 0; i < phi.getOrder(); i++) {
             Doe(Y[i].get(), gf, *X[i]);
             tmp.zero();
             fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
@@ -121,39 +131,46 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     logger.debug() << "\t\t...end calc_fermion_force!";
 }
 
-void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
-        const physics::AdditionalParameters& additionalParameters)
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta* force,
+                                              const physics::lattices::Gaugefield& gf,
+                                              const physics::lattices::Rooted_Staggeredfield_eo& phi,
+                                              const hardware::System& system,
+                                              physics::InterfacesHandler& interfaceHandler,
+                                              const physics::AdditionalParameters& additionalParameters)
 {
     using physics::lattices::Gaugefield;
     using namespace physics::algorithms;
 
     calc_fermion_force(force, gf, phi, system, interfaceHandler, additionalParameters);
 
-    const physics::algorithms::ForcesParametersInterface & parametersInterface = interfaceHandler.getForcesParametersInterface();
-    if(parametersInterface.getUseSmearing() == true) {
+    const physics::algorithms::ForcesParametersInterface& parametersInterface = interfaceHandler
+                                                                                    .getForcesParametersInterface();
+    if (parametersInterface.getUseSmearing() == true) {
         throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
     }
 }
 
-void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Staggeredfield_eo& A,
-        const physics::lattices::Staggeredfield_eo& B, const physics::lattices::Gaugefield& gf, const int evenodd)
+void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta* const gm,
+                                        const physics::lattices::Staggeredfield_eo& A,
+                                        const physics::lattices::Staggeredfield_eo& B,
+                                        const physics::lattices::Gaugefield& gf, const int evenodd)
 {
-    auto gm_bufs = gm->get_buffers();
-    auto A_bufs = A.get_buffers();
-    auto B_bufs = B.get_buffers();
-    auto gf_bufs = gf.get_buffers();
+    auto gm_bufs    = gm->get_buffers();
+    auto A_bufs     = A.get_buffers();
+    auto B_bufs     = B.get_buffers();
+    auto gf_bufs    = gf.get_buffers();
     size_t num_bufs = gm_bufs.size();
-    if(num_bufs != A_bufs.size() || num_bufs != B_bufs.size() || num_bufs != gf_bufs.size()) {
-        throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
+    if (num_bufs != A_bufs.size() || num_bufs != B_bufs.size() || num_bufs != gf_bufs.size()) {
+        throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__,
+                                  __LINE__);
     }
 
     for (size_t i = 0; i < num_bufs; ++i) {
         auto gm_buf = gm_bufs[i];
-        auto A_buf = A_bufs[i];
-        auto B_buf = B_bufs[i];
+        auto A_buf  = A_bufs[i];
+        auto B_buf  = B_bufs[i];
         auto gf_buf = gf_bufs[i];
-        auto code = gm_buf->get_device()->getMolecularDynamicsCode();
+        auto code   = gm_buf->get_device()->getMolecularDynamicsCode();
         code->fermion_staggered_partial_force_device(gf_buf, A_buf, B_buf, gm_buf, evenodd);
     }
     gm->update_halo();

@@ -24,7 +24,7 @@
 
 int meta::ParametersIo::get_writefrequency() const noexcept
 {
-	return writefrequency;
+    return writefrequency;
 }
 int meta::ParametersIo::get_savefrequency() const noexcept
 {
@@ -37,120 +37,119 @@ int meta::ParametersIo::get_savepointfrequency() const noexcept
 
 int meta::ParametersIo::get_config_number_digits() const noexcept
 {
-	return config_number_digits;
+    return config_number_digits;
 }
 
 std::string meta::ParametersIo::get_profiling_data_prefix() const noexcept
 {
-	return profiling_data_prefix;
+    return profiling_data_prefix;
 }
 
 std::string meta::ParametersIo::get_profiling_data_postfix() const noexcept
 {
-	return profiling_data_postfix;
+    return profiling_data_postfix;
 }
 
 std::string meta::ParametersIo::get_prng_prefix() const noexcept
 {
-	return prng_prefix;
+    return prng_prefix;
 }
 
 std::string meta::ParametersIo::get_prng_postfix() const noexcept
 {
-	return prng_postfix;
+    return prng_postfix;
 }
 
 std::string meta::ParametersIo::get_config_prefix() const noexcept
 {
-	return config_prefix;
+    return config_prefix;
 }
 
 std::string meta::ParametersIo::get_config_postfix() const noexcept
 {
-	return config_postfix;
+    return config_postfix;
 }
 
 std::string meta::ParametersIo::get_ferm_obs_corr_prefix() const noexcept
 {
-	return ferm_obs_corr_prefix;
+    return ferm_obs_corr_prefix;
 }
 
 std::string meta::ParametersIo::get_ferm_obs_corr_postfix() const noexcept
 {
-	return ferm_obs_corr_postfix;
+    return ferm_obs_corr_postfix;
 }
 
 std::string meta::ParametersIo::get_ferm_obs_pbp_prefix() const noexcept
 {
-	return ferm_obs_pbp_prefix;
+    return ferm_obs_pbp_prefix;
 }
 
 std::string meta::ParametersIo::get_ferm_obs_pbp_postfix() const noexcept
 {
-	return ferm_obs_pbp_postfix;
+    return ferm_obs_pbp_postfix;
 }
 
 std::string meta::ParametersIo::get_gauge_obs_prefix() const noexcept
 {
-	return gauge_obs_prefix;
+    return gauge_obs_prefix;
 }
 
 std::string meta::ParametersIo::get_gauge_obs_postfix() const noexcept
 {
-	return gauge_obs_postfix;
+    return gauge_obs_postfix;
 }
 
 bool meta::ParametersIo::get_ferm_obs_to_single_file() const noexcept
 {
-	return ferm_obs_to_single_file;
+    return ferm_obs_to_single_file;
 }
 
 bool meta::ParametersIo::get_gauge_obs_to_single_file() const noexcept
 {
-	return gauge_obs_to_single_file;
+    return gauge_obs_to_single_file;
 }
 
 std::string meta::ParametersIo::get_hmc_obs_prefix() const noexcept
 {
-	return hmc_obs_prefix;
+    return hmc_obs_prefix;
 }
 
 std::string meta::ParametersIo::get_hmc_obs_postfix() const noexcept
 {
-	return hmc_obs_postfix;
+    return hmc_obs_postfix;
 }
 
 bool meta::ParametersIo::get_hmc_obs_to_single_file() const noexcept
 {
-	return hmc_obs_to_single_file;
+    return hmc_obs_to_single_file;
 }
 
 std::string meta::ParametersIo::get_rhmc_obs_prefix() const noexcept
 {
-	return rhmc_obs_prefix;
+    return rhmc_obs_prefix;
 }
 
 std::string meta::ParametersIo::get_rhmc_obs_postfix() const noexcept
 {
-	return rhmc_obs_postfix;
+    return rhmc_obs_postfix;
 }
 
 bool meta::ParametersIo::get_rhmc_obs_to_single_file() const noexcept
 {
-	return rhmc_obs_to_single_file;
+    return rhmc_obs_to_single_file;
 }
 
 std::string meta::ParametersIo::get_rectanglesFilename() const noexcept
 {
-	return rectanglesFilename;
+    return rectanglesFilename;
 }
 std::string meta::ParametersIo::get_transportcoefficientKappaFilename() const noexcept
 {
-	return transportcoefficientKappaFilename;
+    return transportcoefficientKappaFilename;
 }
 
-meta::ParametersIo::ParametersIo()
-	: options("IO options")
+meta::ParametersIo::ParametersIo() : options("IO options")
 {
     // clang-format off
 	options.add_options()
@@ -180,12 +179,12 @@ meta::ParametersIo::ParametersIo()
 	("rhmc_obs_to_single_file", po::value<bool>(&rhmc_obs_to_single_file)->default_value(true), "Save rhmc observables to one single file")
 	("rhmc_obs_prefix", po::value<std::string>(&rhmc_obs_prefix)->default_value("rhmc_output"), "Prefix for rhmc observables file")
 	("rhmc_obs_postfix", po::value<std::string>(&rhmc_obs_postfix)->default_value(""), "Postfix for rhmc observables file");
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersIo::~ParametersIo() = default;
 
-po::options_description & meta::ParametersIo::getOptions()
+po::options_description& meta::ParametersIo::getOptions()
 {
-	return options;
+    return options;
 }

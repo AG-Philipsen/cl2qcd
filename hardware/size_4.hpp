@@ -26,19 +26,19 @@
 #include <ostream>
 
 struct size_4 {
-	unsigned x, y, z, t;
+    unsigned x, y, z, t;
 
-	size_4(unsigned x, unsigned y, unsigned z, unsigned t) : x(x), y(y), z(z), t(t) { };
-
+    size_4(unsigned x, unsigned y, unsigned z, unsigned t) : x(x), y(y), z(z), t(t){};
 };
 
 inline std::ostream& operator<<(std::ostream& os, const size_4& data)
 {
-	return os << '(' << data.x << ", " << data.y << ", " << data.z << ", " << data.t << ')';
+    return os << '(' << data.x << ", " << data.y << ", " << data.z << ", " << data.t << ')';
 }
 
-inline unsigned get_vol4d(size_4 data) {
-	return data.x * data.y * data.z * data.t;
+inline unsigned get_vol4d(size_4 data)
+{
+    return data.x * data.y * data.z * data.t;
 }
 
 #endif /* _META_SIZE_4_HPP */

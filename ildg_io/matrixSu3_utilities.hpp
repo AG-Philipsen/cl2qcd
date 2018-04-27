@@ -23,23 +23,22 @@
 #ifndef _MATRIXSU3UTILITIES_HPP_
 #define _MATRIXSU3UTILITIES_HPP_
 
-#include "../common_header_files/types.hpp"
 #include "../common_header_files/operations_complex.hpp"
+#include "../common_header_files/types.hpp"
 
 #include <vector>
 
-namespace Matrixsu3_utilities
-{
-	enum FillType {ZERO, ONE, DIAGONAL, RANDOM, FILLED};
+namespace Matrixsu3_utilities {
+    enum FillType { ZERO, ONE, DIAGONAL, RANDOM, FILLED };
 
-	void fillMatrixSu3Array_constantMatrix(std::vector<Matrixsu3> & in, FillType fillType);
-	void fillMatrixSu3Array_randomMatrix(std::vector<Matrixsu3> & in);
-	hmc_complex sumUpAllMatrixElements(const std::vector<Matrixsu3> & in);
-	hmc_complex sumUpDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
-	hmc_complex sumUpOffDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
-	Matrixsu3 getUnitMatrix();
-	Matrixsu3 getZeroMatrix();
-	Matrixsu3 getFilledMatrix();
-}
+    void fillMatrixSu3Array_constantMatrix(std::vector<Matrixsu3>& in, FillType fillType);
+    void fillMatrixSu3Array_randomMatrix(std::vector<Matrixsu3>& in);
+    hmc_complex sumUpAllMatrixElements(const std::vector<Matrixsu3>& in);
+    hmc_complex sumUpDiagonalMatrixElements(const std::vector<Matrixsu3>& in);
+    hmc_complex sumUpOffDiagonalMatrixElements(const std::vector<Matrixsu3>& in);
+    Matrixsu3 getUnitMatrix();
+    Matrixsu3 getZeroMatrix();
+    Matrixsu3 getFilledMatrix();
+}  // namespace Matrixsu3_utilities
 
 #endif

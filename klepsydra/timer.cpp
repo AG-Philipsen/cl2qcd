@@ -51,7 +51,7 @@ using namespace klepsydra;
 
 uint64_t Timer::getTimeAndReset()
 {
-	uint64_t time = this->getTime();
-	this->reset();
-	return time;
+    uint64_t time = this->getTime();
+    this->reset();
+    return time;
 }

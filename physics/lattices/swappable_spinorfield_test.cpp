@@ -26,45 +26,45 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::lattice::SwappableSpinorfield
-#include <boost/test/unit_test.hpp>
-
-#include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	using namespace physics::lattices;
+    using namespace physics::lattices;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+    const char* _params[] = {"foo"};
+    meta::Inputparameters params(1, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
-	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	logger.debug() << "Devices: " << system.get_devices().size();
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+    logger.debug() << "Devices: " << system.get_devices().size();
 
-	SwappableSpinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+    SwappableSpinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 }
 
 BOOST_AUTO_TEST_CASE(swap)
 {
-	using namespace physics::lattices;
+    using namespace physics::lattices;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+    const char* _params[] = {"foo"};
+    meta::Inputparameters params(1, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
-	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	logger.debug() << "Devices: " << system.get_devices().size();
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+    logger.debug() << "Devices: " << system.get_devices().size();
 
-	SwappableSpinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
-	BOOST_REQUIRE_LT(0, sf.get_buffers().size());
+    SwappableSpinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+    BOOST_REQUIRE_LT(0, sf.get_buffers().size());
 
-	sf.swap_out();
-	BOOST_REQUIRE_EQUAL(0, sf.get_buffers().size());
+    sf.swap_out();
+    BOOST_REQUIRE_EQUAL(0, sf.get_buffers().size());
 
-	sf.swap_in();
-	BOOST_REQUIRE_LT(0, sf.get_buffers().size());
+    sf.swap_in();
+    BOOST_REQUIRE_LT(0, sf.get_buffers().size());
 }

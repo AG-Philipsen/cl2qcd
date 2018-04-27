@@ -24,66 +24,67 @@
 #pragma once
 
 #include "../../common_header_files/types.hpp"
+
 #include <string>
 
 namespace physics {
     namespace lattices {
 
         class GaugefieldParametersInterface {
-            public:
-                virtual ~GaugefieldParametersInterface(){}
-                virtual unsigned getNs() const = 0;
-                virtual unsigned getNt() const = 0;
-                virtual unsigned getPrecision() const = 0;
-                virtual bool ignoreChecksumErrorsInIO() const = 0;
-                virtual unsigned getNumberOfElements() const = 0;
-                virtual double getKappa() const = 0;
-                virtual double getMu() const = 0;
-                virtual double getBeta() const = 0;
-                virtual common::startcondition getStartcondition() const = 0;
-                virtual std::string getNamePrefix() const = 0;
-                virtual std::string getNamePostfix() const = 0;
-                virtual unsigned getNumberOfDigitsInName() const = 0;
-                virtual unsigned getSmearingSteps() const = 0;
-                virtual std::string getSourcefileName() const = 0;
+          public:
+            virtual ~GaugefieldParametersInterface() {}
+            virtual unsigned getNs() const                           = 0;
+            virtual unsigned getNt() const                           = 0;
+            virtual unsigned getPrecision() const                    = 0;
+            virtual bool ignoreChecksumErrorsInIO() const            = 0;
+            virtual unsigned getNumberOfElements() const             = 0;
+            virtual double getKappa() const                          = 0;
+            virtual double getMu() const                             = 0;
+            virtual double getBeta() const                           = 0;
+            virtual common::startcondition getStartcondition() const = 0;
+            virtual std::string getNamePrefix() const                = 0;
+            virtual std::string getNamePostfix() const               = 0;
+            virtual unsigned getNumberOfDigitsInName() const         = 0;
+            virtual unsigned getSmearingSteps() const                = 0;
+            virtual std::string getSourcefileName() const            = 0;
         };
 
         class GaugemomentaParametersInterface {
-            public:
-                virtual ~GaugemomentaParametersInterface(){}
-                virtual unsigned getNs() const = 0;
-                virtual unsigned getNt() const = 0;
-                virtual unsigned getNumberOfElements() const = 0;
+          public:
+            virtual ~GaugemomentaParametersInterface() {}
+            virtual unsigned getNs() const               = 0;
+            virtual unsigned getNt() const               = 0;
+            virtual unsigned getNumberOfElements() const = 0;
         };
 
         class SpinorfieldParametersInterface {
-            public:
-                virtual ~SpinorfieldParametersInterface(){}
-                virtual unsigned getNs() const = 0;
-                virtual unsigned getNt() const = 0;
-                virtual unsigned getNumberOfElements() const = 0;
+          public:
+            virtual ~SpinorfieldParametersInterface() {}
+            virtual unsigned getNs() const               = 0;
+            virtual unsigned getNt() const               = 0;
+            virtual unsigned getNumberOfElements() const = 0;
         };
 
         class SpinorfieldEoParametersInterface {
-            public:
-                virtual ~SpinorfieldEoParametersInterface() = 0;
+          public:
+            virtual ~SpinorfieldEoParametersInterface() = 0;
         };
-        //Pure virtual destructors must be implemented outside the class! (inline for multiple inclusion of header)
-        inline SpinorfieldEoParametersInterface::~SpinorfieldEoParametersInterface(){}
+        // Pure virtual destructors must be implemented outside the class! (inline for multiple inclusion of header)
+        inline SpinorfieldEoParametersInterface::~SpinorfieldEoParametersInterface() {}
 
         class StaggeredfieldEoParametersInterface {
-            public:
-                virtual ~StaggeredfieldEoParametersInterface(){}
-                virtual unsigned getNumberOfElements() const = 0;
+          public:
+            virtual ~StaggeredfieldEoParametersInterface() {}
+            virtual unsigned getNumberOfElements() const = 0;
         };
 
         class RootedStaggeredfieldEoParametersInterface : public StaggeredfieldEoParametersInterface {
-            public:
-                virtual ~RootedStaggeredfieldEoParametersInterface(){}
-                virtual unsigned getMetropolisRationalApproximationOrder() const = 0;
-                virtual unsigned getMolecularDynamicsRationalApproximationOrder() const = 0;
-                virtual unsigned getNumberOfPseudofermions() const = 0;
+          public:
+            virtual ~RootedStaggeredfieldEoParametersInterface() {}
+            virtual unsigned getMetropolisRationalApproximationOrder() const        = 0;
+            virtual unsigned getMolecularDynamicsRationalApproximationOrder() const = 0;
+            virtual unsigned getNumberOfPseudofermions() const                      = 0;
         };
 
-    }
-}
+    }  // namespace lattices
+}  // namespace physics

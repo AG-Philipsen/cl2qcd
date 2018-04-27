@@ -66,22 +66,22 @@
  */
 int get_staggered_phase(const int n, const int dir)
 {
-	coord_spatial coord = get_coord_spatial(n);
-	switch(dir) {
-// 		case XDIR:
-// 			return 1;
-		case YDIR:
-			return 1-2*((coord.x)%2);
-		case ZDIR:
-			return 1-2*((coord.x+coord.y)%2);
-		case TDIR:
-			//if(t!=(NTIME-1))
-			return 1-2*((coord.x+coord.y+coord.z)%2);
-			//else
-			//return -(1-2*((coord.x+coord.y+coord.z)%2));
-		default:
-			return 1;
-	}
+    coord_spatial coord = get_coord_spatial(n);
+    switch (dir) {
+            // 		case XDIR:
+            // 			return 1;
+        case YDIR:
+            return 1 - 2 * ((coord.x) % 2);
+        case ZDIR:
+            return 1 - 2 * ((coord.x + coord.y) % 2);
+        case TDIR:
+            // if(t!=(NTIME-1))
+            return 1 - 2 * ((coord.x + coord.y + coord.z) % 2);
+            // else
+            // return -(1-2*((coord.x+coord.y+coord.z)%2));
+        default:
+            return 1;
+    }
 }
 
 /**
@@ -92,64 +92,61 @@ int get_staggered_phase(const int n, const int dir)
  */
 hmc_complex get_modified_stagg_phase(const int n, const int dir)
 {
-	coord_spatial coord = get_coord_spatial(n);
-	hmc_complex out;
+    coord_spatial coord = get_coord_spatial(n);
+    hmc_complex out;
 
-	out.re = (dir==XDIR)*(1.*SPATIAL_RE) +
-		 (dir==YDIR)*((1-2.*((coord.x)%2))*SPATIAL_RE) +
-		 (dir==ZDIR)*((1-2.*((coord.x+coord.y)%2))*SPATIAL_RE) +
-		 (dir==TDIR)*((1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE);
-	out.im = (dir==XDIR)*(1.*SPATIAL_IM) +
-		 (dir==YDIR)*((1-2.*((coord.x)%2))*SPATIAL_IM) +
-		 (dir==ZDIR)*((1-2.*((coord.x+coord.y)%2))*SPATIAL_IM) +
-		 (dir==TDIR)*((1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM);
+    out.re = (dir == XDIR) * (1. * SPATIAL_RE) + (dir == YDIR) * ((1 - 2. * ((coord.x) % 2)) * SPATIAL_RE) +
+             (dir == ZDIR) * ((1 - 2. * ((coord.x + coord.y) % 2)) * SPATIAL_RE) +
+             (dir == TDIR) * ((1 - 2. * ((coord.x + coord.y + coord.z) % 2)) * TEMPORAL_RE);
+    out.im = (dir == XDIR) * (1. * SPATIAL_IM) + (dir == YDIR) * ((1 - 2. * ((coord.x) % 2)) * SPATIAL_IM) +
+             (dir == ZDIR) * ((1 - 2. * ((coord.x + coord.y) % 2)) * SPATIAL_IM) +
+             (dir == TDIR) * ((1 - 2. * ((coord.x + coord.y + coord.z) % 2)) * TEMPORAL_IM);
 
-	/*
-	if(dir==XDIR){
-	  out.re = 1.*SPATIAL_RE;
-	  out.im = 1.*SPATIAL_IM;
-	  return out;
-	}
-	if(dir==YDIR){
-	  out.re = (1-2.*((coord.x)%2))*SPATIAL_RE;
-	  out.im = (1-2.*((coord.x)%2))*SPATIAL_IM;
-	  return out;
-	}
-	if(dir==ZDIR){
-	  out.re = (1-2.*((coord.x+coord.y)%2))*SPATIAL_RE;
-	  out.im = (1-2.*((coord.x+coord.y)%2))*SPATIAL_IM;
-	  return out;
-	}
-	if(dir==TDIR){
-	  out.re = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE;
-	  out.im = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM;
-	  return out;
-	}
-	*/
-	/*
-	switch(dir) { //Note that the 2. (instead of 2) is crucial to have a float
-	  case YDIR:
-	    out.re = (1-2.*((coord.x)%2))*SPATIAL_RE;
-	    out.im = (1-2.*((coord.x)%2))*SPATIAL_IM;
-	    break;
-	  case ZDIR:
-	    out.re = (1-2.*((coord.x+coord.y)%2))*SPATIAL_RE;
-	    out.im = (1-2.*((coord.x+coord.y)%2))*SPATIAL_IM;
-	    break;
-	  case TDIR:
-	    out.re = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE;
-	    out.im = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM;
-	    break;
-	  default:
-	    //printf("Assuming dir=XDIR");
-	    out.re = 1.*SPATIAL_RE;
-	    out.im = 1.*SPATIAL_IM;
-	    break;
-	}*/
+    /*
+    if(dir==XDIR){
+      out.re = 1.*SPATIAL_RE;
+      out.im = 1.*SPATIAL_IM;
+      return out;
+    }
+    if(dir==YDIR){
+      out.re = (1-2.*((coord.x)%2))*SPATIAL_RE;
+      out.im = (1-2.*((coord.x)%2))*SPATIAL_IM;
+      return out;
+    }
+    if(dir==ZDIR){
+      out.re = (1-2.*((coord.x+coord.y)%2))*SPATIAL_RE;
+      out.im = (1-2.*((coord.x+coord.y)%2))*SPATIAL_IM;
+      return out;
+    }
+    if(dir==TDIR){
+      out.re = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE;
+      out.im = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM;
+      return out;
+    }
+    */
+    /*
+    switch(dir) { //Note that the 2. (instead of 2) is crucial to have a float
+      case YDIR:
+        out.re = (1-2.*((coord.x)%2))*SPATIAL_RE;
+        out.im = (1-2.*((coord.x)%2))*SPATIAL_IM;
+        break;
+      case ZDIR:
+        out.re = (1-2.*((coord.x+coord.y)%2))*SPATIAL_RE;
+        out.im = (1-2.*((coord.x+coord.y)%2))*SPATIAL_IM;
+        break;
+      case TDIR:
+        out.re = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE;
+        out.im = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM;
+        break;
+      default:
+        //printf("Assuming dir=XDIR");
+        out.re = 1.*SPATIAL_RE;
+        out.im = 1.*SPATIAL_IM;
+        break;
+    }*/
 
-	return out;
+    return out;
 }
-
 
 /**
  * This function returns the staggered phase modified in order to include in it
@@ -169,51 +166,51 @@ hmc_complex get_modified_stagg_phase(const int n, const int dir)
 
 hmc_complex get_mod_stagg_phase(const int n, const int t, const int dir)
 {
-	int ph;
-	coord_spatial coord = get_coord_spatial(n);
-	hmc_complex out;
-	switch(dir) {
-	  case YDIR:
-		ph = 1-2*((coord.x)%2);
-		if(coord.y == (NSPACE-1)) {
-			out.re = ph * COS_THETAS;
-			out.im = ph * SIN_THETAS;
-		} else {
-			out.re = ph;
-			out.im = 0.;
-		}
-		break;
-	  case ZDIR:
-		ph = 1-2*((coord.x+coord.y)%2);
-		if(coord.z == (NSPACE-1)) {
-			out.re = ph * COS_THETAS;
-			out.im = ph * SIN_THETAS;
-		} else {
-			out.re = ph;
-			out.im = 0.;
-		}
-		break;
-	  case TDIR:
-		ph = 1-2*((coord.x+coord.y+coord.z)%2);
-		if(t == (NTIME_GLOBAL-1)) {
-			out.re = ph * COS_THETAT;
-			out.im = ph * SIN_THETAT;
-		} else {
-			out.re = ph;
-			out.im = 0.;
-		}
-		break;
-	  default:
-		printf("Assuming dir=XDIR");
-		if(coord.x == (NSPACE-1)) {
-			out.re = COS_THETAS;
-			out.im = SIN_THETAS;
-		} else {
-			out.re = 1.;
-			out.im = 0.;
-		}
-		break;
-	}
-	return out;
+    int ph;
+    coord_spatial coord = get_coord_spatial(n);
+    hmc_complex out;
+    switch(dir) {
+      case YDIR:
+        ph = 1-2*((coord.x)%2);
+        if(coord.y == (NSPACE-1)) {
+            out.re = ph * COS_THETAS;
+            out.im = ph * SIN_THETAS;
+        } else {
+            out.re = ph;
+            out.im = 0.;
+        }
+        break;
+      case ZDIR:
+        ph = 1-2*((coord.x+coord.y)%2);
+        if(coord.z == (NSPACE-1)) {
+            out.re = ph * COS_THETAS;
+            out.im = ph * SIN_THETAS;
+        } else {
+            out.re = ph;
+            out.im = 0.;
+        }
+        break;
+      case TDIR:
+        ph = 1-2*((coord.x+coord.y+coord.z)%2);
+        if(t == (NTIME_GLOBAL-1)) {
+            out.re = ph * COS_THETAT;
+            out.im = ph * SIN_THETAT;
+        } else {
+            out.re = ph;
+            out.im = 0.;
+        }
+        break;
+      default:
+        printf("Assuming dir=XDIR");
+        if(coord.x == (NSPACE-1)) {
+            out.re = COS_THETAS;
+            out.im = SIN_THETAS;
+        } else {
+            out.re = 1.;
+            out.im = 0.;
+        }
+        break;
+    }
+    return out;
 }
 */

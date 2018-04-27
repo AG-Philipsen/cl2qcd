@@ -24,16 +24,16 @@
 namespace physics {
 
     class SourcesParametersInterface {
-        public:
-            virtual ~SourcesParametersInterface(){}
-            virtual bool placeSourcesOnHost() const = 0;
-            virtual common::sourcetypes getSourceType() const = 0;
-            virtual unsigned getSourceT() const = 0;
-            virtual unsigned getSourceX() const = 0;
-            virtual unsigned getSourceY() const = 0;
-            virtual unsigned getSourceZ() const = 0;
-            virtual unsigned getNt() const = 0;
-            virtual unsigned getNs() const = 0;
+      public:
+        virtual ~SourcesParametersInterface() {}
+        virtual bool placeSourcesOnHost() const           = 0;
+        virtual common::sourcetypes getSourceType() const = 0;
+        virtual unsigned getSourceT() const               = 0;
+        virtual unsigned getSourceX() const               = 0;
+        virtual unsigned getSourceY() const               = 0;
+        virtual unsigned getSourceZ() const               = 0;
+        virtual unsigned getNt() const                    = 0;
+        virtual unsigned getNs() const                    = 0;
     };
 
-}
+}  // namespace physics

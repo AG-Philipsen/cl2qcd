@@ -22,127 +22,119 @@
  */
 
 #include "type_ops.hpp"
+
 #include <cstdlib>
 
-template<> void fill(hmc_complex* array, size_t num_elems, int seed)
+template<>
+void fill(hmc_complex* array, size_t num_elems, int seed)
 {
-	srand48(seed);
-	for(size_t i = 0; i < num_elems; i++) {
-		array[i] = {drand48(), drand48()};
-	}
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {drand48(), drand48()};
+    }
 }
 
-template<> void fill(Matrixsu3* array, size_t num_elems, int seed)
+template<>
+void fill(Matrixsu3* array, size_t num_elems, int seed)
 {
-	srand48(seed);
-	for(size_t i = 0; i < num_elems; i++) {
-		array[i] = {
-			{ drand48(), drand48() },
-			{ drand48(), drand48() },
-			{ drand48(), drand48() },
-			{ drand48(), drand48() },
-			{ drand48(), drand48() },
-			{ drand48(), drand48() },
-			{ drand48(), drand48() },
-			{ drand48(), drand48() },
-			{ drand48(), drand48() }
-		};
-	}
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {{drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()},
+                    {drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()},
+                    {drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()}};
+    }
 }
 
-template<> void fill(spinor* array, size_t num_elems, int seed)
+template<>
+void fill(spinor* array, size_t num_elems, int seed)
 {
-	srand48(seed);
-	for(size_t i = 0; i < num_elems; i++) {
-		array[i] = {
-			{
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-			}, {
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-			}, {
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-				{ drand48(), drand48() }
-			}, {
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-				{ drand48(), drand48() }
-			}
-		};
-	}
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {{
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                    },
+                    {
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                    },
+                    {{drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()}},
+                    {{drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()}}};
+    }
 }
 
-template<> void fill(su3vec* array, size_t num_elems, int seed)
+template<>
+void fill(su3vec* array, size_t num_elems, int seed)
 {
-	srand48(seed);
-	for(size_t i = 0; i < num_elems; i++) {
-		array[i] = {
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-				{ drand48(), drand48() },
-		};
-	}
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {
+            {drand48(), drand48()},
+            {drand48(), drand48()},
+            {drand48(), drand48()},
+        };
+    }
 }
 
-template<> void fill(ae* array, size_t num_elems, int seed)
+template<>
+void fill(ae* array, size_t num_elems, int seed)
 {
-	srand48(seed);
-	for(size_t i = 0; i < num_elems; i++) {
-		array[i] = {
-			drand48(),
-			drand48(),
-			drand48(),
-			drand48(),
-			drand48(),
-			drand48(),
-			drand48(),
-			drand48()
-		};
-	}
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {drand48(), drand48(), drand48(), drand48(), drand48(), drand48(), drand48(), drand48()};
+    }
 }
 
-template<> size_t get_flops<hmc_complex, complexconj>()
+template<>
+size_t get_flops<hmc_complex, complexconj>()
 {
-	return 0;
+    return 0;
 }
-template<> size_t get_flops<hmc_complex, complexmult>()
+template<>
+size_t get_flops<hmc_complex, complexmult>()
 {
-	return 6;
+    return 6;
 }
-template<> size_t get_flops<hmc_complex, complexadd>()
+template<>
+size_t get_flops<hmc_complex, complexadd>()
 {
-	return 2;
+    return 2;
 }
-template<> size_t get_flops<hmc_complex, complexsubtract>()
+template<>
+size_t get_flops<hmc_complex, complexsubtract>()
 {
-	return 2;
+    return 2;
 }
-template<> size_t get_flops<hmc_complex, complexdivide>()
+template<>
+size_t get_flops<hmc_complex, complexdivide>()
 {
-	return 11;
+    return 11;
 }
 
-template<> size_t get_read_write_size<hmc_complex, complexconj>()
+template<>
+size_t get_read_write_size<hmc_complex, complexconj>()
 {
-	return 4*8;
+    return 4 * 8;
 }
-template<> size_t get_read_write_size<hmc_complex, complexmult>()
+template<>
+size_t get_read_write_size<hmc_complex, complexmult>()
 {
-	return 6*8;
+    return 6 * 8;
 }
-template<> size_t get_read_write_size<hmc_complex, complexadd>()
+template<>
+size_t get_read_write_size<hmc_complex, complexadd>()
 {
-	return 6*8;
+    return 6 * 8;
 }
-template<> size_t get_read_write_size<hmc_complex, complexsubtract>()
+template<>
+size_t get_read_write_size<hmc_complex, complexsubtract>()
 {
-	return 6*8;
+    return 6 * 8;
 }
-template<> size_t get_read_write_size<hmc_complex, complexdivide>()
+template<>
+size_t get_read_write_size<hmc_complex, complexdivide>()
 {
-	return 6*8;
+    return 6 * 8;
 }

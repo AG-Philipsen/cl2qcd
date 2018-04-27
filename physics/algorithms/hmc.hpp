@@ -23,18 +23,18 @@
 #ifndef _PHYSICS_ALGORITHMS_HMC_
 #define _PHYSICS_ALGORITHMS_HMC_
 
-#include "../lattices/gaugefield.hpp"
-#include "../prng.hpp"
 #include "../../common_header_files/types_hmc.hpp"
 #include "../interfacesHandler.hpp"
+#include "../lattices/gaugefield.hpp"
+#include "../prng.hpp"
 
 namespace physics {
     namespace algorithms {
 
-        hmc_observables perform_hmc_step(const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng,
-                                         const hardware::System& system, physics::InterfacesHandler& interfaceHandler);
-
+        hmc_observables perform_hmc_step(const physics::lattices::Gaugefield* gf, int iter, hmc_float rnd_number,
+                                         physics::PRNG& prng, const hardware::System& system,
+                                         physics::InterfacesHandler& interfaceHandler);
     }
-}
+}  // namespace physics
 
 #endif /* _PHYSICS_ALGORITHMS_HMC_ */

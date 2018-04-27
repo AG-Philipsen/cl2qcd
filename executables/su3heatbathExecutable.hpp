@@ -24,29 +24,28 @@
 #include "../physics/algorithms/su3heatbath.hpp"
 #include "generationExecutable.hpp"
 
-class su3heatbathExecutable: public generationExecutable
-{
-public:
-	su3heatbathExecutable(int argc, const char* argv[]);
+class su3heatbathExecutable : public generationExecutable {
+  public:
+    su3heatbathExecutable(int argc, const char* argv[]);
 
-private:
-	int overrelaxSteps;
+  private:
+    int overrelaxSteps;
 
-	/*
-	 * Thermalize the system using the heatbath algorithm.
-	 */
-	void thermalizeAccordingToSpecificAlgorithm();
+    /*
+     * Thermalize the system using the heatbath algorithm.
+     */
+    void thermalizeAccordingToSpecificAlgorithm();
 
-	/*
-	 * Generate configurations using the heatbath algorithm.
-	 */
-	void generateAccordingToSpecificAlgorithm();
+    /*
+     * Generate configurations using the heatbath algorithm.
+     */
+    void generateAccordingToSpecificAlgorithm();
 
-	void writeSu3heatbathLogfile();
+    void writeSu3heatbathLogfile();
 
-	void printParametersToScreenAndFile();
+    void printParametersToScreenAndFile();
 
-	void setIterationParameters();
+    void setIterationParameters();
 };
 
 #endif /* SU3HEATBATHEXECUTABLE_H_ */

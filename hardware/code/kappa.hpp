@@ -25,77 +25,73 @@
 #ifndef _HARDWARE_CODE_KAPPA_
 #define _HARDWARE_CODE_KAPPA_
 
-#include "opencl_module.hpp"
 #include "../buffers/plain.hpp"
 #include "../buffers/su3.hpp"
+#include "opencl_module.hpp"
 
 namespace hardware {
 
-namespace code {
+    namespace code {
 
-/**
- * An OpenCL device
- *
- * Adds random numbers to basic Opencl_Module class
- *
- * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
- */
-class Kappa : public Opencl_Module {
-public:
-	friend hardware::Device;
+        /**
+         * An OpenCL device
+         *
+         * Adds random numbers to basic Opencl_Module class
+         *
+         * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
+         */
+        class Kappa : public Opencl_Module {
+          public:
+            friend hardware::Device;
 
-	virtual ~Kappa();
+            virtual ~Kappa();
 
-	/**
-	 * Run the calculation of kappa clover. No OpenCL barrier.
-	 * @TODO remove beta
-	 */
-	void run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const;
+            /**
+             * Run the calculation of kappa clover. No OpenCL barrier.
+             * @TODO remove beta
+             */
+            void run_kappa_clover(const hardware::buffers::Plain<hmc_float>* kappa,
+                                  const hardware::buffers::SU3* gaugefield, const hmc_float beta) const;
 
-protected:
-	/**
-	 * Return amount of Floating point operations performed by a specific kernel per call.
-	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual uint64_t get_flop_size(const std::string&) const {
-		return 0;
-	};
+          protected:
+            /**
+             * Return amount of Floating point operations performed by a specific kernel per call.
+             * NOTE: this is meant to be the "netto" amount in order to be comparable.
+             *
+             * @param in Name of the kernel under consideration.
+             */
+            virtual uint64_t get_flop_size(const std::string&) const { return 0; };
 
-	/**
-	 * Return amount of bytes read and written by a specific kernel per call.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual size_t get_read_write_size(const std::string&) const {
-		return 0;
-	};
+            /**
+             * Return amount of bytes read and written by a specific kernel per call.
+             *
+             * @param in Name of the kernel under consideration.
+             */
+            virtual size_t get_read_write_size(const std::string&) const { return 0; };
 
+            /**
+             * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+             * 	It may be made private again in the future!
+             */
+          public:
+            Kappa(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device* device);
 
-	/**
-	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
-	 * 	It may be made private again in the future!
-	 */
-public:
-	Kappa(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
+          private:
+            /**
+             * Collect the kernels for OpenCL.
+             */
+            void fill_kernels();
 
-private:
-	/**
-	 * Collect the kernels for OpenCL.
-	 */
-	void fill_kernels();
+            /**
+             * Clear out the kernels,
+             */
+            void clear_kernels();
 
-	/**
-	 * Clear out the kernels,
-	 */
-	void clear_kernels();
+            cl_kernel kappa_clover_gpu;
+        };
 
-	cl_kernel kappa_clover_gpu;
-};
+    }  // namespace code
 
-}
+}  // namespace hardware
 
-}
-
-#endif // _HARDWARE_CODE_KAPPA_
+#endif  // _HARDWARE_CODE_KAPPA_

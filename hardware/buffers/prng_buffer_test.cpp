@@ -26,67 +26,66 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::PRNGBuffer
-#include <boost/test/unit_test.hpp>
-
-#include "../system.hpp"
 #include "../interfaceMockups.hpp"
+#include "../system.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(get_prng_buffer_size)
 {
-	using namespace hardware;
-	using namespace hardware::buffers;
+    using namespace hardware;
+    using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
-	for(Device * device : system.get_devices())
-	{
-		int elems = hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers());
+    const hardware::HardwareParametersMockup hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
+    for (Device* device : system.get_devices()) {
+        int elems = hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers());
 
-		BOOST_CHECK_GT(elems, 0);
-		BOOST_CHECK_LT(elems, 1e6);
-	}
+        BOOST_CHECK_GT(elems, 0);
+        BOOST_CHECK_LT(elems, 1e6);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	using namespace hardware;
-	using namespace hardware::buffers;
+    using namespace hardware;
+    using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
-	for(Device * device : system.get_devices())
-	{
-		PRNGBuffer dummy(device, hardwareParameters.useSameRandomNumbers());
-		BOOST_CHECK_EQUAL(dummy.get_elements(), hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers()));
-		const cl_mem * tmp = dummy;
-		BOOST_CHECK(tmp);
-		BOOST_CHECK(*tmp);
-	}
+    const hardware::HardwareParametersMockup hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
+    for (Device* device : system.get_devices()) {
+        PRNGBuffer dummy(device, hardwareParameters.useSameRandomNumbers());
+        BOOST_CHECK_EQUAL(dummy.get_elements(),
+                          hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers()));
+        const cl_mem* tmp = dummy;
+        BOOST_CHECK(tmp);
+        BOOST_CHECK(*tmp);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(import_export)
 {
-	using namespace hardware;
-	using namespace hardware::buffers;
+    using namespace hardware;
+    using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	hardware::System system( hardwareParameters, kernelParameters );
-	for(Device * device : system.get_devices())
-	{
-		PRNGBuffer buffer(device, hardwareParameters.useSameRandomNumbers());
-		int elems = buffer.get_elements();
-		PRNGBuffer::prng_state_t * in = new PRNGBuffer::prng_state_t[elems];
-		// TODO fill with random data
-		buffer.load(in);
-		PRNGBuffer::prng_state_t * out = new PRNGBuffer::prng_state_t[elems];
-		buffer.dump(out);
+    const hardware::HardwareParametersMockup hardwareParameters(4, 4);
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    hardware::System system(hardwareParameters, kernelParameters);
+    for (Device* device : system.get_devices()) {
+        PRNGBuffer buffer(device, hardwareParameters.useSameRandomNumbers());
+        int elems                    = buffer.get_elements();
+        PRNGBuffer::prng_state_t* in = new PRNGBuffer::prng_state_t[elems];
+        // TODO fill with random data
+        buffer.load(in);
+        PRNGBuffer::prng_state_t* out = new PRNGBuffer::prng_state_t[elems];
+        buffer.dump(out);
 
-		BOOST_CHECK_EQUAL_COLLECTIONS(reinterpret_cast<uint64_t*>(in), reinterpret_cast<uint64_t*>(in + elems), reinterpret_cast<uint64_t*>(out), reinterpret_cast<uint64_t*>(out + elems));
+        BOOST_CHECK_EQUAL_COLLECTIONS(reinterpret_cast<uint64_t*>(in), reinterpret_cast<uint64_t*>(in + elems),
+                                      reinterpret_cast<uint64_t*>(out), reinterpret_cast<uint64_t*>(out + elems));
 
-		delete[] out;
-		delete[] in;
-	}
+        delete[] out;
+        delete[] in;
+    }
 }

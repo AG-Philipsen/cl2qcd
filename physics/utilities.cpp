@@ -19,25 +19,22 @@
  */
 
 #include "utilities.hpp"
+
 #include <sstream>
 
-namespace physics
-{
-	std::string buildCheckpointName( std::string prefix, std::string postfix, int numberOfDigitsInName, int number)
-	{
-	std::stringstream middle;
-	if (number == -1)
-	{
-		middle << "save";
-	}
-	else
-	{
-		middle.fill('0');
-		middle.width(numberOfDigitsInName);
-		middle << std::right << number;
-	}
-	std::stringstream outfilename;
-	outfilename << prefix << middle.str() << postfix;
-	return outfilename.str();
-	}
-}
+namespace physics {
+    std::string buildCheckpointName(std::string prefix, std::string postfix, int numberOfDigitsInName, int number)
+    {
+        std::stringstream middle;
+        if (number == -1) {
+            middle << "save";
+        } else {
+            middle.fill('0');
+            middle.width(numberOfDigitsInName);
+            middle << std::right << number;
+        }
+        std::stringstream outfilename;
+        outfilename << prefix << middle.str() << postfix;
+        return outfilename.str();
+    }
+}  // namespace physics

@@ -28,35 +28,38 @@ namespace physics {
     namespace fermionmatrix {
 
         class FermionmatrixParametersInterface {
-            public:
-                virtual ~FermionmatrixParametersInterface(){}
-                virtual common::action getFermionicActionType() const = 0;
-                virtual bool useMergedFermionicKernels() const = 0;
+          public:
+            virtual ~FermionmatrixParametersInterface() {}
+            virtual common::action getFermionicActionType() const = 0;
+            virtual bool useMergedFermionicKernels() const        = 0;
         };
 
         class FermionmatrixStaggeredParametersInterface {
-            public:
-                virtual ~FermionmatrixStaggeredParametersInterface() = 0;
+          public:
+            virtual ~FermionmatrixStaggeredParametersInterface() = 0;
         };
-        //Pure virtual destructors must be implemented outside the class! (inline for multiple inclusion of header)
-        inline FermionmatrixStaggeredParametersInterface::~FermionmatrixStaggeredParametersInterface(){}
+        // Pure virtual destructors must be implemented outside the class! (inline for multiple inclusion of header)
+        inline FermionmatrixStaggeredParametersInterface::~FermionmatrixStaggeredParametersInterface() {}
 
-    }
+    }  // namespace fermionmatrix
 
-    //TODO: Think to a better place where to put these interfaces
-    class FermionParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldParametersInterface {
-        public:
-            virtual ~FermionParametersInterface(){}
+    // TODO: Think to a better place where to put these interfaces
+    class FermionParametersInterface : public fermionmatrix::FermionmatrixParametersInterface,
+                                       public lattices::SpinorfieldParametersInterface {
+      public:
+        virtual ~FermionParametersInterface() {}
     };
 
-    class FermionEoParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldEoParametersInterface {
-        public:
-            virtual ~FermionEoParametersInterface(){}
+    class FermionEoParametersInterface : public fermionmatrix::FermionmatrixParametersInterface,
+                                         public lattices::SpinorfieldEoParametersInterface {
+      public:
+        virtual ~FermionEoParametersInterface() {}
     };
 
-    class FermionStaggeredEoParametersInterface : public fermionmatrix::FermionmatrixStaggeredParametersInterface, public lattices::StaggeredfieldEoParametersInterface {
-        public:
-            virtual ~FermionStaggeredEoParametersInterface(){}
+    class FermionStaggeredEoParametersInterface : public fermionmatrix::FermionmatrixStaggeredParametersInterface,
+                                                  public lattices::StaggeredfieldEoParametersInterface {
+      public:
+        virtual ~FermionStaggeredEoParametersInterface() {}
     };
 
-}
+}  // namespace physics

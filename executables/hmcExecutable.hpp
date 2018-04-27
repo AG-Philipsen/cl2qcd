@@ -29,42 +29,44 @@
 #define HMCEXECUTABLE_H_
 
 #include "../physics/algorithms/hmc.hpp"
-#include <cmath>
 #include "generationExecutable.hpp"
 
+#include <cmath>
+
 class hmcExecutable : public generationExecutable {
-    public:
-        hmcExecutable(int argc, const char* argv[]);
-        ~hmcExecutable();
-    protected:
-        // 	const std::string filenameForHmcLogfile = "hmc.log";
-        double acceptanceRate = 0;
-        hmc_observables observables;
+  public:
+    hmcExecutable(int argc, const char* argv[]);
+    ~hmcExecutable();
 
-        /*
-         * Sets member variables that control the iterations during
-         * the generation of gaugefield configurations.
-         */
-        void setIterationParameters();
+  protected:
+    // 	const std::string filenameForHmcLogfile = "hmc.log";
+    double acceptanceRate = 0;
+    hmc_observables observables;
 
-        void printParametersToScreenAndFile();
+    /*
+     * Sets member variables that control the iterations during
+     * the generation of gaugefield configurations.
+     */
+    void setIterationParameters();
 
-        void writeHmcLogfile();
+    void printParametersToScreenAndFile();
 
-        void thermalizeAccordingToSpecificAlgorithm() override;
+    void writeHmcLogfile();
 
-        void generateAccordingToSpecificAlgorithm() override;
+    void thermalizeAccordingToSpecificAlgorithm() override;
 
-        /**
-         * Measures HMC related observables
-         */
-        void performOnlineMeasurements() override;
+    void generateAccordingToSpecificAlgorithm() override;
 
-        void printHmcObservables(const std::string& filename);
+    /**
+     * Measures HMC related observables
+     */
+    void performOnlineMeasurements() override;
 
-        void printHmcObservablesToFile(const std::string& filename);
+    void printHmcObservables(const std::string& filename);
 
-        void printHmcObservablesToScreen();
+    void printHmcObservablesToFile(const std::string& filename);
+
+    void printHmcObservablesToScreen();
 };
 
 #endif /* HMCEXECUTABLE_H_ */

@@ -25,47 +25,49 @@
 #define BOOST_TEST_MODULE staple_test
 #include <boost/test/unit_test.hpp>
 
-void printInfo(int expectedNumberOfParameters){
-	std::cout << "Testing passing of arguments from boost master_test_suite..." << std::endl;
-	std::cout << "Getting number of arguments, this should be equal to " << expectedNumberOfParameters << "!" << std::endl;
-	std::cout << "If this test fails, it might indicate a problem of boost with the used compiler..." << std::endl;
+void printInfo(int expectedNumberOfParameters)
+{
+    std::cout << "Testing passing of arguments from boost master_test_suite..." << std::endl;
+    std::cout << "Getting number of arguments, this should be equal to " << expectedNumberOfParameters << "!"
+              << std::endl;
+    std::cout << "If this test fails, it might indicate a problem of boost with the used compiler..." << std::endl;
 }
 
 void checkArgc(int expectedNumberOfParameters)
 {
-		printInfo(expectedNumberOfParameters);
-		int numberOfParametersFromBoost = 	boost::unit_test::framework::master_test_suite().argc;
-		BOOST_REQUIRE_EQUAL(numberOfParametersFromBoost, expectedNumberOfParameters);
+    printInfo(expectedNumberOfParameters);
+    int numberOfParametersFromBoost = boost::unit_test::framework::master_test_suite().argc;
+    BOOST_REQUIRE_EQUAL(numberOfParametersFromBoost, expectedNumberOfParameters);
 }
 
-BOOST_AUTO_TEST_SUITE ( BOOST_ARGUMENTS )
+BOOST_AUTO_TEST_SUITE(BOOST_ARGUMENTS)
 
-	BOOST_AUTO_TEST_CASE( BOOST_ARGC_1 )
-	{
-		int expectedNumberOfParameters = 1;
-		checkArgc(expectedNumberOfParameters);
-	}
+    BOOST_AUTO_TEST_CASE(BOOST_ARGC_1)
+    {
+        int expectedNumberOfParameters = 1;
+        checkArgc(expectedNumberOfParameters);
+    }
 
-	BOOST_AUTO_TEST_CASE( BOOST_ARGC_2 )
-	{
-		int expectedNumberOfParameters = 2;
-		checkArgc(expectedNumberOfParameters);
-	}
+    BOOST_AUTO_TEST_CASE(BOOST_ARGC_2)
+    {
+        int expectedNumberOfParameters = 2;
+        checkArgc(expectedNumberOfParameters);
+    }
 
-	void checkArgv(int position, std::string expectedContent)
-	{
-		std::string argument = boost::unit_test::framework::master_test_suite().argv[position];
-		BOOST_REQUIRE_EQUAL(argument, expectedContent);
-	}
+    void checkArgv(int position, std::string expectedContent)
+    {
+        std::string argument = boost::unit_test::framework::master_test_suite().argv[position];
+        BOOST_REQUIRE_EQUAL(argument, expectedContent);
+    }
 
-	BOOST_AUTO_TEST_CASE( BOOST_ARGV )
-	{
-		int expectedNumberOfParameters = 4;
-		checkArgc(expectedNumberOfParameters);
+    BOOST_AUTO_TEST_CASE(BOOST_ARGV)
+    {
+        int expectedNumberOfParameters = 4;
+        checkArgc(expectedNumberOfParameters);
 
-		checkArgv(1, "firstArgument");
-		checkArgv(2, "secondArgument");
-		checkArgv(3, "thirdArgument");
-	}
+        checkArgv(1, "firstArgument");
+        checkArgv(2, "secondArgument");
+        checkArgv(3, "thirdArgument");
+    }
 
 BOOST_AUTO_TEST_SUITE_END()

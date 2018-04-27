@@ -26,27 +26,27 @@ using namespace meta;
 
 unsigned int ParametersRhmc::get_md_approx_ord() const noexcept
 {
-	return molecularDynamicsRationalApproximationOrder;
+    return molecularDynamicsRationalApproximationOrder;
 }
 unsigned int ParametersRhmc::get_metro_approx_ord() const noexcept
 {
-	return metropolisTestRationalApproximationOrder;
+    return metropolisTestRationalApproximationOrder;
 }
 unsigned int ParametersRhmc::get_findminmax_iteration_block_size() const noexcept
 {
-	return findMinMaxEigenvalueIterationBlockSize;
+    return findMinMaxEigenvalueIterationBlockSize;
 }
 unsigned int ParametersRhmc::get_findminmax_max() const noexcept
 {
-	return findMinMaxEigenvalueMaxNumberOfIterations;
+    return findMinMaxEigenvalueMaxNumberOfIterations;
 }
 double ParametersRhmc::get_findminmax_prec() const noexcept
 {
-	return findMinMaxEigenvaluePrecision;
+    return findMinMaxEigenvaluePrecision;
 }
 bool ParametersRhmc::get_conservative() const noexcept
 {
-	return beConservativeInFindMinMaxEigenvalue;
+    return beConservativeInFindMinMaxEigenvalue;
 }
 double ParametersRhmc::get_num_tastes() const noexcept
 {
@@ -62,35 +62,34 @@ unsigned int ParametersRhmc::get_num_pseudofermions() const noexcept
 }
 double ParametersRhmc::get_approx_lower() const noexcept
 {
-	return lowerBoundForRationalApproximationRange;
+    return lowerBoundForRationalApproximationRange;
 }
 double ParametersRhmc::get_approx_upper() const noexcept
 {
-	return upperBoundForRationalApproximationRange;
+    return upperBoundForRationalApproximationRange;
 }
 unsigned int ParametersRhmc::get_rhmcsteps() const noexcept
 {
-	return numberOfRhmcSteps;
+    return numberOfRhmcSteps;
 }
 std::string ParametersRhmc::get_approx_heatbath_file() const noexcept
 {
-	return heatbathRationalApproximationFilename;
+    return heatbathRationalApproximationFilename;
 }
 std::string ParametersRhmc::get_approx_md_file() const noexcept
 {
-	return molecularDynamicsRationalApproximationFilename;
+    return molecularDynamicsRationalApproximationFilename;
 }
 std::string ParametersRhmc::get_approx_metropolis_file() const noexcept
 {
-	return metropolisTestRationalApproximationFilename;
+    return metropolisTestRationalApproximationFilename;
 }
 bool ParametersRhmc::get_read_rational_approximations_from_file() const noexcept
 {
-	return readRationalApproximationsFromFile;
+    return readRationalApproximationsFromFile;
 }
 
-meta::ParametersRhmc::ParametersRhmc()
-	: options("RHMC options")
+meta::ParametersRhmc::ParametersRhmc() : options("RHMC options")
 {
     // clang-format off
 	options.add_options()
@@ -110,12 +109,12 @@ meta::ParametersRhmc::ParametersRhmc()
 	("approx_md_file", po::value<std::string>(&molecularDynamicsRationalApproximationFilename)->default_value("Approx_MD"))
 	("approx_metropolis_file", po::value<std::string>(&metropolisTestRationalApproximationFilename)->default_value("Approx_Metropolis"))
 	("read_rational_approximations_from_file", po::value<bool>(&readRationalApproximationsFromFile)->default_value(true));
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersRhmc::~ParametersRhmc() = default;
 
-po::options_description & meta::ParametersRhmc::getOptions()
+po::options_description& meta::ParametersRhmc::getOptions()
 {
-	return options;
+    return options;
 }

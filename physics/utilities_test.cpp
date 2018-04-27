@@ -23,13 +23,13 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics
-#include <boost/test/unit_test.hpp>
-
 #include "utilities.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(utilities)
 {
-	BOOST_REQUIRE_EQUAL(physics::buildCheckpointName( "conf.", "", 5, 1000),"conf.01000");
-	BOOST_REQUIRE_EQUAL(physics::buildCheckpointName( "conf.", "postfix", 6, 1000),"conf.001000postfix");
-	BOOST_REQUIRE_EQUAL(physics::buildCheckpointName( "conf.", "", 6, -1),"conf.save");
+    BOOST_REQUIRE_EQUAL(physics::buildCheckpointName("conf.", "", 5, 1000), "conf.01000");
+    BOOST_REQUIRE_EQUAL(physics::buildCheckpointName("conf.", "postfix", 6, 1000), "conf.001000postfix");
+    BOOST_REQUIRE_EQUAL(physics::buildCheckpointName("conf.", "", 6, -1), "conf.save");
 }

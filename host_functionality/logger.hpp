@@ -42,4 +42,4 @@ extern einhard::Logger<einhard::LOG_LEVEL> logger;
  */
 void switchLogLevel(const std::string log_level);
 
-#endif //_LOGGERHPP_
+#endif  //_LOGGERHPP_

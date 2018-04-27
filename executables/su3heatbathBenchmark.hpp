@@ -21,21 +21,20 @@
 #ifndef SU3HEATBATHBENCHMARK_H_
 #define SU3HEATBATHBENCHMARK_H_
 
-#include "../physics/lattices/gaugefield.hpp"
 #include "../physics/algorithms/su3heatbath.hpp"
+#include "../physics/lattices/gaugefield.hpp"
 #include "benchmarkExecutable.hpp"
 
-class su3heatbathBenchmark : public benchmarkExecutable
-{
-public:
-  su3heatbathBenchmark(int argc, const char* argv[]);
+class su3heatbathBenchmark : public benchmarkExecutable {
+  public:
+    su3heatbathBenchmark(int argc, const char* argv[]);
 
-protected:
-	/*
-	 * Calls the heatbath and overrelax kernels.
-	 * Per iteration, the kernel is called with EVEN and ODD parameters.
-	 */
-  void performBenchmarkForSpecificKernels() override;
+  protected:
+    /*
+     * Calls the heatbath and overrelax kernels.
+     * Per iteration, the kernel is called with EVEN and ODD parameters.
+     */
+    void performBenchmarkForSpecificKernels() override;
 };
 
 #endif /* SU3HEATBATHBENCHMARK_H_ */

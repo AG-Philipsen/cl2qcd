@@ -21,30 +21,29 @@
 
 #pragma once
 
-#include "latticeExtents.hpp"
 #include "../common_header_files/globaldefs.hpp"
-#include "../hardware/size_4.hpp" //todo: remove!
+#include "../hardware/size_4.hpp"  //todo: remove!
+#include "latticeExtents.hpp"
 
 typedef uint latticeIndex;
 
-struct Index
-{
-	Index(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents lE);
-	Index(const size_4, const LatticeExtents); //todo: remove
-	Index up(const Direction dir) const;
-	Index down(const Direction dir) const;
-	operator latticeSize() const;
-	const LatticeCoordinate x,y,z,t;
-	const latticeIndex spatialIndex, globalIndex;
+struct Index {
+    Index(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t,
+          const LatticeExtents lE);
+    Index(const size_4, const LatticeExtents);  // todo: remove
+    Index up(const Direction dir) const;
+    Index down(const Direction dir) const;
+    operator latticeSize() const;
+    const LatticeCoordinate x, y, z, t;
+    const latticeIndex spatialIndex, globalIndex;
 };
 
-struct LinkIndex : public Index
-{
-	LinkIndex (const Index indexIn, const Direction dirIn);
-	operator latticeSize() const;
-	const LinkIndex up(const Direction dirIn) const;
-	const LinkIndex down(const Direction dirIn) const;
-	uint get_su3_idx_ildg_format(const uint n, const uint m); // ADD TESTS!!
-	const Direction direction;
-	const latticeIndex globalIndex;
+struct LinkIndex : public Index {
+    LinkIndex(const Index indexIn, const Direction dirIn);
+    operator latticeSize() const;
+    const LinkIndex up(const Direction dirIn) const;
+    const LinkIndex down(const Direction dirIn) const;
+    uint get_su3_idx_ildg_format(const uint n, const uint m);  // ADD TESTS!!
+    const Direction direction;
+    const latticeIndex globalIndex;
 };

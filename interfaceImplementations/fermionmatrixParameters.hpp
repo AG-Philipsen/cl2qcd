@@ -28,40 +28,29 @@ namespace physics {
     namespace fermionmatrix {
 
         class FermionmatrixParametersImplementation : public FermionmatrixParametersInterface {
-            public:
-                FermionmatrixParametersImplementation() = delete;
-                FermionmatrixParametersImplementation(const meta::Inputparameters& paramsIn)
-                    : parameters(paramsIn)
-                {
-                }
-                virtual ~FermionmatrixParametersImplementation()
-                {
-                }
-                common::action getFermionicActionType() const override
-                {
-                    return parameters.get_fermact();
-                }
-                bool useMergedFermionicKernels() const override
-                {
-                    return parameters.get_use_merge_kernels_fermion();
-                }
-            private:
-                const meta::Inputparameters& parameters;
+          public:
+            FermionmatrixParametersImplementation() = delete;
+            FermionmatrixParametersImplementation(const meta::Inputparameters& paramsIn) : parameters(paramsIn) {}
+            virtual ~FermionmatrixParametersImplementation() {}
+            common::action getFermionicActionType() const override { return parameters.get_fermact(); }
+            bool useMergedFermionicKernels() const override { return parameters.get_use_merge_kernels_fermion(); }
+
+          private:
+            const meta::Inputparameters& parameters;
         };
 
         class FermionmatrixStaggeredParametersImplementation : public FermionmatrixStaggeredParametersInterface {
-            public:
-                FermionmatrixStaggeredParametersImplementation() = delete;
-                FermionmatrixStaggeredParametersImplementation(const meta::Inputparameters& parametersIn)
+          public:
+            FermionmatrixStaggeredParametersImplementation() = delete;
+            FermionmatrixStaggeredParametersImplementation(const meta::Inputparameters& parametersIn)
                 : parameters(parametersIn)
-                {
-                }
-                virtual ~FermionmatrixStaggeredParametersImplementation()
-                {
-                }
-            private:
-                const meta::Inputparameters& parameters;
+            {
+            }
+            virtual ~FermionmatrixStaggeredParametersImplementation() {}
+
+          private:
+            const meta::Inputparameters& parameters;
         };
 
-    }
-}
+    }  // namespace fermionmatrix
+}  // namespace physics

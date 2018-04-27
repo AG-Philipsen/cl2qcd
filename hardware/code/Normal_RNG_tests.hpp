@@ -19,33 +19,40 @@
  */
 
 #include "../../host_functionality/logger.hpp"
+
 #include <boost/test/unit_test.hpp>
 #include <cmath>
-#include <vector>
 #include <numeric>
+#include <vector>
 
 /**
  * This function calculates the mean of a vector entries
  */
-hmc_float mean(std::vector<hmc_float> a){
-  return std::accumulate(a.begin(),a.end(),0.0)/a.size();
+hmc_float mean(std::vector<hmc_float> a)
+{
+    return std::accumulate(a.begin(), a.end(), 0.0) / a.size();
 }
 
 /**
  * This function calculates the variance of a vector entries
  */
-hmc_float square_add (hmc_float x, hmc_float y) {return x+y*y;}
-hmc_float variance(std::vector<hmc_float> a){
-  hmc_float out=std::accumulate(a.begin(),a.end(),0.0,square_add)/a.size();
-  out-=mean(a)*mean(a);
-  return out;
+hmc_float square_add(hmc_float x, hmc_float y)
+{
+    return x + y * y;
+}
+hmc_float variance(std::vector<hmc_float> a)
+{
+    hmc_float out = std::accumulate(a.begin(), a.end(), 0.0, square_add) / a.size();
+    out -= mean(a) * mean(a);
+    return out;
 }
 
 /**
  * This function calculates the standard deviation of a vector entries
  */
-hmc_float std_deviation(std::vector<hmc_float> a){
-  return sqrt(variance(a));
+hmc_float std_deviation(std::vector<hmc_float> a)
+{
+    return sqrt(variance(a));
 }
 
 /**
@@ -65,17 +72,19 @@ hmc_float std_deviation(std::vector<hmc_float> a){
  * @param mu The mean of the theoretical distribution according which the data have been drawn
  * @param num_sigma The number of standard deviation to take into account in the test
  */
-bool mean_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float mu=0, hmc_float sigma=1){
-  hmc_float data_mean=mean(a);
-  hmc_float mean_std_dev=sigma/sqrt(a.size());
-  if(data_mean>=(mu-num_sigma*mean_std_dev) && data_mean<=(mu+num_sigma*mean_std_dev))
-    return true;
-  else{
-    if(logger.beDebug()){
-      logger.trace() << "mean_test_single_set failed since " << mu-num_sigma*mean_std_dev << "<=" << data_mean << "<=" << mu+num_sigma*mean_std_dev << " is not true!";
+bool mean_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float mu = 0, hmc_float sigma = 1)
+{
+    hmc_float data_mean    = mean(a);
+    hmc_float mean_std_dev = sigma / sqrt(a.size());
+    if (data_mean >= (mu - num_sigma * mean_std_dev) && data_mean <= (mu + num_sigma * mean_std_dev))
+        return true;
+    else {
+        if (logger.beDebug()) {
+            logger.trace() << "mean_test_single_set failed since " << mu - num_sigma * mean_std_dev << "<=" << data_mean
+                           << "<=" << mu + num_sigma * mean_std_dev << " is not true!";
+        }
+        return false;
     }
-    return false;
-  }
 }
 
 /**
@@ -85,35 +94,36 @@ bool mean_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float mu
  * This integral is equal to Erf[num_sigma/sqrt(2)]. This function print to the shell
  * how often the mean_test_single_set has passed together with the theoretical frequency.
  */
-void mean_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sigma, hmc_float mu=0, hmc_float sigma=1){
-  hmc_float success_exp;
-  hmc_float success_teo=erf(num_sigma/sqrt(2))*100;
-  for(uint i=0, k=0; i<samples.size(); i++){
-    if(mean_test_single_set(samples[i],num_sigma,mu,sigma))
-      k++;
-    else{
-      if(logger.beDebug())
-	logger.trace() << "The " << i << "th mean_test_single_set failed!";
+void mean_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sigma, hmc_float mu = 0,
+                            hmc_float sigma = 1)
+{
+    hmc_float success_exp;
+    hmc_float success_teo = erf(num_sigma / sqrt(2)) * 100;
+    for (uint i = 0, k = 0; i < samples.size(); i++) {
+        if (mean_test_single_set(samples[i], num_sigma, mu, sigma))
+            k++;
+        else {
+            if (logger.beDebug())
+                logger.trace() << "The " << i << "th mean_test_single_set failed!";
+        }
+        if (i == samples.size() - 1)
+            success_exp = ((hmc_float)k) / samples.size() * 100;
     }
-    if(i==samples.size()-1)
-      success_exp=((hmc_float)k)/samples.size()*100;
-  }
-  logger.info() << "The mean_test_single_set up to " << num_sigma << "sigma has passed the " <<setprecision(8) <<  success_exp << "% of the times.";
-  logger.info() << "It should pass the " << setprecision(8) << success_teo << "% of the times.";
-  //The following tests are meaningfull with a big number of sets of samples (bigger than 2000)
-  if(num_sigma<1.9)
-    BOOST_CHECK(fabs(success_exp-success_teo)<2);
-  else if(num_sigma>=1.9 && num_sigma<2.9)
-    BOOST_CHECK(fabs(success_exp-success_teo)<1);
-  else if(num_sigma>=2.9 && num_sigma<3.9)
-    BOOST_CHECK(fabs(success_exp-success_teo)<0.25);
-  else
-    BOOST_CHECK(fabs(success_exp-success_teo)<0.1);
+    logger.info() << "The mean_test_single_set up to " << num_sigma << "sigma has passed the " << setprecision(8)
+                  << success_exp << "% of the times.";
+    logger.info() << "It should pass the " << setprecision(8) << success_teo << "% of the times.";
+    // The following tests are meaningfull with a big number of sets of samples (bigger than 2000)
+    if (num_sigma < 1.9)
+        BOOST_CHECK(fabs(success_exp - success_teo) < 2);
+    else if (num_sigma >= 1.9 && num_sigma < 2.9)
+        BOOST_CHECK(fabs(success_exp - success_teo) < 1);
+    else if (num_sigma >= 2.9 && num_sigma < 3.9)
+        BOOST_CHECK(fabs(success_exp - success_teo) < 0.25);
+    else
+        BOOST_CHECK(fabs(success_exp - success_teo) < 0.1);
 }
 
-
-
- /**
+/**
  * This function makes the variance test on a single set of samples in a similar way in which
  * we tested the mean. Suppose an RNG produces values from a normal distribution with variance
  * σ^2. Let S^2 be the sample variance based on n values from the RNG. If n is very large,
@@ -128,18 +138,21 @@ void mean_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sig
  * @param mu The mean of the theoretical distribution according which the data have been drawn
  * @param num_sigma The number of standard deviation to take into account in the test
  */
-bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float sigma=1){
-  hmc_float data_variance=variance(a);
-  hmc_float variance_std_dev=sqrt(2./(a.size()-1))*sigma*sigma;
-  if(data_variance>=(sigma*sigma-num_sigma*variance_std_dev) &&
-     data_variance<=(sigma*sigma+num_sigma*variance_std_dev))
-    return true;
-  else{
-    if(logger.beDebug()){
-      logger.trace() << "variance_test_single_set failed since " << sigma*sigma-num_sigma*variance_std_dev << "<=" << data_variance << "<=" << sigma*sigma+num_sigma*variance_std_dev << " is not true!";
+bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float sigma = 1)
+{
+    hmc_float data_variance    = variance(a);
+    hmc_float variance_std_dev = sqrt(2. / (a.size() - 1)) * sigma * sigma;
+    if (data_variance >= (sigma * sigma - num_sigma * variance_std_dev) &&
+        data_variance <= (sigma * sigma + num_sigma * variance_std_dev))
+        return true;
+    else {
+        if (logger.beDebug()) {
+            logger.trace() << "variance_test_single_set failed since " << sigma * sigma - num_sigma * variance_std_dev
+                           << "<=" << data_variance << "<=" << sigma * sigma + num_sigma * variance_std_dev
+                           << " is not true!";
+        }
+        return false;
     }
-    return false;
-  }
 }
 
 /**
@@ -149,34 +162,36 @@ bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_floa
  * This integral is equal to Erf[num_sigma/sqrt(2)]. This function print to the shell
  * how often the variance_test_single_set has passed together with the theoretical frequency.
  */
-void variance_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sigma, hmc_float sigma=1){
-  hmc_float success_exp;
-  hmc_float success_teo=erf(num_sigma/sqrt(2))*100;
-  for(uint i=0, k=0; i<samples.size(); i++){
-    if(variance_test_single_set(samples[i],num_sigma,sigma))
-      k++;
-    else{
-      if(logger.beDebug())
-	logger.trace() << "The " << i << "th variance_test_single_set failed!";
+void variance_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sigma, hmc_float sigma = 1)
+{
+    hmc_float success_exp;
+    hmc_float success_teo = erf(num_sigma / sqrt(2)) * 100;
+    for (uint i = 0, k = 0; i < samples.size(); i++) {
+        if (variance_test_single_set(samples[i], num_sigma, sigma))
+            k++;
+        else {
+            if (logger.beDebug())
+                logger.trace() << "The " << i << "th variance_test_single_set failed!";
+        }
+        if (i == samples.size() - 1)
+            success_exp = ((hmc_float)k) / samples.size() * 100;
     }
-    if(i==samples.size()-1)
-      success_exp=((hmc_float)k)/samples.size()*100;
-  }
-  logger.info() << "The variance_test_single_set up to " << num_sigma << "sigma has passed the " <<setprecision(8) <<  success_exp << "% of the times.";
-  logger.info() << "It should pass the " << setprecision(8) << success_teo << "% of the times.";
-  //The following tests are meaningfull with a big number of sets of samples (bigger than 2000)
-  if(num_sigma<1.9)
-    BOOST_CHECK(fabs(success_exp-success_teo)<2);
-  else if(num_sigma>=1.9 && num_sigma<2.9)
-    BOOST_CHECK(fabs(success_exp-success_teo)<1);
-  else if(num_sigma>=2.9 && num_sigma<3.9)
-    BOOST_CHECK(fabs(success_exp-success_teo)<0.5);
-  else
-    BOOST_CHECK(fabs(success_exp-success_teo)<0.25);
-  //Note that "Typically, sample variances will be more variable than the normal
-  //approximation predicts. This means our tests will fail more often than predicted. But
-  //as before, we may not need to be too careful. Coding errors are likely to cause the tests to fail
-  //every time, not just a little more often than expected. Also, the tests in the following sections
-  //do a more careful job of testing the distribution of the samples and have a solid theoretical
-  //justification."
+    logger.info() << "The variance_test_single_set up to " << num_sigma << "sigma has passed the " << setprecision(8)
+                  << success_exp << "% of the times.";
+    logger.info() << "It should pass the " << setprecision(8) << success_teo << "% of the times.";
+    // The following tests are meaningfull with a big number of sets of samples (bigger than 2000)
+    if (num_sigma < 1.9)
+        BOOST_CHECK(fabs(success_exp - success_teo) < 2);
+    else if (num_sigma >= 1.9 && num_sigma < 2.9)
+        BOOST_CHECK(fabs(success_exp - success_teo) < 1);
+    else if (num_sigma >= 2.9 && num_sigma < 3.9)
+        BOOST_CHECK(fabs(success_exp - success_teo) < 0.5);
+    else
+        BOOST_CHECK(fabs(success_exp - success_teo) < 0.25);
+    // Note that "Typically, sample variances will be more variable than the normal
+    // approximation predicts. This means our tests will fail more often than predicted. But
+    // as before, we may not need to be too careful. Coding errors are likely to cause the tests to fail
+    // every time, not just a little more often than expected. Also, the tests in the following sections
+    // do a more careful job of testing the distribution of the samples and have a solid theoretical
+    // justification."
 }

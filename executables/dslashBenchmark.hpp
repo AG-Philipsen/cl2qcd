@@ -21,33 +21,32 @@
 #ifndef DSLASHBENCHMARK_H_
 #define DSLASHBENCHMARK_H_
 
-#include "../physics/lattices/spinorfield_eo.hpp"
 #include "../hardware/code/fermions.hpp"
 #include "../hardware/code/spinors.hpp"
 #include "../physics/fermionmatrix/fermionmatrix.hpp"
+#include "../physics/lattices/spinorfield_eo.hpp"
 #include "benchmarkExecutable.hpp"
 
-class dslashBenchmark : public benchmarkExecutable
-{
-public:
-  dslashBenchmark(int argc, const char* argv[]);
+class dslashBenchmark : public benchmarkExecutable {
+  public:
+    dslashBenchmark(int argc, const char* argv[]);
 
-protected:
-  const physics::lattices::Spinorfield_eo * spinorfield1;
-  const physics::lattices::Spinorfield_eo * spinorfield2;
+  protected:
+    const physics::lattices::Spinorfield_eo* spinorfield1;
+    const physics::lattices::Spinorfield_eo* spinorfield2;
 
-	/*
-	 * Calls the dslash_eo kernel.
-	 * Per iteration, the kernel is called with EVEN and ODD parameters.
-	 */
-	void performBenchmarkForSpecificKernels() override;
-	/*
-	 * Calls dslash_eo on all devices in the system.
-	 * Per iteration, the kernel is called with EVEN and ODD parameters.
-	 */
-	void enqueueSpecificKernelForBenchmarkingMultipleDevices()  override;
+    /*
+     * Calls the dslash_eo kernel.
+     * Per iteration, the kernel is called with EVEN and ODD parameters.
+     */
+    void performBenchmarkForSpecificKernels() override;
+    /*
+     * Calls dslash_eo on all devices in the system.
+     * Per iteration, the kernel is called with EVEN and ODD parameters.
+     */
+    void enqueueSpecificKernelForBenchmarkingMultipleDevices() override;
 
-	void printProfilingDataToScreen() override;
+    void printProfilingDataToScreen() override;
 };
 
 #endif /* DSLASHBENCHMARK_H_ */

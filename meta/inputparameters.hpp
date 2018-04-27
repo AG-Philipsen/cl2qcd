@@ -25,63 +25,60 @@
 #define _META_INPUTPARAMETERS_HPP_
 
 #include "../host_functionality/logger.hpp"
-
-#include <boost/algorithm/string.hpp>
-
 #include "parametersBasic.hpp"
 #include "parametersConfig.hpp"
+#include "parametersFermion.hpp"
+#include "parametersGauge.hpp"
+#include "parametersHeatbath.hpp"
+#include "parametersHmc.hpp"
 #include "parametersIo.hpp"
 #include "parametersObs.hpp"
-#include "parametersGauge.hpp"
-#include "parametersFermion.hpp"
-#include "parametersSources.hpp"
-#include "parametersSolver.hpp"
-#include "parametersHmc.hpp"
-#include "parametersHeatbath.hpp"
 #include "parametersRhmc.hpp"
+#include "parametersSolver.hpp"
+#include "parametersSources.hpp"
 #include "parametersTest.hpp"
+
+#include <boost/algorithm/string.hpp>
 
 /**
  * This namespace contains generic utility code required by the other packages.
  */
 namespace meta {
 
-/**
- * Parser and representation of an input file.
- *
- * This class is copyable and assignable, but should
- * be used as a const value after initialization.
- */
-	class Inputparameters :
-		public ParametersConfig,
-		public ParametersIo,
-		public ParametersObs,
-		public ParametersGauge,
-		public ParametersFermion,
-		public ParametersSources,
-		public ParametersSolver,
-		public ParametersHmc,
-		public ParametersHeatbath,
-		public ParametersRhmc,
-		public ParametersTest
-	{
+    /**
+     * Parser and representation of an input file.
+     *
+     * This class is copyable and assignable, but should
+     * be used as a const value after initialization.
+     */
+    class Inputparameters : public ParametersConfig,
+                            public ParametersIo,
+                            public ParametersObs,
+                            public ParametersGauge,
+                            public ParametersFermion,
+                            public ParametersSources,
+                            public ParametersSolver,
+                            public ParametersHmc,
+                            public ParametersHeatbath,
+                            public ParametersRhmc,
+                            public ParametersTest {
+      public:
+        /**
+         * The parsing of the input parameters aborted for some reason.
+         * Could either be invalid input or the specification of --help.
+         */
+        struct parse_aborted {
+        };
 
-public:
-		/**
-		* The parsing of the input parameters aborted for some reason.
-		* Could either be invalid input or the specification of --help.
-		*/
-		struct parse_aborted {};
-
-		/**
-		* Construct from command line and config file.
-		*
-		* Config file will be retrieved from command line.
-		*
-		* @throws parse_aborted
-		*/
-		Inputparameters(int argc, const char** argv, std::string parameterSet = "allParameters");
-	};
-}
+        /**
+         * Construct from command line and config file.
+         *
+         * Config file will be retrieved from command line.
+         *
+         * @throws parse_aborted
+         */
+        Inputparameters(int argc, const char** argv, std::string parameterSet = "allParameters");
+    };
+}  // namespace meta
 
 #endif /* _META_INPUTPARAMETERS_H_ */

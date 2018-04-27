@@ -52,38 +52,37 @@
 
 namespace klepsydra {
 
-	/**
-	 * Generic interface for all timers implemented by Klepsydra.
-	 *
-	 * TODO not all timers will be able to return time in microseconds,
-	 * will have to be adjusted to be able to return alternate values
-	 * like clock ticks.
-	 */
-	class Timer
-	{
-		public:
-			/**
-			 * Resets the timer to start at 0 again.
-			 */
-			virtual void reset() = 0;
+    /**
+     * Generic interface for all timers implemented by Klepsydra.
+     *
+     * TODO not all timers will be able to return time in microseconds,
+     * will have to be adjusted to be able to return alternate values
+     * like clock ticks.
+     */
+    class Timer {
+      public:
+        /**
+         * Resets the timer to start at 0 again.
+         */
+        virtual void reset() = 0;
 
-			/**
-			 * Recieves the time passed since timer start/reset.
-			 * The value returned is in microseconds.
-			 */
-			virtual uint64_t getTime() = 0;
+        /**
+         * Recieves the time passed since timer start/reset.
+         * The value returned is in microseconds.
+         */
+        virtual uint64_t getTime() = 0;
 
-			/**
-			 * Recieves the time passed sind timer start/reset
-			 * and resets the timer.
-			 * The value returned is in microseconds.
-			 *
-			 * The interface provides a basic implementations, but
-			 * implementations are expected to provide optimized versions.
-			 */
-			virtual uint64_t getTimeAndReset();
-	};
+        /**
+         * Recieves the time passed sind timer start/reset
+         * and resets the timer.
+         * The value returned is in microseconds.
+         *
+         * The interface provides a basic implementations, but
+         * implementations are expected to provide optimized versions.
+         */
+        virtual uint64_t getTimeAndReset();
+    };
 
-}
+}  // namespace klepsydra
 
-#endif // _TIMER_H_
+#endif  // _TIMER_H_

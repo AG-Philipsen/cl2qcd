@@ -24,120 +24,119 @@
 
 size_t meta::ParametersConfig::get_precision() const noexcept
 {
-	return precision;
+    return precision;
 }
 
 const std::vector<int> meta::ParametersConfig::get_selected_devices() const noexcept
 {
-	return selected_devices;
+    return selected_devices;
 }
 int meta::ParametersConfig::get_device_count() const noexcept
 {
-	return device_count;
+    return device_count;
 }
 bool meta::ParametersConfig::get_use_gpu() const noexcept
 {
-	return use_gpu;
+    return use_gpu;
 }
 bool meta::ParametersConfig::get_use_cpu() const noexcept
 {
-	return use_cpu;
+    return use_cpu;
 }
 bool meta::ParametersConfig::get_enable_profiling() const noexcept
 {
-	return enable_profiling;
+    return enable_profiling;
 }
 
 bool meta::ParametersConfig::get_use_aniso() const noexcept
 {
-	return use_aniso;
+    return use_aniso;
 }
 
 int meta::ParametersConfig::get_nspace() const noexcept
 {
-	return nspace;
+    return nspace;
 }
 int meta::ParametersConfig::get_ntime() const noexcept
 {
-	return ntime;
+    return ntime;
 }
 
 common::startcondition meta::ParametersConfig::get_startcondition() const noexcept
 {
-	return _startcondition;
+    return _startcondition;
 }
 
 std::string meta::ParametersConfig::get_sourcefile() const noexcept
 {
-	return sourcefile;
+    return sourcefile;
 }
 bool meta::ParametersConfig::get_ignore_checksum_errors() const noexcept
 {
-	return ignore_checksum_errors;
+    return ignore_checksum_errors;
 }
 bool meta::ParametersConfig::get_print_to_screen() const noexcept
 {
-	return print_to_screen;
+    return print_to_screen;
 }
 uint32_t meta::ParametersConfig::get_host_seed() const noexcept
 {
-	return host_seed;
+    return host_seed;
 }
 std::string meta::ParametersConfig::get_initial_prng_state() const noexcept
 {
-	return initial_prng_state;
+    return initial_prng_state;
 }
 
 int meta::ParametersConfig::get_benchmarksteps() const noexcept
 {
-	return benchmarksteps;
+    return benchmarksteps;
 }
 
 bool meta::ParametersConfig::get_use_same_rnd_numbers() const noexcept
 {
-	return use_same_rnd_numbers;
+    return use_same_rnd_numbers;
 }
 
 bool meta::ParametersConfig::is_ocl_compiler_opt_disabled() const noexcept
 {
-	return ocl_compiler_opt_disabled;
+    return ocl_compiler_opt_disabled;
 }
 
 std::string meta::ParametersConfig::get_log_level() const noexcept
 {
-	return log_level;
+    return log_level;
 }
 
-//parameters to read in gauge configurations
+// parameters to read in gauge configurations
 bool meta::ParametersConfig::get_read_multiple_configs() const noexcept
 {
-	return read_multiple_configs;
+    return read_multiple_configs;
 }
 int meta::ParametersConfig::get_config_read_start() const noexcept
 {
-	return config_read_start;
+    return config_read_start;
 }
 int meta::ParametersConfig::get_config_read_end() const noexcept
 {
-	return config_read_end;
+    return config_read_end;
 }
 int meta::ParametersConfig::get_config_read_incr() const noexcept
 {
-	return config_read_incr;
+    return config_read_incr;
 }
 
 bool meta::ParametersConfig::get_use_rec12() const noexcept
 {
-	return use_rec12;
+    return use_rec12;
 }
 
 bool meta::ParametersConfig::get_split_cpu() const noexcept
 {
-	return split_cpu;
+    return split_cpu;
 }
 
-meta::ParametersConfig::ParametersConfig()
-	: options("Configuration options")
+meta::ParametersConfig::ParametersConfig() : options("Configuration options")
 {
     // clang-format off
 	options.add_options()
@@ -167,12 +166,12 @@ meta::ParametersConfig::ParametersConfig()
 	("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
 	//todo: this is not used ?!
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false));
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersConfig::~ParametersConfig() = default;
 
-po::options_description & meta::ParametersConfig::getOptions()
+po::options_description& meta::ParametersConfig::getOptions()
 {
-	return options;
+    return options;
 }

@@ -21,14 +21,14 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::observables::parametersInterface
-#include <boost/test/unit_test.hpp>
-
 #include "observablesParameters.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {
-    const char * _params[] = {"foo"};
-    return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params) );
+    const char* _params[] = {"foo"};
+    return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params));
 }
 
 BOOST_AUTO_TEST_CASE(testGaugeObservablesParameters)
@@ -39,10 +39,12 @@ BOOST_AUTO_TEST_CASE(testGaugeObservablesParameters)
     BOOST_CHECK_EQUAL(test.measureRectangles(), params->get_measure_rectangles());
     BOOST_CHECK_EQUAL(test.measureTransportCoefficientKappa(), params->get_measure_transportcoefficient_kappa());
     BOOST_CHECK_EQUAL(test.printToScreen(), params->get_print_to_screen());
-    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getBeta()), boost::lexical_cast<std::string>(params->get_beta()));
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getBeta()),
+                      boost::lexical_cast<std::string>(params->get_beta()));
     BOOST_CHECK_EQUAL(test.getTransportCoefficientKappaFilename(), params->get_transportcoefficientKappaFilename());
     BOOST_CHECK_EQUAL(test.getRectanglesFilename(), params->get_rectanglesFilename());
-    BOOST_CHECK_EQUAL(test.getGaugeObservablesFilename("conf.00000"), meta::get_gauge_obs_file_name(*params, "conf.00000"));
+    BOOST_CHECK_EQUAL(test.getGaugeObservablesFilename("conf.00000"),
+                      meta::get_gauge_obs_file_name(*params, "conf.00000"));
     BOOST_CHECK_EQUAL(test.getTemporalPlaquetteNormalization(), meta::get_tplaq_norm(*params));
     BOOST_CHECK_EQUAL(test.getSpatialPlaquetteNormalization(), meta::get_splaq_norm(*params));
     BOOST_CHECK_EQUAL(test.getPlaquetteNormalization(), meta::get_plaq_norm(*params));
@@ -56,7 +58,8 @@ BOOST_AUTO_TEST_CASE(testStaggeredChiralCondensateObservablesParameters)
     physics::observables::StaggeredChiralCondensateParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getNumberOfSources(), params->get_num_sources());
-    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getMass()), boost::lexical_cast<std::string>(params->get_mass()));
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getMass()),
+                      boost::lexical_cast<std::string>(params->get_mass()));
     BOOST_CHECK_EQUAL(test.measurePbp(), params->get_measure_pbp());
     BOOST_CHECK_EQUAL(test.getSolverPrecision(), params->get_solver_prec());
     BOOST_CHECK_EQUAL(test.getNumberOfTastes(), params->get_num_tastes());
@@ -74,11 +77,13 @@ BOOST_AUTO_TEST_CASE(testWilsonChiralCondensateObservablesParameters)
     BOOST_CHECK_EQUAL(test.getPbpVersion(), params->get_pbp_version());
     BOOST_CHECK_EQUAL(test.measurePbp(), params->get_measure_pbp());
     BOOST_CHECK_EQUAL(test.getNumberOfSources(), params->get_num_sources());
-    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getKappa()), boost::lexical_cast<std::string>(params->get_kappa()));
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getKappa()),
+                      boost::lexical_cast<std::string>(params->get_kappa()));
     BOOST_CHECK_EQUAL(test.get4dVolume(), meta::get_vol4d(*params));
     BOOST_CHECK_EQUAL(test.useEvenOdd(), params->get_use_eo());
     BOOST_CHECK_EQUAL(test.getPbpFilename("conf.00000"), meta::get_ferm_obs_pbp_file_name(*params, "conf.00000"));
-    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getMubar()), boost::lexical_cast<std::string>(meta::get_mubar(*params)));
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getMubar()),
+                      boost::lexical_cast<std::string>(meta::get_mubar(*params)));
 }
 
 BOOST_AUTO_TEST_CASE(testWilsonCorrelatorsObservablesParameters)
@@ -91,7 +96,8 @@ BOOST_AUTO_TEST_CASE(testWilsonCorrelatorsObservablesParameters)
     BOOST_CHECK_EQUAL(test.getSourceType(), params->get_sourcetype());
     BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
     BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
-    BOOST_CHECK_EQUAL(test.getCorrelatorFilename("conf.00000"), meta::get_ferm_obs_corr_file_name(*params, "conf.00000"));
+    BOOST_CHECK_EQUAL(test.getCorrelatorFilename("conf.00000"),
+                      meta::get_ferm_obs_corr_file_name(*params, "conf.00000"));
     BOOST_CHECK_EQUAL(test.placeSourcesOnHost(), params->get_place_sources_on_host());
     BOOST_CHECK_EQUAL(test.getNumberOfSources(), params->get_num_sources());
 }
@@ -102,12 +108,13 @@ BOOST_AUTO_TEST_CASE(testStaggeredCorrelatorsObservablesParameters)
     physics::observables::StaggeredTwoFlavourCorrelatorsParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.printToScreen(), params->get_print_to_screen());
-//    BOOST_CHECK_EQUAL(test.getCorrelatorDirection(), params->get_corr_dir());
+    //    BOOST_CHECK_EQUAL(test.getCorrelatorDirection(), params->get_corr_dir());
     BOOST_CHECK_EQUAL(test.getSourceType(), params->get_sourcetype());
-//    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
+    //    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
     BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
-    BOOST_CHECK_EQUAL(test.getCorrelatorFilename("conf.00000"), meta::get_ferm_obs_corr_file_name(*params, "conf.00000"));
-//    BOOST_CHECK_EQUAL(test.placeSourcesOnHost(), params->get_place_sources_on_host());
+    BOOST_CHECK_EQUAL(test.getCorrelatorFilename("conf.00000"),
+                      meta::get_ferm_obs_corr_file_name(*params, "conf.00000"));
+    //    BOOST_CHECK_EQUAL(test.placeSourcesOnHost(), params->get_place_sources_on_host());
     BOOST_CHECK_EQUAL(test.getNumberOfSources(), params->get_num_sources());
     BOOST_CHECK_EQUAL(test.getSolverPrecision(), params->get_solver_prec());
 }

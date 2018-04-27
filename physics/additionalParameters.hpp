@@ -24,17 +24,17 @@
 #include "../common_header_files/types.hpp"
 #include "../executables/exceptions.hpp"
 
-namespace physics{
+namespace physics {
 
     class AdditionalParameters {
-        public:
-            virtual ~AdditionalParameters() = 0;
-            virtual hmc_float getKappa() const {throw Print_Error_Message("Generic AdditionalParameter object used!");}
-            virtual hmc_float getMubar() const {throw Print_Error_Message("Generic AdditionalParameter object used!");}
-            virtual hmc_float getMass() const {throw Print_Error_Message("Generic AdditionalParameter object used!");}
-            virtual bool getConservative() const {throw Print_Error_Message("Generic AdditionalParameter object used!");}
+      public:
+        virtual ~AdditionalParameters() = 0;
+        virtual hmc_float getKappa() const { throw Print_Error_Message("Generic AdditionalParameter object used!"); }
+        virtual hmc_float getMubar() const { throw Print_Error_Message("Generic AdditionalParameter object used!"); }
+        virtual hmc_float getMass() const { throw Print_Error_Message("Generic AdditionalParameter object used!"); }
+        virtual bool getConservative() const { throw Print_Error_Message("Generic AdditionalParameter object used!"); }
     };
 
-    inline AdditionalParameters::~AdditionalParameters(){}
+    inline AdditionalParameters::~AdditionalParameters() {}
 
-}
+}  // namespace physics

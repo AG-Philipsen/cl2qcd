@@ -22,89 +22,90 @@
 #include <iostream>
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE KernelTester_test
-#include <boost/test/unit_test.hpp>
-
 #include "kernelTester.hpp"
 
-struct DoubleKernelTester : public KernelTester
-{
-	DoubleKernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface& hPI,
-			const hardware::code::OpenClKernelParametersInterface& kP, struct TestParameters tP, const ReferenceValues rV):
-		KernelTester(kernelNameIn, hPI, kP, tP, rV)
-	{
-		kernelResult.at(0) = 1;
-	}
+#include <boost/test/unit_test.hpp>
+
+struct DoubleKernelTester : public KernelTester {
+    DoubleKernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface& hPI,
+                       const hardware::code::OpenClKernelParametersInterface& kP, struct TestParameters tP,
+                       const ReferenceValues rV)
+        : KernelTester(kernelNameIn, hPI, kP, tP, rV)
+    {
+        kernelResult.at(0) = 1;
+    }
 };
 
-struct ComplexKernelTester : public KernelTester
-{
-	ComplexKernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface& hPI,
-			const hardware::code::OpenClKernelParametersInterface& kP, struct TestParameters tP, const ReferenceValues rV) :
-		KernelTester(kernelNameIn, hPI, kP, tP, rV)
-	{
-		kernelResult.at(0) = 1.;
-		kernelResult.at(1) = 2.;
-	}
+struct ComplexKernelTester : public KernelTester {
+    ComplexKernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface& hPI,
+                        const hardware::code::OpenClKernelParametersInterface& kP, struct TestParameters tP,
+                        const ReferenceValues rV)
+        : KernelTester(kernelNameIn, hPI, kP, tP, rV)
+    {
+        kernelResult.at(0) = 1.;
+        kernelResult.at(1) = 2.;
+    }
 };
 
-BOOST_AUTO_TEST_SUITE ( BUILD )
+BOOST_AUTO_TEST_SUITE(BUILD)
 
-	BOOST_AUTO_TEST_CASE( BUILD_1 )
-	{
-		const hardware::HardwareParametersMockup params(4,4);
-		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const struct TestParameters testParams(LatticeExtents(4,4));
-		BOOST_CHECK_NO_THROW(KernelTester kernelTester("testMockup", params, kernelParameters, testParams, ReferenceValues{0} ) );
-	}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE ( DOUBLE )
-
-	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL )
-	{
-		const hardware::HardwareParametersMockup params(4,4);
-		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const struct TestParameters testParams(LatticeExtents(4,4));
-
-		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1} );
-	}
+    BOOST_AUTO_TEST_CASE(BUILD_1)
+    {
+        const hardware::HardwareParametersMockup params(4, 4);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4, true);
+        const struct TestParameters testParams(LatticeExtents(4, 4));
+        BOOST_CHECK_NO_THROW(
+            KernelTester kernelTester("testMockup", params, kernelParameters, testParams, ReferenceValues{0}));
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE ( DOUBLE_SMALL )
+BOOST_AUTO_TEST_SUITE(DOUBLE)
 
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (FAILING_COMPARISON, 1)
+    BOOST_AUTO_TEST_CASE(TRIVIALKERNEL)
+    {
+        const hardware::HardwareParametersMockup params(4, 4);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4, true);
+        const struct TestParameters testParams(LatticeExtents(4, 4));
 
-	BOOST_AUTO_TEST_CASE( FAILING_COMPARISON )
-	{
-		const hardware::HardwareParametersMockup params(4,4);
-		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const struct TestParameters testParams(LatticeExtents(4,4));
-
-		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{0.});
-	}
-
-	BOOST_AUTO_TEST_CASE( SUCCEEDING_COMPARISON )
-	{
-		const hardware::HardwareParametersMockup params(4,4);
-		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const struct TestParameters testParams(LatticeExtents(4,4));
-
-		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1});
-	}
+        DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1});
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE ( COMPLEX )
+BOOST_AUTO_TEST_SUITE(DOUBLE_SMALL)
 
-	BOOST_AUTO_TEST_CASE( COMPARE_COMPLEX_NUMBERS )
-	{
-		const hardware::HardwareParametersMockup params(4,4);
-		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const struct TestParameters testParams(LatticeExtents(4,4));
+    BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(FAILING_COMPARISON, 1)
 
-		ComplexKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1.,2.});
-	}
+    BOOST_AUTO_TEST_CASE(FAILING_COMPARISON)
+    {
+        const hardware::HardwareParametersMockup params(4, 4);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4, true);
+        const struct TestParameters testParams(LatticeExtents(4, 4));
+
+        DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{0.});
+    }
+
+    BOOST_AUTO_TEST_CASE(SUCCEEDING_COMPARISON)
+    {
+        const hardware::HardwareParametersMockup params(4, 4);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4, true);
+        const struct TestParameters testParams(LatticeExtents(4, 4));
+
+        DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1});
+    }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(COMPLEX)
+
+    BOOST_AUTO_TEST_CASE(COMPARE_COMPLEX_NUMBERS)
+    {
+        const hardware::HardwareParametersMockup params(4, 4);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4, true);
+        const struct TestParameters testParams(LatticeExtents(4, 4));
+
+        ComplexKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1., 2.});
+    }
 
 BOOST_AUTO_TEST_SUITE_END()

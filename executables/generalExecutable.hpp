@@ -20,7 +20,6 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /*
  * @file
  * Declaration of the generalExecutable class.
@@ -30,63 +29,61 @@
 #ifndef GENERALEXECUTABLE_H_
 #define GENERALEXECUTABLE_H_
 
-#include <fstream>
-
 #include "../common_header_files/types.hpp"
 #include "../executables/exceptions.hpp"
-#include "../host_functionality/logger.hpp"
-#include "../meta/util.hpp"
 #include "../hardware/system.hpp"
 #include "../host_functionality/host_use_timer.hpp"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../physics/prng.hpp"
-#include "../physics/observables/gaugeObservables.hpp"
-#include "../physics/interfacesHandler.hpp"
+#include "../host_functionality/logger.hpp"
 #include "../interfaceImplementations/hardwareParameters.hpp"
 #include "../interfaceImplementations/openClKernelParameters.hpp"
+#include "../meta/util.hpp"
+#include "../physics/interfacesHandler.hpp"
+#include "../physics/lattices/gaugefield.hpp"
+#include "../physics/observables/gaugeObservables.hpp"
+#include "../physics/prng.hpp"
 
-class generalExecutable
-{
+#include <fstream>
 
-public:
-	/**
-	 * Destructor. Prints runtime information to screen and file.
-	 */
-	virtual ~generalExecutable();
+class generalExecutable {
+  public:
+    /**
+     * Destructor. Prints runtime information to screen and file.
+     */
+    virtual ~generalExecutable();
 
-protected:
-	/**
-	* Initialize meta::Inputparametes and hardware::System objects
-	 */
-	//Protected since it makes no sense to allow the user to instantiate this class
-	generalExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
+  protected:
+    /**
+     * Initialize meta::Inputparametes and hardware::System objects
+     */
+    // Protected since it makes no sense to allow the user to instantiate this class
+    generalExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
 
-	const char* ownName;
-	std::string filenameForLogfile;
-	std::string filenameForProfilingData;
-	usetimer totalRuntimeOfExecutable;
-	usetimer initializationTimer;
-	usetimer performanceTimer;
-	const meta::Inputparameters parameters;
-	const physics::PrngParametersInterface * prngParameters;
-	const hardware::HardwareParametersImplementation * hP;
-	const hardware::code::OpenClKernelParametersImplementation * kP;
-	hardware::System * system;
-	physics::PRNG * prng;
-	physics::lattices::Gaugefield * gaugefield;
-	std::unique_ptr<physics::InterfacesHandler> interfacesHandler;
-	std::ofstream outputToFile;
-	const char* generalTimeOutputFilename = "general_time_output";
+    const char* ownName;
+    std::string filenameForLogfile;
+    std::string filenameForProfilingData;
+    usetimer totalRuntimeOfExecutable;
+    usetimer initializationTimer;
+    usetimer performanceTimer;
+    const meta::Inputparameters parameters;
+    const physics::PrngParametersInterface* prngParameters;
+    const hardware::HardwareParametersImplementation* hP;
+    const hardware::code::OpenClKernelParametersImplementation* kP;
+    hardware::System* system;
+    physics::PRNG* prng;
+    physics::lattices::Gaugefield* gaugefield;
+    std::unique_ptr<physics::InterfacesHandler> interfacesHandler;
+    std::ofstream outputToFile;
+    const char* generalTimeOutputFilename = "general_time_output";
 
-	void printRuntimeInformationToScreenAndFile();
+    void printRuntimeInformationToScreenAndFile();
 
-	void printGeneralTimesToScreen();
+    void printGeneralTimesToScreen();
 
-	void printGeneralTimesToFile();
+    void printGeneralTimesToFile();
 
-	void printParametersToScreenAndFile();
+    void printParametersToScreenAndFile();
 
-	void printProfilingDataToFile();
+    void printProfilingDataToFile();
 };
 
 #endif /* GENERALEXECUTABLE_H_ */

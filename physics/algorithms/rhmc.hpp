@@ -23,20 +23,21 @@
 #ifndef _PHYSICS_ALGORITHMS_RHMC_
 #define _PHYSICS_ALGORITHMS_RHMC_
 
+#include "../../common_header_files/types_hmc.hpp"
+#include "../interfacesHandler.hpp"
 #include "../lattices/gaugefield.hpp"
 #include "../prng.hpp"
-#include "../../common_header_files/types_hmc.hpp"
 #include "rational_approximation.hpp"
-#include "../interfacesHandler.hpp"
 
 namespace physics {
     namespace algorithms {
 
-        hmc_observables perform_rhmc_step(const Rational_Approximation& approx1, const Rational_Approximation& approx2, const Rational_Approximation& approx3,
-                                          const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system,
+        hmc_observables perform_rhmc_step(const Rational_Approximation& approx1, const Rational_Approximation& approx2,
+                                          const Rational_Approximation& approx3,
+                                          const physics::lattices::Gaugefield* gf, int iter, hmc_float rnd_number,
+                                          physics::PRNG& prng, const hardware::System& system,
                                           physics::InterfacesHandler& interfacesHandler);
-
     }
-}
+}  // namespace physics
 
 #endif /* _PHYSICS_ALGORITHMS_RHMC_ */

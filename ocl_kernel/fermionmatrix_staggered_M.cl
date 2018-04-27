@@ -61,31 +61,30 @@
  *       VOL4D components.
  */
 
-
-__kernel void M_staggered(__global const su3vec * const restrict in, __global const Matrixsu3StorageType * const restrict field, __global su3vec * const restrict out, hmc_float mass_in)
+__kernel void M_staggered(__global const su3vec* const restrict in,
+                          __global const Matrixsu3StorageType* const restrict field,
+                          __global su3vec* const restrict out, hmc_float mass_in)
 {
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	su3vec out_tmp, out_tmp2;
+    int global_size = get_global_size(0);
+    int id          = get_global_id(0);
+    su3vec out_tmp, out_tmp2;
 
-	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+    for (int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+        /** @todo this must be done more efficient */
+        st_index pos = (id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2);
 
-		/** @todo this must be done more efficient */
-		st_index pos = (id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2);
+        // From now on we adopt the notation M = m + D_KS
 
+        // Diagonal part: m * in(n)
+        out_tmp = get_su3vec_from_field(in, pos.space, pos.time);
+        out_tmp = su3vec_times_real(out_tmp, mass_in);
 
-		//From now on we adopt the notation M = m + D_KS
+        // Non-diagonal part: calc D_KS
+        for (dir_idx dir = 0; dir < 4; ++dir) {
+            out_tmp2 = D_KS_local(in, field, pos, dir);
+            out_tmp  = su3vec_acc(out_tmp, out_tmp2);
+        }
 
-		//Diagonal part: m * in(n)
-		out_tmp = get_su3vec_from_field(in, pos.space, pos.time);
-		out_tmp = su3vec_times_real(out_tmp, mass_in);
-
-		//Non-diagonal part: calc D_KS
-		for(dir_idx dir = 0; dir < 4; ++dir) {
-			out_tmp2 = D_KS_local(in, field, pos, dir);
-			out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		}
-
-		put_su3vec_to_field(out_tmp, out, pos.space, pos.time);
-	}
+        put_su3vec_to_field(out_tmp, out, pos.space, pos.time);
+    }
 }

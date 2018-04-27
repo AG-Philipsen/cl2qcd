@@ -26,43 +26,45 @@
 #include "../../../executables/exceptions.hpp"
 
 namespace physics {
-namespace algorithms {
-namespace solvers {
+    namespace algorithms {
+        namespace solvers {
 
-/**
- * Base exception used by solvers to indicate solving failures.
- */
-class SolverException : public Print_Error_Message {
-public:
-	/**
-	 * How many iterations the solver performed until the iteration occured.
-	 */
-	int get_iterations() const noexcept {
-		return iterations;
-	};
-protected:
-	/**
-	 * Create a solver exception with a printable message and the iteration at which it occured.
-	 *
-	 * Protected to not allow creation of generic solver exceptions.
-	 */
-	SolverException(std::string message, int iterations, std::string filename, int linenumber) : Print_Error_Message(message, filename, linenumber), iterations(iterations) { };
-private:
-	const int iterations;
-};
+            /**
+             * Base exception used by solvers to indicate solving failures.
+             */
+            class SolverException : public Print_Error_Message {
+              public:
+                /**
+                 * How many iterations the solver performed until the iteration occured.
+                 */
+                int get_iterations() const noexcept { return iterations; };
 
-class SolverStuck : public SolverException {
-public:
-	SolverStuck(int iterations, std::string filename, int linenumber);
-};
+              protected:
+                /**
+                 * Create a solver exception with a printable message and the iteration at which it occured.
+                 *
+                 * Protected to not allow creation of generic solver exceptions.
+                 */
+                SolverException(std::string message, int iterations, std::string filename, int linenumber)
+                    : Print_Error_Message(message, filename, linenumber), iterations(iterations){};
 
-class SolverDidNotSolve : public SolverException {
-public:
-	SolverDidNotSolve(int iterations, std::string filename, int linenumber) : SolverException("Solver did not solve.", iterations, filename, linenumber) { };
-};
+              private:
+                const int iterations;
+            };
 
-}
-}
-}
+            class SolverStuck : public SolverException {
+              public:
+                SolverStuck(int iterations, std::string filename, int linenumber);
+            };
+
+            class SolverDidNotSolve : public SolverException {
+              public:
+                SolverDidNotSolve(int iterations, std::string filename, int linenumber)
+                    : SolverException("Solver did not solve.", iterations, filename, linenumber){};
+            };
+
+        }  // namespace solvers
+    }      // namespace algorithms
+}  // namespace physics
 
 #endif

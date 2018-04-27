@@ -26,8 +26,9 @@
 
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/spinorfield.hpp"
-#include <fstream>
 #include "observablesInterfaces.hpp"
+
+#include <fstream>
 
 namespace physics {
 
@@ -35,11 +36,15 @@ namespace physics {
 
         namespace wilson {
 
-            std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName,
-                                                                                physics::InterfacesHandler & interfacesHandler);
-            std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration,
-                                                                                physics::InterfacesHandler & interfacesHandler);
-        }
-    }
-}
+            std::vector<double>
+            measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield* gaugefield,
+                                                            std::string configurationName,
+                                                            physics::InterfacesHandler& interfacesHandler);
+            std::vector<double>
+            measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield* gaugefield,
+                                                            int iteration,
+                                                            physics::InterfacesHandler& interfacesHandler);
+        }  // namespace wilson
+    }      // namespace observables
+}  // namespace physics
 #endif

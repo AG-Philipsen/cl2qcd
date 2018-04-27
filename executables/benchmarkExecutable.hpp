@@ -30,38 +30,37 @@
 #include "../hardware/device.hpp"
 #include "generalExecutable.hpp"
 
-class benchmarkExecutable : public generalExecutable
-{
-public:
-	benchmarkExecutable(int argc, const char* argv[]);
+class benchmarkExecutable : public generalExecutable {
+  public:
+    benchmarkExecutable(int argc, const char* argv[]);
 
-	/**
-	 * performs to-be-specified kernels a number of times.
-	 * This should be used with profiling enabled.
-	 */
-	void benchmark();
+    /**
+     * performs to-be-specified kernels a number of times.
+     * This should be used with profiling enabled.
+     */
+    void benchmark();
 
-	/**
-	 * Calls a kernel on possibly multiple devices.
-	 * The total execution time is measured after a warm-up run.
-	 * Therefore, it should not be used with profiling enabled.
-	 */
-	void benchmarkMultipleDevices();
+    /**
+     * Calls a kernel on possibly multiple devices.
+     * The total execution time is measured after a warm-up run.
+     * Therefore, it should not be used with profiling enabled.
+     */
+    void benchmarkMultipleDevices();
 
-protected:
-	hardware::Device * device;
-	int benchmarkSteps;
-	uint64_t executionTime;
+  protected:
+    hardware::Device* device;
+    int benchmarkSteps;
+    uint64_t executionTime;
 
-	void synchronizeAllDevices();
+    void synchronizeAllDevices();
 
-	/**
-	 * Functions to call specific kernels.
-	 * As this can be done for a single of multiple devices, they are not purely virtual.
-	 */
-	virtual void performBenchmarkForSpecificKernels() {};
-	virtual void enqueueSpecificKernelForBenchmarkingMultipleDevices() {};
-	virtual void printProfilingDataToScreen() {};
+    /**
+     * Functions to call specific kernels.
+     * As this can be done for a single of multiple devices, they are not purely virtual.
+     */
+    virtual void performBenchmarkForSpecificKernels(){};
+    virtual void enqueueSpecificKernelForBenchmarkingMultipleDevices(){};
+    virtual void printProfilingDataToScreen(){};
 };
 
 #endif /* BENCHMARKEXECUTABLE_H_ */

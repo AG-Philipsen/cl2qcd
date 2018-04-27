@@ -22,14 +22,14 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::additionalParameters
-#include <boost/test/unit_test.hpp>
-
 #include "physicsParameters.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {
-    const char * _params[] = {"foo"};
-    return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params) );
+    const char* _params[] = {"foo"};
+    return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params));
 }
 
 BOOST_AUTO_TEST_SUITE(testWilsonAdditionalParameters)
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(testFermionParameters)
 
     BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
     BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
-    BOOST_CHECK_EQUAL(test.getNumberOfElements(), std::pow(params->get_nspace(), 3.)*params->get_ntime());
+    BOOST_CHECK_EQUAL(test.getNumberOfElements(), std::pow(params->get_nspace(), 3.) * params->get_ntime());
     BOOST_CHECK_EQUAL(test.getFermionicActionType(), params->get_fermact());
     BOOST_CHECK_EQUAL(test.useMergedFermionicKernels(), params->get_use_merge_kernels_fermion());
 }
@@ -99,20 +99,19 @@ BOOST_AUTO_TEST_CASE(testSourcesParameters)
     BOOST_CHECK_EQUAL(test.getSourceType(), params->get_sourcetype());
     BOOST_CHECK_EQUAL(test.getSourceT(), params->get_source_t());
     BOOST_CHECK_EQUAL(test.getSourceZ(), params->get_source_z());
-
 }
 
 BOOST_AUTO_TEST_CASE(testPrngParameters)
 {
-    const char * _params[] = {"foo"};
+    const char* _params[] = {"foo"};
     meta::Inputparameters params(1, _params);
 
     physics::PrngParametersImplementation test(params);
 
     BOOST_CHECK_EQUAL(test.getHostSeed(), params.get_host_seed());
     BOOST_CHECK_EQUAL(test.getInitialPrngStateFilename(), params.get_initial_prng_state());
-    BOOST_CHECK_EQUAL(test.useSameRandomNumbers(), params.get_use_same_rnd_numbers() );
-    BOOST_CHECK_EQUAL(test.getNamePostfix(), params.get_prng_postfix() );
-    BOOST_CHECK_EQUAL(test.getNamePrefix(), params.get_prng_prefix() );
-    BOOST_CHECK_EQUAL(test.getNumberOfDigitsInName(), params.get_config_number_digits() );
+    BOOST_CHECK_EQUAL(test.useSameRandomNumbers(), params.get_use_same_rnd_numbers());
+    BOOST_CHECK_EQUAL(test.getNamePostfix(), params.get_prng_postfix());
+    BOOST_CHECK_EQUAL(test.getNamePrefix(), params.get_prng_prefix());
+    BOOST_CHECK_EQUAL(test.getNumberOfDigitsInName(), params.get_config_number_digits());
 }

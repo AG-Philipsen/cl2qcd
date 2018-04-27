@@ -23,31 +23,30 @@
 
 #include "parametersGauge.hpp"
 
-//gaugefield parameters
+// gaugefield parameters
 double meta::ParametersGauge::get_beta() const noexcept
 {
-	return beta;
+    return beta;
 }
 double meta::ParametersGauge::get_rho() const noexcept
 {
-	return rho;
+    return rho;
 }
 int meta::ParametersGauge::get_rho_iter() const noexcept
 {
-	return rho_iter;
+    return rho_iter;
 }
 common::action meta::ParametersGauge::get_gaugeact() const noexcept
 {
-	return gaugeact;
+    return gaugeact;
 }
 
 bool meta::ParametersGauge::get_use_smearing() const noexcept
 {
-	return use_smearing;
+    return use_smearing;
 }
 
-meta::ParametersGauge::ParametersGauge()
-	: options("Gaugefield options")
+meta::ParametersGauge::ParametersGauge() : options("Gaugefield options")
 {
     // clang-format off
 	options.add_options()
@@ -56,12 +55,12 @@ meta::ParametersGauge::ParametersGauge()
 	("rho", po::value<double>(&rho)->default_value(0.))
 	("rho_iter", po::value<int>(&rho_iter)->default_value(0))
 	("gaugeact", po::value<std::string>()->default_value("wilson"));
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersGauge::~ParametersGauge() = default;
 
-po::options_description & meta::ParametersGauge::getOptions()
+po::options_description& meta::ParametersGauge::getOptions()
 {
-	return options;
+    return options;
 }

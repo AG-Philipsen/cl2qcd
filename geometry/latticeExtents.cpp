@@ -20,78 +20,79 @@
  */
 
 #include "latticeExtents.hpp"
+
 #include <stdexcept>
 
-LatticeExtents::LatticeExtents(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn) :
-	xExtent(nsIn), yExtent(nsIn), zExtent(nsIn), tExtent(ntIn)	{}
+LatticeExtents::LatticeExtents(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn)
+    : xExtent(nsIn), yExtent(nsIn), zExtent(nsIn), tExtent(ntIn)
+{
+}
 
-LatticeExtents::LatticeExtents(latticeSize nIn):
-	xExtent(nIn), yExtent(nIn), zExtent(nIn), tExtent(nIn)	{}
+LatticeExtents::LatticeExtents(latticeSize nIn) : xExtent(nIn), yExtent(nIn), zExtent(nIn), tExtent(nIn) {}
 
-LatticeExtents::LatticeExtents(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn):
-	xExtent(nxIn), yExtent(nyIn), zExtent(nzIn), tExtent(ntIn)	{}
+LatticeExtents::LatticeExtents(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn)
+    : xExtent(nxIn), yExtent(nyIn), zExtent(nzIn), tExtent(ntIn)
+{
+}
 
-LatticeExtents::LatticeExtents() :
-	xExtent(4), yExtent(4), zExtent(4), tExtent(4)	{}
+LatticeExtents::LatticeExtents() : xExtent(4), yExtent(4), zExtent(4), tExtent(4) {}
 
 latticeSize LatticeExtents::getNs() const
 {
-	return xExtent;
+    return xExtent;
 }
 
 latticeSize LatticeExtents::getNt() const
 {
-	return tExtent;
+    return tExtent;
 }
 
 latticeSize LatticeExtents::getSpatialLatticeVolume() const
 {
-	return xExtent * yExtent * zExtent;
+    return xExtent * yExtent * zExtent;
 }
 
 latticeSize LatticeExtents::getLatticeVolume() const
 {
-	return getSpatialLatticeVolume() * tExtent;
+    return getSpatialLatticeVolume() * tExtent;
 }
 
 LatticeExtent::LatticeExtent(const latticeSize value) : value(value)
 {
-	if(value == 0)
-	{
-		throw(std::invalid_argument("Must have non-zero latticeExtent!"));
-	}
+    if (value == 0) {
+        throw(std::invalid_argument("Must have non-zero latticeExtent!"));
+    }
 }
 
 LatticeExtent::operator latticeSize() const
 {
-	return value;
+    return value;
 }
 
-LatticeCoordinate::LatticeCoordinate(const latticeCoordinate valueIn, const LatticeExtent lE):
-	value(valueIn), extent(lE)
+LatticeCoordinate::LatticeCoordinate(const latticeCoordinate valueIn, const LatticeExtent lE)
+    : value(valueIn), extent(lE)
 {
-	if(value >= extent)
-	{
-		throw(std::invalid_argument("LatticeCoordinate must be smaller than LatticeExtent!"));
-	}
+    if (value >= extent) {
+        throw(std::invalid_argument("LatticeCoordinate must be smaller than LatticeExtent!"));
+    }
 }
 
 LatticeCoordinate LatticeCoordinate::up() const
 {
-	return LatticeCoordinate( (value+1)%extent, extent);
+    return LatticeCoordinate((value + 1) % extent, extent);
 }
 
 LatticeCoordinate LatticeCoordinate::down() const
 {
-	return LatticeCoordinate( (value-1+extent)%extent, extent);
+    return LatticeCoordinate((value - 1 + extent) % extent, extent);
 }
 
 LatticeCoordinate::operator latticeSize() const
 {
-	return value;
+    return value;
 }
 
 std::ostream& operator<<(std::ostream& out, const LatticeExtents in)
 {
-	return out << '(' << in.xExtent << ", " << in.yExtent << ", " << in.zExtent << ", " << in.tExtent << ')';
+    return out << '(' << in.xExtent << ", " << in.yExtent << ", " << in.zExtent << ", " << in.tExtent << ')';
 }

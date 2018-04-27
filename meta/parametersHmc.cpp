@@ -24,68 +24,68 @@
 #include "parametersHmc.hpp"
 
 #include "../host_functionality/logger.hpp"
+
 #include <stdexcept>
 
 using namespace meta;
 
 double ParametersHmc::get_tau() const noexcept
 {
-	return tau;
+    return tau;
 }
 bool ParametersHmc::get_reversibility_check() const noexcept
 {
-	return reversibility_check;
+    return reversibility_check;
 }
 int ParametersHmc::get_integrationsteps(size_t timescale) const noexcept
 {
-	switch(timescale) {
-		case 0:
-			return integrationsteps0;
-		case 1:
-			return integrationsteps1;
-		case 2:
-			return integrationsteps2;
-		default:
-			throw std::out_of_range("No such timescale");
-	}
+    switch (timescale) {
+        case 0:
+            return integrationsteps0;
+        case 1:
+            return integrationsteps1;
+        case 2:
+            return integrationsteps2;
+        default:
+            throw std::out_of_range("No such timescale");
+    }
 }
 int ParametersHmc::get_hmcsteps() const noexcept
 {
-	return hmcsteps;
+    return hmcsteps;
 }
 int ParametersHmc::get_num_timescales() const noexcept
 {
-	return num_timescales;
+    return num_timescales;
 }
 common::integrator ParametersHmc::get_integrator(size_t timescale) const noexcept
 {
-	switch(timescale) {
-		case 0:
-			return integrator0;
-		case 1:
-			return integrator1;
-		case 2:
-			return integrator2;
-		default:
-			throw std::out_of_range("No such timescale");
-	}
+    switch (timescale) {
+        case 0:
+            return integrator0;
+        case 1:
+            return integrator1;
+        case 2:
+            return integrator2;
+        default:
+            throw std::out_of_range("No such timescale");
+    }
 }
 double ParametersHmc::get_lambda(size_t timescale) const noexcept
 {
-	switch(timescale) {
-		case 0:
-			return lambda0;
-		case 1:
-			return lambda1;
-		case 2:
-			return lambda2;
-		default:
-			throw std::out_of_range("No such timescale");
-	}
+    switch (timescale) {
+        case 0:
+            return lambda0;
+        case 1:
+            return lambda1;
+        case 2:
+            return lambda2;
+        default:
+            throw std::out_of_range("No such timescale");
+    }
 }
 
-ParametersHmc::ParametersHmc()
-	: options("HMC options")
+ParametersHmc::ParametersHmc() : options("HMC options")
 {
     // clang-format off
 	options.add_options()
@@ -105,22 +105,22 @@ ParametersHmc::ParametersHmc()
 	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
 	("use_mp", po::value<bool>(&use_mp)->default_value(false));
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersHmc::~ParametersHmc() = default;
 
-po::options_description & ParametersHmc::getOptions()
+po::options_description& ParametersHmc::getOptions()
 {
-	return options;
+    return options;
 }
 
 bool ParametersHmc::get_use_gauge_only() const noexcept
 {
-	return use_gauge_only;
+    return use_gauge_only;
 }
 
 bool ParametersHmc::get_use_mp() const noexcept
 {
-	return use_mp;
+    return use_mp;
 }

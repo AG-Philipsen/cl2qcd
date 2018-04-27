@@ -26,117 +26,67 @@
 
 #include "../interfaceImplementations/latticesParameters.hpp"
 
-class IldgIoParametersInterface
-{
-public:
-	virtual ~IldgIoParametersInterface() {};
-	virtual bool ignoreChecksumErrors() const = 0;
-	virtual int getNumberOfElements() const = 0;
-	virtual int getNs() const = 0;
-	virtual int getNt() const = 0;
-	virtual int getPrecision() const = 0;
-	virtual double getKappa() const = 0;
-	virtual double getMu() const = 0;
-	virtual double getBeta() const = 0;
+class IldgIoParametersInterface {
+  public:
+    virtual ~IldgIoParametersInterface(){};
+    virtual bool ignoreChecksumErrors() const = 0;
+    virtual int getNumberOfElements() const   = 0;
+    virtual int getNs() const                 = 0;
+    virtual int getNt() const                 = 0;
+    virtual int getPrecision() const          = 0;
+    virtual double getKappa() const           = 0;
+    virtual double getMu() const              = 0;
+    virtual double getBeta() const            = 0;
 };
 
-class Inputparameters : public IldgIoParametersInterface
-{
-public:
-	Inputparameters (const physics::lattices::GaugefieldParametersInterface * parametersIn) : parameters(parametersIn) {} ;
-	virtual bool ignoreChecksumErrors() const
-	{
-		return parameters->ignoreChecksumErrorsInIO();
-	}
-	virtual int getNumberOfElements() const
-	{
-		return parameters->getNumberOfElements();
-	}
-	virtual int getNs() const
-	{
-		return parameters->getNs();
-	}
-	virtual int getNt() const
-	{
-		return parameters->getNt();
-	}
-	virtual int getPrecision() const
-	{
-		return parameters->getPrecision();
-	}
-	virtual double getKappa() const
-	{
-		return parameters->getKappa();
-	}
-	virtual double getMu() const
-	{
-		return parameters->getMu();
-	}
-	virtual double getBeta() const
-	{
-		return parameters->getBeta();
-	}
-private:
-	const physics::lattices::GaugefieldParametersInterface * parameters;
+class Inputparameters : public IldgIoParametersInterface {
+  public:
+    Inputparameters(const physics::lattices::GaugefieldParametersInterface* parametersIn) : parameters(parametersIn){};
+    virtual bool ignoreChecksumErrors() const { return parameters->ignoreChecksumErrorsInIO(); }
+    virtual int getNumberOfElements() const { return parameters->getNumberOfElements(); }
+    virtual int getNs() const { return parameters->getNs(); }
+    virtual int getNt() const { return parameters->getNt(); }
+    virtual int getPrecision() const { return parameters->getPrecision(); }
+    virtual double getKappa() const { return parameters->getKappa(); }
+    virtual double getMu() const { return parameters->getMu(); }
+    virtual double getBeta() const { return parameters->getBeta(); }
+
+  private:
+    const physics::lattices::GaugefieldParametersInterface* parameters;
 };
 
-//TODO: this abstract class can be removed, the interface above is sufficient
-class IldgIoParameters
-{
-public:
-	IldgIoParameters(IldgIoParametersInterface * in) : itsClient( in ) {};
-	virtual ~IldgIoParameters() {};
-	virtual bool ignoreChecksumErrors() const = 0;
-	virtual int getNumberOfElements() const = 0;
-	virtual int getNt() const = 0;
-	virtual int getNs() const = 0;
-	virtual int getPrecision() const = 0;
-	virtual double getKappa() const = 0;
-	virtual double getBeta() const = 0;
-	virtual double getMu() const = 0;
-protected:
-	//@Todo: Make this an instance??
-	IldgIoParametersInterface * itsClient;
+// TODO: this abstract class can be removed, the interface above is sufficient
+class IldgIoParameters {
+  public:
+    IldgIoParameters(IldgIoParametersInterface* in) : itsClient(in){};
+    virtual ~IldgIoParameters(){};
+    virtual bool ignoreChecksumErrors() const = 0;
+    virtual int getNumberOfElements() const   = 0;
+    virtual int getNt() const                 = 0;
+    virtual int getNs() const                 = 0;
+    virtual int getPrecision() const          = 0;
+    virtual double getKappa() const           = 0;
+    virtual double getBeta() const            = 0;
+    virtual double getMu() const              = 0;
+
+  protected:
+    //@Todo: Make this an instance??
+    IldgIoParametersInterface* itsClient;
 };
 
-class IldgIoParameters_gaugefield: public IldgIoParameters
-{
-public:
-	IldgIoParameters_gaugefield(IldgIoParametersInterface * in) : IldgIoParameters(in) {};
-	virtual bool ignoreChecksumErrors() const
-	{
-		return itsClient->ignoreChecksumErrors();
-	}
-	virtual int getNumberOfElements() const
-	{
-		return itsClient->getNumberOfElements();
-	}
-	virtual int getNs() const
-	{
-		return itsClient->getNs();
-	}
-	virtual int getNt() const
-	{
-		return itsClient->getNt();
-	}
-	virtual int getPrecision() const
-	{
-		return itsClient->getPrecision();
-	}
-	virtual double getKappa() const
-	{
-		return itsClient->getKappa();
-	}
-	virtual double getMu() const
-	{
-		return itsClient->getMu();
-	}
-	virtual double getBeta() const
-	{
-		return itsClient->getBeta();
-	}
+class IldgIoParameters_gaugefield : public IldgIoParameters {
+  public:
+    IldgIoParameters_gaugefield(IldgIoParametersInterface* in) : IldgIoParameters(in){};
+    virtual bool ignoreChecksumErrors() const { return itsClient->ignoreChecksumErrors(); }
+    virtual int getNumberOfElements() const { return itsClient->getNumberOfElements(); }
+    virtual int getNs() const { return itsClient->getNs(); }
+    virtual int getNt() const { return itsClient->getNt(); }
+    virtual int getPrecision() const { return itsClient->getPrecision(); }
+    virtual double getKappa() const { return itsClient->getKappa(); }
+    virtual double getMu() const { return itsClient->getMu(); }
+    virtual double getBeta() const { return itsClient->getBeta(); }
 };
 
-IldgIoParameters_gaugefield createIldgIoParameters(const meta::Inputparameters * parametersIn);
+IldgIoParameters_gaugefield createIldgIoParameters(const meta::Inputparameters* parametersIn);
 
 #endif /* ILDGIOPARAMETERS_HPP_ */

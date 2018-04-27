@@ -21,39 +21,40 @@
 #ifndef _HARDWARE_LATTICES_GAUGEMOMENTA_
 #define _HARDWARE_LATTICES_GAUGEMOMENTA_
 
-#include "../system.hpp"
 #include "../buffers/gaugemomentum.hpp"
+#include "../system.hpp"
 
 namespace hardware {
 
-namespace lattices {
+    namespace lattices {
 
-class Gaugemomenta
-{
-public:
+        class Gaugemomenta {
+          public:
+            virtual ~Gaugemomenta();
 
-	virtual ~Gaugemomenta();
+            Gaugemomenta(const hardware::System& system);
 
-	Gaugemomenta(const hardware::System& system);
+            Gaugemomenta& operator=(const Gaugemomenta&) = delete;
+            Gaugemomenta(const Gaugemomenta&)            = delete;
+            Gaugemomenta()                               = delete;
 
-	Gaugemomenta& operator=(const Gaugemomenta&) = delete;
-	Gaugemomenta(const Gaugemomenta&) = delete;
-	Gaugemomenta() = delete;
+            std::vector<const hardware::buffers::Gaugemomentum*> allocate_buffers() const;
+            const std::vector<const hardware::buffers::Gaugemomentum*> get_buffers() const noexcept;
 
-	std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers() const;
-	const std::vector<const hardware::buffers::Gaugemomentum *> get_buffers() const noexcept;
+            void import(const ae* const host) const;
+            void update_halo() const;
+            void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum*> buffers,
+                                 const hardware::System& system) const;
+            void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum*> buffers,
+                                 const hardware::System& system) const;
 
-	void import(const ae * const host) const;
-	void update_halo() const;
-	void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system) const;
-	void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system) const;
-private:
-	hardware::System const& system;
-	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
-};
+          private:
+            hardware::System const& system;
+            const std::vector<const hardware::buffers::Gaugemomentum*> buffers;
+        };
 
-}
+    }  // namespace lattices
 
-}
+}  // namespace hardware
 
 #endif /* _HARDWARE_LATTICES_GAUGEMOMENTA_ */

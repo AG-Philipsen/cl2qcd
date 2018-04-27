@@ -21,33 +21,32 @@
 
 #pragma once
 
-#include "kernelTester.hpp"
 #include "gaugefield.hpp"
+#include "kernelTester.hpp"
 
 int calculateGaugefieldSize(LatticeExtents latticeExtentsIn) noexcept;
 
-enum GaugefieldFillType {cold = 1, nonTrivial};
+enum GaugefieldFillType { cold = 1, nonTrivial };
 
-struct GaugefieldTestParameters : public virtual TestParameters
-{
-	GaugefieldFillType fillType;
+struct GaugefieldTestParameters : public virtual TestParameters {
+    GaugefieldFillType fillType;
 
-	GaugefieldTestParameters(const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn):
-		TestParameters(latticeExtentsIn), fillType( fillTypeIn ) {}
+    GaugefieldTestParameters(const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn)
+        : TestParameters(latticeExtentsIn), fillType(fillTypeIn)
+    {
+    }
 };
 
-struct GaugefieldTester : public KernelTester
-{
-	GaugefieldTester(std::string, const ParameterCollection &, const GaugefieldTestParameters, const ReferenceValues rV);
+struct GaugefieldTester : public KernelTester {
+    GaugefieldTester(std::string, const ParameterCollection&, const GaugefieldTestParameters, const ReferenceValues rV);
 
-protected:
-	const hardware::code::Gaugefield * code;
+  protected:
+    const hardware::code::Gaugefield* code;
 };
 
-struct GaugefieldCreator
-{
-	GaugefieldCreator(const LatticeExtents lE): numberOfElements(calculateGaugefieldSize(lE)){};
-	const Matrixsu3* createGaugefield(const GaugefieldFillType fillTypeIn);
+struct GaugefieldCreator {
+    GaugefieldCreator(const LatticeExtents lE) : numberOfElements(calculateGaugefieldSize(lE)){};
+    const Matrixsu3* createGaugefield(const GaugefieldFillType fillTypeIn);
 
-	size_t numberOfElements;
+    size_t numberOfElements;
 };

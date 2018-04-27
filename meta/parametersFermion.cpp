@@ -25,82 +25,81 @@
 
 bool meta::ParametersFermion::get_use_chem_pot_re() const noexcept
 {
-	return use_chem_pot_re;
+    return use_chem_pot_re;
 }
 bool meta::ParametersFermion::get_use_chem_pot_im() const noexcept
 {
-	return use_chem_pot_im;
+    return use_chem_pot_im;
 }
 
 common::action meta::ParametersFermion::get_fermact() const noexcept
 {
-	return fermact;
+    return fermact;
 }
 common::action meta::ParametersFermion::get_fermact_mp() const noexcept
 {
-	return fermact_mp;
+    return fermact_mp;
 }
 double meta::ParametersFermion::get_kappa() const noexcept
 {
-	return kappa;
+    return kappa;
 }
 double meta::ParametersFermion::get_mass() const noexcept
 {
-	return mass;
+    return mass;
 }
 double meta::ParametersFermion::get_mu() const noexcept
 {
-	return mu;
+    return mu;
 }
 double meta::ParametersFermion::get_csw() const noexcept
 {
-	return csw;
+    return csw;
 }
 double meta::ParametersFermion::get_kappa_mp() const noexcept
 {
-	return kappa_mp;
+    return kappa_mp;
 }
 double meta::ParametersFermion::get_mu_mp() const noexcept
 {
-	return mu_mp;
+    return mu_mp;
 }
 double meta::ParametersFermion::get_csw_mp() const noexcept
 {
-	return csw_mp;
+    return csw_mp;
 }
 
 double meta::ParametersFermion::get_theta_fermion_spatial() const noexcept
 {
-	return theta_fermion_spatial;
+    return theta_fermion_spatial;
 }
 double meta::ParametersFermion::get_theta_fermion_temporal() const noexcept
 {
-	return theta_fermion_temporal;
+    return theta_fermion_temporal;
 }
 double meta::ParametersFermion::get_chem_pot_re() const noexcept
 {
-	return chem_pot_re;
+    return chem_pot_re;
 }
 double meta::ParametersFermion::get_chem_pot_im() const noexcept
 {
-	return chem_pot_im;
+    return chem_pot_im;
 }
 bool meta::ParametersFermion::get_use_eo() const noexcept
 {
-	return use_eo;
+    return use_eo;
 }
 
 bool meta::ParametersFermion::get_use_merge_kernels_fermion() const noexcept
 {
-	return use_merge_kernels_fermion;
+    return use_merge_kernels_fermion;
 }
 bool meta::ParametersFermion::get_use_merge_kernels_spinor() const noexcept
 {
-	return use_merge_kernels_spinor;
+    return use_merge_kernels_spinor;
 }
 
-meta::ParametersFermion::ParametersFermion()
-	: options("Fermion options")
+meta::ParametersFermion::ParametersFermion() : options("Fermion options")
 {
     // clang-format off
 	options.add_options()
@@ -123,12 +122,12 @@ meta::ParametersFermion::ParametersFermion()
 	("use_eo", po::value<bool>(&use_eo)->default_value(true))
 	("use_merge_kernels_spinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Use kernel merging for spinor kernels")
 	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels");
-	// clang-format on
+    // clang-format on
 }
 
 meta::ParametersFermion::~ParametersFermion() = default;
 
-po::options_description & meta::ParametersFermion::getOptions()
+po::options_description& meta::ParametersFermion::getOptions()
 {
-	return options;
+    return options;
 }

@@ -25,19 +25,20 @@
 
 #include "limeUtilities.hpp"
 
-class LimeFileWriter : public LimeFile_basic
-{
-public:
-	void closeLimeFile();
-protected:
-	LimeFileWriter(std::string filenameIn);
-	~LimeFileWriter();
-	void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes, std::string description);
-private:
-	int MB_flag;
-	int ME_flag;
-	n_uint64_t writtenBytes;
-	LimeWriter *writer;
+class LimeFileWriter : public LimeFile_basic {
+  public:
+    void closeLimeFile();
+
+  protected:
+    LimeFileWriter(std::string filenameIn);
+    ~LimeFileWriter();
+    void writeMemoryToLimeFile(void* memoryPointer, n_uint64_t bytes, std::string description);
+
+  private:
+    int MB_flag;
+    int ME_flag;
+    n_uint64_t writtenBytes;
+    LimeWriter* writer;
 };
 
 #endif

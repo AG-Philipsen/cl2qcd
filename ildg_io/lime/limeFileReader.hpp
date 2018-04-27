@@ -23,36 +23,38 @@
 #ifndef _LIMEFILEREADER_HPP_
 #define _LIMEFILEREADER_HPP_
 
-#include "limeUtilities.hpp"
 #include "../sourcefileParameters/SourcefileParameters.hpp"
+#include "limeUtilities.hpp"
 
-class LimeFileReader : public LimeFileReader_basic
-{
-public:
-	//todo: remove precision?
-	LimeFileReader(std::string sourceFilenameIn, int precision);
-	//todo: make this private or remove/find better solution?
-	Sourcefileparameters parameters;
+class LimeFileReader : public LimeFileReader_basic {
+  public:
+    // todo: remove precision?
+    LimeFileReader(std::string sourceFilenameIn, int precision);
+    // todo: make this private or remove/find better solution?
+    Sourcefileparameters parameters;
 
-	int getReadTrajectoryNumber() noexcept;
-	double getReadPlaquetteValue() noexcept;
-protected:
-	void readMetaDataFromLimeFile();
-	void extractMetadataFromLimeFile();
-	void readLimeFile(char ** destination, size_t expectedNumberOfBytes = 0);
-	void extractDataFromLimeFile(char ** destination, size_t expectedNumberOfBytes);
-	void goThroughLimeRecords(char ** destination, size_t expectedNumberOfBytes);
-	void extractInformationFromLimeEntry(char ** destination, size_t expectedNumberOfBytes);
-	LimeFileProperties extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData);
-	void extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char ** destination, size_t expectedNumberOfBytes);
+    int getReadTrajectoryNumber() noexcept;
+    double getReadPlaquetteValue() noexcept;
 
-	void handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type);
-	void handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes);
-	void handleLimeEntry_scidacChecksum(char * buffer, std::string lime_type, size_t numberOfBytes);
-	void handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error);
-	void handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error);
+  protected:
+    void readMetaDataFromLimeFile();
+    void extractMetadataFromLimeFile();
+    void readLimeFile(char** destination, size_t expectedNumberOfBytes = 0);
+    void extractDataFromLimeFile(char** destination, size_t expectedNumberOfBytes);
+    void goThroughLimeRecords(char** destination, size_t expectedNumberOfBytes);
+    void extractInformationFromLimeEntry(char** destination, size_t expectedNumberOfBytes);
+    LimeFileProperties extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData);
+    void
+    extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char** destination, size_t expectedNumberOfBytes);
 
-	int desiredPrecision;
+    void handleLimeEntry_xlf(Sourcefileparameters& parameters, char* buffer, std::string lime_type);
+    void
+    handleLimeEntry_ildg(Sourcefileparameters& parameters, char* buffer, std::string lime_type, size_t numberOfBytes);
+    void handleLimeEntry_scidacChecksum(char* buffer, std::string lime_type, size_t numberOfBytes);
+    void handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error);
+    void handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error);
+
+    int desiredPrecision;
 };
 
 #endif

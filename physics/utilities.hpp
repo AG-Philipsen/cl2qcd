@@ -20,9 +20,8 @@
  */
 #include <string>
 
-# pragma once
+#pragma once
 
-namespace physics
-{
-	std::string buildCheckpointName( std::string prefix, std::string postfix, int numberOfDigitsInName, int number);
+namespace physics {
+    std::string buildCheckpointName(std::string prefix, std::string postfix, int numberOfDigitsInName, int number);
 }

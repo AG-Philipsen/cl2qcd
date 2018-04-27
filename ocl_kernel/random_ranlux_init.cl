@@ -18,7 +18,7 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-__kernel void prng_ranlux_init(uint ins, __global rngStateStorageType * const restrict states)
+__kernel void prng_ranlux_init(uint ins, __global rngStateStorageType* const restrict states)
 {
-	ranluxcl_initialization(ins, states);
+    ranluxcl_initialization(ins, states);
 }

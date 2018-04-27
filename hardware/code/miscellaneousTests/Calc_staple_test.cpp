@@ -23,49 +23,49 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE staple_test
-#include <boost/test/unit_test.hpp>
-
 #include "testCode.hpp"
+
+#include <boost/test/unit_test.hpp>
 
 const ReferenceValues calculateReferenceValue_staple(const LatticeExtents lE)
 {
-	return ReferenceValues{ -11.30184821830432 * lE.getLatticeVolume() };
+    return ReferenceValues{-11.30184821830432 * lE.getLatticeVolume()};
 }
 
-struct StapleTestCode : public TestCode
-{
-	StapleTestCode(const hardware::code::OpenClKernelParametersInterface & kP, hardware::Device * device):
-		TestCode(kP, device)
-	{
-		testKernel = createKernel("staple_test") << get_device()->getGaugefieldCode()->get_sources() << "../hardware/code/miscellaneousTests/staple_test.cl";
-	}
+struct StapleTestCode : public TestCode {
+    StapleTestCode(const hardware::code::OpenClKernelParametersInterface& kP, hardware::Device* device)
+        : TestCode(kP, device)
+    {
+        testKernel = createKernel("staple_test") << get_device()->getGaugefieldCode()->get_sources()
+                                                 << "../hardware/code/miscellaneousTests/staple_test.cl";
+    }
 
-	virtual void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, const int gs, const int ls) override
-	{
-		err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
-		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-		err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
-		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+    virtual void runTestKernel(const hardware::buffers::SU3* gf, const hardware::buffers::Plain<hmc_float>* out,
+                               const int gs, const int ls) override
+    {
+        err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
+        BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+        err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
+        BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-		get_device()->enqueue_kernel(testKernel, gs, ls);
-	}
+        get_device()->enqueue_kernel(testKernel, gs, ls);
+    }
 };
 
-struct StapleTester : public OtherKernelTester
-{
-	StapleTester(const ParameterCollection pC, const GaugefieldTestParameters tP):
-		OtherKernelTester("StapleTest", pC, tP, calculateReferenceValue_staple(tP.latticeExtents))
-	{
-		testCode = new StapleTestCode(pC.kernelParameters, device);
-		testCode->runTestKernel(OtherKernelTester::gaugefieldBuffer, out, gs, ls);
-	}
+struct StapleTester : public OtherKernelTester {
+    StapleTester(const ParameterCollection pC, const GaugefieldTestParameters tP)
+        : OtherKernelTester("StapleTest", pC, tP, calculateReferenceValue_staple(tP.latticeExtents))
+    {
+        testCode = new StapleTestCode(pC.kernelParameters, device);
+        testCode->runTestKernel(OtherKernelTester::gaugefieldBuffer, out, gs, ls);
+    }
 };
 
-BOOST_AUTO_TEST_CASE( STAPLE_TEST )
+BOOST_AUTO_TEST_CASE(STAPLE_TEST)
 {
-	GaugefieldTestParameters parametersForThisTest {LatticeExtents{4,4}, GaugefieldFillType::nonTrivial};
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns,parametersForThisTest.nt);
-	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns,parametersForThisTest.nt);
-	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-	StapleTester tester(parameterCollection, parametersForThisTest);
+    GaugefieldTestParameters parametersForThisTest{LatticeExtents{4, 4}, GaugefieldFillType::nonTrivial};
+    hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+    hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+    ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
+    StapleTester tester(parameterCollection, parametersForThisTest);
 }

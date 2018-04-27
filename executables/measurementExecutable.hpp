@@ -18,7 +18,6 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /*
  * @file
  * Declaration of the measurementExecutable class.
@@ -30,34 +29,32 @@
 
 #include "generalExecutable.hpp"
 
-class measurementExecutable : public generalExecutable
-{
-public:
-	measurementExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
+class measurementExecutable : public generalExecutable {
+  public:
+    measurementExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
 
-	void performMeasurements();
+    void performMeasurements();
 
-protected:
-	std::string currentConfigurationName;
-	int iterationStart;
-	int iterationEnd;
-	int iterationIncrement;
-	int iteration;
+  protected:
+    std::string currentConfigurationName;
+    int iterationStart;
+    int iterationEnd;
+    int iterationIncrement;
+    int iteration;
 
-	void setIterationVariables();
+    void setIterationVariables();
 
-	void checkStartconditions();
+    void checkStartconditions();
 
-	void initializeGaugefieldAccordingToIterationVariable();
+    void initializeGaugefieldAccordingToIterationVariable();
 
-	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
+    void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
 
-	void initializeGaugefield();
+    void initializeGaugefield();
 
-	void performMeasurementsForSpecificIteration();
+    void performMeasurementsForSpecificIteration();
 
-	virtual void performApplicationSpecificMeasurements() = 0;
+    virtual void performApplicationSpecificMeasurements() = 0;
 };
-
 
 #endif /* MEASUREMENTEXECUTABLE_H_ */

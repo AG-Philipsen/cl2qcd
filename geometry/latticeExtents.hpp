@@ -25,60 +25,56 @@ typedef unsigned int uint;
 typedef unsigned int latticeSize;
 typedef unsigned int latticeCoordinate;
 
-enum Direction {TDIR = 0, XDIR, YDIR, ZDIR};
+enum Direction { TDIR = 0, XDIR, YDIR, ZDIR };
 
-#include <ostream>
 #include "../hardware/size_4.hpp"
 
-struct LatticeExtent
-{
-	LatticeExtent(const latticeSize value);
-	operator latticeSize() const;
-	const latticeSize value;
+#include <ostream>
+
+struct LatticeExtent {
+    LatticeExtent(const latticeSize value);
+    operator latticeSize() const;
+    const latticeSize value;
 };
 
-struct LatticeCoordinate
-{
-	LatticeCoordinate(const latticeCoordinate valueIn, const LatticeExtent lE);
-	LatticeCoordinate up() const;
-	LatticeCoordinate down() const;
-	operator latticeSize() const;
+struct LatticeCoordinate {
+    LatticeCoordinate(const latticeCoordinate valueIn, const LatticeExtent lE);
+    LatticeCoordinate up() const;
+    LatticeCoordinate down() const;
+    operator latticeSize() const;
 
-	const latticeCoordinate value;
-	const LatticeExtent extent;
+    const latticeCoordinate value;
+    const LatticeExtent extent;
 };
 
 struct TemporalLatticeExtent;
 
-struct SpatialLatticeExtent : public LatticeExtent
-{
-	SpatialLatticeExtent(const latticeSize value) : LatticeExtent(value){}
-	SpatialLatticeExtent(const TemporalLatticeExtent&) = delete;
-	SpatialLatticeExtent(TemporalLatticeExtent&) = delete;
+struct SpatialLatticeExtent : public LatticeExtent {
+    SpatialLatticeExtent(const latticeSize value) : LatticeExtent(value) {}
+    SpatialLatticeExtent(const TemporalLatticeExtent&) = delete;
+    SpatialLatticeExtent(TemporalLatticeExtent&)       = delete;
 };
 
-struct TemporalLatticeExtent : public LatticeExtent
-{
-	TemporalLatticeExtent(const latticeSize value) : LatticeExtent(value){}
-	TemporalLatticeExtent(const SpatialLatticeExtent&) = delete;
-	TemporalLatticeExtent(SpatialLatticeExtent&) = delete;
+struct TemporalLatticeExtent : public LatticeExtent {
+    TemporalLatticeExtent(const latticeSize value) : LatticeExtent(value) {}
+    TemporalLatticeExtent(const SpatialLatticeExtent&) = delete;
+    TemporalLatticeExtent(SpatialLatticeExtent&)       = delete;
 };
 
-struct LatticeExtents
-{
-	LatticeExtents(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn);
-	LatticeExtents(latticeSize nIn);
-	LatticeExtents(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn);
-	LatticeExtents();
-	const LatticeExtent xExtent, yExtent, zExtent, tExtent;
-	latticeSize getNs() const;
-	latticeSize getNt() const;
-	latticeSize getSpatialLatticeVolume() const;
-	latticeSize getLatticeVolume() const;
-	operator size_4() const //todo: remove this!
-		{
-			return size_4(xExtent, yExtent, zExtent, tExtent);
-		}
+struct LatticeExtents {
+    LatticeExtents(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn);
+    LatticeExtents(latticeSize nIn);
+    LatticeExtents(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn);
+    LatticeExtents();
+    const LatticeExtent xExtent, yExtent, zExtent, tExtent;
+    latticeSize getNs() const;
+    latticeSize getNt() const;
+    latticeSize getSpatialLatticeVolume() const;
+    latticeSize getLatticeVolume() const;
+    operator size_4() const  // todo: remove this!
+    {
+        return size_4(xExtent, yExtent, zExtent, tExtent);
+    }
 };
 
 std::ostream& operator<<(std::ostream&, const LatticeExtents);

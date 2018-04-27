@@ -24,75 +24,77 @@
 #ifndef _META_UTIL_
 #define _META_UTIL_
 
-#include "inputparameters.hpp"
-
 #include "../common_header_files/globaldefs.hpp"
 #include "../common_header_files/types.hpp"
+#include "inputparameters.hpp"
+
 #include <iostream>
 #include <sstream>
 #include <string.h>
 #include <utility>
 
 namespace meta {
-size_t get_volspace(const Inputparameters&);
-size_t get_volspace(const int ns);
-size_t get_vol4d(const Inputparameters&);
-size_t get_vol4d(const int nt, const int ns);
-bool get_use_rectangles(const Inputparameters& params);
-hmc_float get_mubar(const Inputparameters& params);
-hmc_float get_mubar_mp(const Inputparameters& params);
-size_t get_float_size(const Inputparameters& params);
-size_t get_mat_size(const Inputparameters& params);
-size_t get_plaq_norm(const Inputparameters& params);
-size_t get_tplaq_norm(const Inputparameters& params);
-size_t get_splaq_norm(const Inputparameters& params);
-size_t get_rect_norm(const Inputparameters& params);
-size_t get_poly_norm(const Inputparameters& params);
-double get_c0(const Inputparameters& params);
-double get_c1(const Inputparameters& params);
-double get_xi_0(const Inputparameters& params);
+    size_t get_volspace(const Inputparameters&);
+    size_t get_volspace(const int ns);
+    size_t get_vol4d(const Inputparameters&);
+    size_t get_vol4d(const int nt, const int ns);
+    bool get_use_rectangles(const Inputparameters& params);
+    hmc_float get_mubar(const Inputparameters& params);
+    hmc_float get_mubar_mp(const Inputparameters& params);
+    size_t get_float_size(const Inputparameters& params);
+    size_t get_mat_size(const Inputparameters& params);
+    size_t get_plaq_norm(const Inputparameters& params);
+    size_t get_tplaq_norm(const Inputparameters& params);
+    size_t get_splaq_norm(const Inputparameters& params);
+    size_t get_rect_norm(const Inputparameters& params);
+    size_t get_poly_norm(const Inputparameters& params);
+    double get_c0(const Inputparameters& params);
+    double get_c1(const Inputparameters& params);
+    double get_xi_0(const Inputparameters& params);
 
-void print_info_global(const meta::Inputparameters& params);
-void print_info_global(std::ostream* os, const meta::Inputparameters& params);
-void print_info_configs_io(const meta::Inputparameters& params);
-void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params);
-void print_info_prng_io(const meta::Inputparameters& params);
-void print_info_prng_io(std::ostream * os, const meta::Inputparameters& params);
-void print_info_observables_gauge_io(const meta::Inputparameters& params);
-void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
-void print_info_heatbath(const Inputparameters& params);
-void print_info_heatbath(std::ostream* os, const Inputparameters& params);
-void print_info_inverter(const Inputparameters& params);
-void print_info_inverter(std::ostream* os, const Inputparameters& params);
-void print_info_hmc(const Inputparameters& params);
-void print_info_hmc(std::ostream* os, const Inputparameters& params);
-void print_info_rhmc(const Inputparameters& params);
-void print_info_rhmc(std::ostream* os, const Inputparameters& params);
-std::string get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-std::string get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-std::string get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-std::string create_prng_name(const Inputparameters& parameters, int number) noexcept;
-std::string create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept;
-std::string create_prng_name(const Inputparameters& parameters) noexcept;
-void print_info_flavour_doublet_correlators(const meta::Inputparameters& params);
-void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters& params);
-template<typename Container> void free_container(Container& c) noexcept;
-std::string createLogfileName(const char* name);
-std::pair<int, std::vector<const char*>> addOptionsToArgv(int argc, const char** argv, std::vector<const char*> op);
+    void print_info_global(const meta::Inputparameters& params);
+    void print_info_global(std::ostream* os, const meta::Inputparameters& params);
+    void print_info_configs_io(const meta::Inputparameters& params);
+    void print_info_configs_io(std::ostream* os, const meta::Inputparameters& params);
+    void print_info_prng_io(const meta::Inputparameters& params);
+    void print_info_prng_io(std::ostream* os, const meta::Inputparameters& params);
+    void print_info_observables_gauge_io(const meta::Inputparameters& params);
+    void print_info_observables_gauge_io(std::ostream* os, const meta::Inputparameters& params);
+    void print_info_heatbath(const Inputparameters& params);
+    void print_info_heatbath(std::ostream* os, const Inputparameters& params);
+    void print_info_inverter(const Inputparameters& params);
+    void print_info_inverter(std::ostream* os, const Inputparameters& params);
+    void print_info_hmc(const Inputparameters& params);
+    void print_info_hmc(std::ostream* os, const Inputparameters& params);
+    void print_info_rhmc(const Inputparameters& params);
+    void print_info_rhmc(std::ostream* os, const Inputparameters& params);
+    std::string get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+    std::string get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+    std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+    std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+    std::string get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+    std::string create_prng_name(const Inputparameters& parameters, int number) noexcept;
+    std::string create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept;
+    std::string create_prng_name(const Inputparameters& parameters) noexcept;
+    void print_info_flavour_doublet_correlators(const meta::Inputparameters& params);
+    void print_info_flavour_doublet_correlators(std::ostream* os, const meta::Inputparameters& params);
+    template<typename Container>
+    void free_container(Container& c) noexcept;
+    std::string createLogfileName(const char* name);
+    std::pair<int, std::vector<const char*>> addOptionsToArgv(int argc, const char** argv, std::vector<const char*> op);
 
-/*
-* TEMPLATE IMPLEMENTATIONS
-*/
-template<typename Container> void free_container(Container& c) noexcept {
-	while(!c.empty()) {
-		delete c.back();
-		c.pop_back();
-	}
-}
+    /*
+     * TEMPLATE IMPLEMENTATIONS
+     */
+    template<typename Container>
+    void free_container(Container& c) noexcept
+    {
+        while (!c.empty()) {
+            delete c.back();
+            c.pop_back();
+        }
+    }
 
-
-}
+}  // namespace meta
 
 #endif /* META_UTIL_ */

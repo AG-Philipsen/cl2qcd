@@ -27,34 +27,39 @@
 //  - beta:  The number by which y has to be multiplied
 //  - out: The output staggered field: alpha*x+beta*y (site by site)
 
-__kernel void saxpby_real_staggered_eoprec(__global const staggeredStorageType * const x, __global const staggeredStorageType * const y, __global const hmc_float * const alpha, __global hmc_float * beta, __global staggeredStorageType * const out)
+__kernel void saxpby_real_staggered_eoprec(__global const staggeredStorageType* const x,
+                                           __global const staggeredStorageType* const y,
+                                           __global const hmc_float* const alpha, __global hmc_float* beta,
+                                           __global staggeredStorageType* const out)
 {
-	const int id = get_global_id(0);
-	const int global_size = get_global_size(0);
+    const int id          = get_global_id(0);
+    const int global_size = get_global_size(0);
 
-	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
-		su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
-		x_tmp = su3vec_times_real(x_tmp, *alpha);
-		su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
-		y_tmp = su3vec_times_real(y_tmp, *beta);
+    for (int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
+        su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
+        x_tmp        = su3vec_times_real(x_tmp, *alpha);
+        su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
+        y_tmp        = su3vec_times_real(y_tmp, *beta);
 
-		su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
-		put_su3vec_to_field_eo(out, id_mem, out_tmp);
-	}
+        su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
+        put_su3vec_to_field_eo(out, id_mem, out_tmp);
+    }
 }
 
-__kernel void saxpby_real_arg_staggered_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, const hmc_float alpha, const hmc_float beta, __global spinorStorageType * const out)
+__kernel void saxpby_real_arg_staggered_eoprec(__global const spinorStorageType* const x,
+                                               __global const spinorStorageType* const y, const hmc_float alpha,
+                                               const hmc_float beta, __global spinorStorageType* const out)
 {
-	const int id = get_global_id(0);
-	const int global_size = get_global_size(0);
+    const int id          = get_global_id(0);
+    const int global_size = get_global_size(0);
 
-	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
-		su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
-		x_tmp = su3vec_times_real(x_tmp, alpha);
-		su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
-		y_tmp = su3vec_times_real(y_tmp, beta);
+    for (int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
+        su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
+        x_tmp        = su3vec_times_real(x_tmp, alpha);
+        su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
+        y_tmp        = su3vec_times_real(y_tmp, beta);
 
-		su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
-		put_su3vec_to_field_eo(out, id_mem, out_tmp);
-	}
+        su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
+        put_su3vec_to_field_eo(out, id_mem, out_tmp);
+    }
 }

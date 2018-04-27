@@ -20,79 +20,85 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "measurementExecutable.hpp"
 
 #include "../physics/utilities.hpp"
 
 void measurementExecutable::checkStartconditions()
 {
-  if(parameters.get_read_multiple_configs() ){
-    logger.info() << "To work on multiple configurations, this executable requires the following parameter value(s) to work properly:";
-    logger.info() << "startcondition:\tcontinue";
-    if(parameters.get_startcondition() != common::start_from_source ) {
-      logger.fatal() << "Found wrong startcondition! Aborting..";
-      throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
+    if (parameters.get_read_multiple_configs()) {
+        logger.info() << "To work on multiple configurations, this executable requires the following parameter "
+                         "value(s) to work properly:";
+        logger.info() << "startcondition:\tcontinue";
+        if (parameters.get_startcondition() != common::start_from_source) {
+            logger.fatal() << "Found wrong startcondition! Aborting..";
+            throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
+        }
     }
-  }
 }
 
-measurementExecutable::measurementExecutable(int argc, const char* argv[], std::string parameterSet) : generalExecutable (argc, argv, parameterSet)
+measurementExecutable::measurementExecutable(int argc, const char* argv[], std::string parameterSet)
+    : generalExecutable(argc, argv, parameterSet)
 {
-	initializationTimer.reset();
-	setIterationVariables();
-	checkStartconditions();
-	initializationTimer.add();
+    initializationTimer.reset();
+    setIterationVariables();
+    checkStartconditions();
+    initializationTimer.add();
 }
 
 void measurementExecutable::setIterationVariables()
 {
-	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
-	iterationEnd = 			(parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
-	iterationIncrement =	(parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
-	iteration = iterationStart;
+    iterationStart     = (parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
+    iterationEnd       = (parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
+    iterationIncrement = (parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
+    iteration          = iterationStart;
 }
 
 void measurementExecutable::initializeGaugefieldAccordingToIterationVariable()
 {
-	currentConfigurationName = physics::buildCheckpointName(parameters.get_config_prefix(), parameters.get_config_postfix(), parameters.get_config_number_digits(), iteration);
-	gaugefield = new physics::lattices::Gaugefield(*system, &(interfacesHandler->getInterface<physics::lattices::Gaugefield>()), *prng, currentConfigurationName);
+    currentConfigurationName = physics::buildCheckpointName(parameters.get_config_prefix(),
+                                                            parameters.get_config_postfix(),
+                                                            parameters.get_config_number_digits(), iteration);
+    gaugefield               = new physics::lattices::Gaugefield(*system,
+                                                   &(interfacesHandler->getInterface<physics::lattices::Gaugefield>()),
+                                                   *prng, currentConfigurationName);
 }
 
 void measurementExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
 {
-	currentConfigurationName = parameters.get_sourcefile();
-	gaugefield = new physics::lattices::Gaugefield(*system, &(interfacesHandler->getInterface<physics::lattices::Gaugefield>()), *prng);
+    currentConfigurationName = parameters.get_sourcefile();
+    gaugefield               = new physics::lattices::Gaugefield(*system,
+                                                   &(interfacesHandler->getInterface<physics::lattices::Gaugefield>()),
+                                                   *prng);
 }
 
 void measurementExecutable::initializeGaugefield()
 {
-	initializationTimer.reset();
-	if (parameters.get_read_multiple_configs()) {
-		initializeGaugefieldAccordingToIterationVariable();
-	} else {
-		initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
-	}
-	initializationTimer.add();
+    initializationTimer.reset();
+    if (parameters.get_read_multiple_configs()) {
+        initializeGaugefieldAccordingToIterationVariable();
+    } else {
+        initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
+    }
+    initializationTimer.add();
 }
 
 void measurementExecutable::performMeasurements()
 {
-	logger.trace() << "Perform inversion(s) on device..";
+    logger.trace() << "Perform inversion(s) on device..";
 
-	for (;iteration < iterationEnd; iteration += iterationIncrement)
-	{
-	  performMeasurementsForSpecificIteration();
-	}
-	logger.trace() << "Inversion(s) done";
+    for (; iteration < iterationEnd; iteration += iterationIncrement) {
+        performMeasurementsForSpecificIteration();
+    }
+    logger.trace() << "Inversion(s) done";
 }
 
 void measurementExecutable::performMeasurementsForSpecificIteration()
 {
-	initializeGaugefield();
-	performanceTimer.reset();
-	performApplicationSpecificMeasurements();
-	prng->saveToSpecificFile(iteration);
-	delete gaugefield;
-	performanceTimer.add();
+    initializeGaugefield();
+    performanceTimer.reset();
+    performApplicationSpecificMeasurements();
+    prng->saveToSpecificFile(iteration);
+    delete gaugefield;
+    performanceTimer.add();
 }

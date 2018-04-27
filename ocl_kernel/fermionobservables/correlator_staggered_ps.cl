@@ -26,47 +26,41 @@
 // C(t)= - 64 * (-1)^t sum_{vec{x}} sum_{c,d} |[D^(-1)_f (vec{x}|0)]_{c,d}|^2
 // We drop the prefactor of -64*(-1)^t in the following since it can be neglected for the final mass extraction
 
-__kernel void correlator_staggered_ps(__global hmc_float * const restrict correlator, __global const staggeredStorageType * const restrict invertedSourceEven,
-                                                                                      __global const staggeredStorageType * const restrict invertedSourceOdd)
+__kernel void correlator_staggered_ps(__global hmc_float* const restrict correlator,
+                                      __global const staggeredStorageType* const restrict invertedSourceEven,
+                                      __global const staggeredStorageType* const restrict invertedSourceOdd)
 {
-	int local_size = get_local_size(0);
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
+    int local_size  = get_local_size(0);
+    int global_size = get_global_size(0);
+    int id          = get_global_id(0);
+    int loc_idx     = get_local_id(0);
+    int num_groups  = get_num_groups(0);
+    int group_id    = get_group_id(0);
 
-	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size )
-	{
-		hmc_float summedSquarenorms = 0.;
-		uint3 coord;
+    for (int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
+        hmc_float summedSquarenorms = 0.;
+        uint3 coord;
 
-		for(coord.x = 0; coord.x < NSPACE; coord.x++ )
-		{
-			for(coord.y = 0; coord.y < NSPACE; coord.y++ )
-			{
-				for(coord.z = 0; coord.z < NSPACE; coord.z++ )
-				{
-					int nspace = get_nspace(coord);
-					int tmp_idx = get_n_eoprec(nspace, id_tmp);
-					const bool sourceOnEvenSite = ((coord.x+coord.y+coord.z+id_tmp)%2 == 0) ? true : false;
-					su3vec temporalField;
+        for (coord.x = 0; coord.x < NSPACE; coord.x++) {
+            for (coord.y = 0; coord.y < NSPACE; coord.y++) {
+                for (coord.z = 0; coord.z < NSPACE; coord.z++) {
+                    int nspace                  = get_nspace(coord);
+                    int tmp_idx                 = get_n_eoprec(nspace, id_tmp);
+                    const bool sourceOnEvenSite = ((coord.x + coord.y + coord.z + id_tmp) % 2 == 0) ? true : false;
+                    su3vec temporalField;
 
-					if(sourceOnEvenSite)
-					{
-						temporalField = get_su3vec_from_field_eo(invertedSourceEven, tmp_idx);
-					}
-					else
-					{
-						temporalField = get_su3vec_from_field_eo(invertedSourceOdd, tmp_idx);
-					}
+                    if (sourceOnEvenSite) {
+                        temporalField = get_su3vec_from_field_eo(invertedSourceEven, tmp_idx);
+                    } else {
+                        temporalField = get_su3vec_from_field_eo(invertedSourceOdd, tmp_idx);
+                    }
 
-					summedSquarenorms += su3vec_squarenorm(temporalField);
-				}
-			}
-		}
+                    summedSquarenorms += su3vec_squarenorm(temporalField);
+                }
+            }
+        }
 
-		hmc_float spatialVolume = NSPACE * NSPACE * NSPACE;
-		correlator[NTIME_OFFSET + id_tmp] += summedSquarenorms / spatialVolume ;
-	}
+        hmc_float spatialVolume = NSPACE * NSPACE * NSPACE;
+        correlator[NTIME_OFFSET + id_tmp] += summedSquarenorms / spatialVolume;
+    }
 }

@@ -24,16 +24,16 @@
 #ifndef _META_PARAMETERS_BASIC_HPP_
 #define _META_PARAMETERS_BASIC_HPP_
 
-#include <vector>
-#include <string>
 #include "../common_header_files/types.hpp"
 
 #include <boost/program_options.hpp>
+#include <string>
+#include <vector>
 namespace po = boost::program_options;
 
 namespace meta {
-//todo: move this elsewhere
-//enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2, rooted_stagg };
+    // todo: move this elsewhere
+    // enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2, rooted_stagg };
 }
 
 #endif

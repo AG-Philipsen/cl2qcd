@@ -27,78 +27,77 @@ namespace physics {
     namespace observables {
 
         class GaugeObservablesParametersInterface {
-            public:
-                virtual ~GaugeObservablesParametersInterface(){}
-                virtual bool measureRectangles() const = 0;
-                virtual bool measureTransportCoefficientKappa() const = 0;
-                virtual bool printToScreen() const = 0;
-                virtual hmc_float getBeta() const = 0;
-                virtual std::string getTransportCoefficientKappaFilename() const = 0;
-                virtual std::string getRectanglesFilename() const = 0;
-                virtual std::string getGaugeObservablesFilename(std::string) const = 0;
-                virtual unsigned getTemporalPlaquetteNormalization() const = 0;
-                virtual unsigned getSpatialPlaquetteNormalization() const = 0;
-                virtual unsigned getPlaquetteNormalization() const = 0;
-                virtual unsigned getSpatialVolume() const = 0;
-                virtual unsigned getPolyakovLoopNormalization() const = 0;
+          public:
+            virtual ~GaugeObservablesParametersInterface() {}
+            virtual bool measureRectangles() const                             = 0;
+            virtual bool measureTransportCoefficientKappa() const              = 0;
+            virtual bool printToScreen() const                                 = 0;
+            virtual hmc_float getBeta() const                                  = 0;
+            virtual std::string getTransportCoefficientKappaFilename() const   = 0;
+            virtual std::string getRectanglesFilename() const                  = 0;
+            virtual std::string getGaugeObservablesFilename(std::string) const = 0;
+            virtual unsigned getTemporalPlaquetteNormalization() const         = 0;
+            virtual unsigned getSpatialPlaquetteNormalization() const          = 0;
+            virtual unsigned getPlaquetteNormalization() const                 = 0;
+            virtual unsigned getSpatialVolume() const                          = 0;
+            virtual unsigned getPolyakovLoopNormalization() const              = 0;
         };
 
         class WilsonTwoFlavourChiralCondensateParametersInterface {
-            public:
-                virtual ~WilsonTwoFlavourChiralCondensateParametersInterface(){}
-                virtual common::action getFermionicActionType() const = 0;
-                virtual common::pbp_version getPbpVersion() const = 0;
-                virtual bool measurePbp() const = 0;
-                virtual int getNumberOfSources() const = 0;
-                virtual hmc_float getKappa() const = 0;
-                virtual hmc_float getMubar() const = 0;
-                virtual unsigned get4dVolume() const = 0;
-                virtual bool useEvenOdd() const = 0;
-                virtual std::string getPbpFilename(std::string configurationName) const = 0;
+          public:
+            virtual ~WilsonTwoFlavourChiralCondensateParametersInterface() {}
+            virtual common::action getFermionicActionType() const                   = 0;
+            virtual common::pbp_version getPbpVersion() const                       = 0;
+            virtual bool measurePbp() const                                         = 0;
+            virtual int getNumberOfSources() const                                  = 0;
+            virtual hmc_float getKappa() const                                      = 0;
+            virtual hmc_float getMubar() const                                      = 0;
+            virtual unsigned get4dVolume() const                                    = 0;
+            virtual bool useEvenOdd() const                                         = 0;
+            virtual std::string getPbpFilename(std::string configurationName) const = 0;
         };
 
         class StaggeredChiralCondensateParametersInterface {
-            public:
-                virtual ~StaggeredChiralCondensateParametersInterface(){}
-                virtual bool measurePbp() const = 0;
-                virtual int getNumberOfSources() const = 0;
-                virtual hmc_float getMass() const = 0;
-                virtual hmc_float getSolverPrecision() const = 0;
-                virtual hmc_float getNumberOfTastes() const = 0;
-                virtual unsigned get4dVolume() const = 0;
-                virtual std::string getPbpFilename(std::string configurationName) const = 0;
-                virtual unsigned getPbpNumberOfMeasurements() const = 0;
+          public:
+            virtual ~StaggeredChiralCondensateParametersInterface() {}
+            virtual bool measurePbp() const                                         = 0;
+            virtual int getNumberOfSources() const                                  = 0;
+            virtual hmc_float getMass() const                                       = 0;
+            virtual hmc_float getSolverPrecision() const                            = 0;
+            virtual hmc_float getNumberOfTastes() const                             = 0;
+            virtual unsigned get4dVolume() const                                    = 0;
+            virtual std::string getPbpFilename(std::string configurationName) const = 0;
+            virtual unsigned getPbpNumberOfMeasurements() const                     = 0;
         };
 
         class WilsonTwoFlavourCorrelatorsParametersInterface {
-            public:
-                virtual ~WilsonTwoFlavourCorrelatorsParametersInterface(){}
-                virtual bool printToScreen() const = 0;
-                virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
-                virtual unsigned getCorrelatorDirection() const = 0;
-                virtual common::sourcetypes getSourceType() const = 0;
-                virtual unsigned getNs() const = 0;
-                virtual unsigned getNt() const = 0;
-                virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
-                virtual bool placeSourcesOnHost() const = 0;
-                virtual int getNumberOfSources() const = 0;
+          public:
+            virtual ~WilsonTwoFlavourCorrelatorsParametersInterface() {}
+            virtual bool printToScreen() const                                                        = 0;
+            virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
+            virtual unsigned getCorrelatorDirection() const                                           = 0;
+            virtual common::sourcetypes getSourceType() const                                         = 0;
+            virtual unsigned getNs() const                                                            = 0;
+            virtual unsigned getNt() const                                                            = 0;
+            virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const     = 0;
+            virtual bool placeSourcesOnHost() const                                                   = 0;
+            virtual int getNumberOfSources() const                                                    = 0;
         };
 
         class StaggeredTwoFlavourCorrelatorsParametersInterface {
-			public:
-				virtual ~StaggeredTwoFlavourCorrelatorsParametersInterface(){}
-				virtual bool printToScreen() const = 0;
-				virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
-//                virtual unsigned getCorrelatorDirection() const = 0;
-                virtual common::sourcetypes getSourceType() const = 0;
-//                virtual unsigned getNs() const = 0;
-                virtual unsigned getNt() const = 0;
-				virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
-				virtual hmc_float getSolverPrecision() const = 0;
-//                virtual bool placeSourcesOnHost() const = 0;
-                virtual int getNumberOfSources() const = 0;
+          public:
+            virtual ~StaggeredTwoFlavourCorrelatorsParametersInterface() {}
+            virtual bool printToScreen() const                                                        = 0;
+            virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
+            //                virtual unsigned getCorrelatorDirection() const = 0;
+            virtual common::sourcetypes getSourceType() const = 0;
+            //                virtual unsigned getNs() const = 0;
+            virtual unsigned getNt() const                                                        = 0;
+            virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
+            virtual hmc_float getSolverPrecision() const                                          = 0;
+            //                virtual bool placeSourcesOnHost() const = 0;
+            virtual int getNumberOfSources() const = 0;
         };
 
-
-    }
-}
+    }  // namespace observables
+}  // namespace physics

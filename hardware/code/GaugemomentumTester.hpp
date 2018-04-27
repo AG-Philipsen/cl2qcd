@@ -23,54 +23,52 @@
 #define GAUGEMOMENTUM_TESTER_HPP_
 
 #include "../../host_functionality/host_random.hpp"
-#include "kernelTester.hpp"
-#include "gaugemomentum.hpp"
-#include "prng.hpp"
 #include "SpinorTester.hpp"
+#include "gaugemomentum.hpp"
+#include "kernelTester.hpp"
+#include "prng.hpp"
 
-enum GaugeMomentumFilltype {One, Zero, Ascending};
+enum GaugeMomentumFilltype { One, Zero, Ascending };
 
 int calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept;
 int calculateAlgebraSize(LatticeExtents latticeExtentsIn) noexcept;
 
-double count_gm(ae * ae_in, int size);
-double calc_var_gm(ae * ae_in, int size, double sum);
+double count_gm(ae* ae_in, int size);
+double calc_var_gm(ae* ae_in, int size, double sum);
 
-struct GaugemomentumTestParameters: public TestParameters
-{
-	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const double testPrecisionIn = 10e-8) :
-		TestParameters(latticeExtendsIn, testPrecisionIn), fillType(GaugeMomentumFilltype::One), coefficient(1.) {};
-	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn) :
-		TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(1.) {};
-	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn, const double c) :
-		TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(c) {};
+struct GaugemomentumTestParameters : public TestParameters {
+    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const double testPrecisionIn = 10e-8)
+        : TestParameters(latticeExtendsIn, testPrecisionIn), fillType(GaugeMomentumFilltype::One), coefficient(1.){};
+    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn)
+        : TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(1.){};
+    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn,
+                                const double c)
+        : TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(c){};
 
-	const GaugeMomentumFilltype fillType;
-	const double coefficient;
+    const GaugeMomentumFilltype fillType;
+    const double coefficient;
 };
 
-class GaugemomentumTester : public KernelTester
-{
-public:
-	GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP);
-	virtual ~GaugemomentumTester();
-protected:
-	const hardware::code::Gaugemomentum * code;
-	hardware::buffers::Plain<double> * doubleBuffer;
-	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index = 0);
+class GaugemomentumTester : public KernelTester {
+  public:
+    GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV,
+                        const GaugemomentumTestParameters tP);
+    virtual ~GaugemomentumTester();
+
+  protected:
+    const hardware::code::Gaugemomentum* code;
+    hardware::buffers::Plain<double>* doubleBuffer;
+    void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum* in, int index = 0);
 };
 
+struct GaugemomentumCreator {
+    GaugemomentumCreator(const LatticeExtents lE) : numberOfElements(calculateAlgebraSize(lE)){};
+    ae* createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = One);
+    void fill_with_one(ae* in);
+    void fill_with_zero(ae* in);
+    void fill_with_ascending(ae* in);
 
-struct GaugemomentumCreator
-{
-	GaugemomentumCreator(const LatticeExtents lE): numberOfElements(calculateAlgebraSize(lE)){};
-	ae * createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = One);
-	void fill_with_one(ae * in);
-	void fill_with_zero(ae * in);
-	void fill_with_ascending(ae * in);
-
-	size_t numberOfElements;
-
+    size_t numberOfElements;
 };
 
 #endif

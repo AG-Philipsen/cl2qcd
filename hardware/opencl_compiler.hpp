@@ -24,156 +24,153 @@
 #ifndef _OPENCL_COMPILER_H_
 #define _OPENCL_COMPILER_H_
 
-#include <vector>
-#include <string>
-
 #include "../executables/exceptions.hpp"
 #include "../host_functionality/logger.hpp"
 
+#include <string>
+#include <vector>
+
 #ifdef __APPLE__
-#include <OpenCL/cl.h>
+#    include <OpenCL/cl.h>
 #else
-#include <CL/cl.h>
+#    include <CL/cl.h>
 #endif
 
 /**
  * A collection of OpenCL source files for repeated passing to the OpenCL compiler.
  */
 class ClSourcePackage {
+  public:
+    /**
+     * Create a package based from an array of filenames and potentially
+     * another package
+     *
+     * @param names An array of filenames.
+     * @param num How many filenames.
+     * @param base Optionally a package to base this package on.
+     */
+    ClSourcePackage(const std::vector<std::string>& files, const std::string& options);
 
-public:
-	/**
-	 * Create a package based from an array of filenames and potentially
-	 * another package
-	 *
-	 * @param names An array of filenames.
-	 * @param num How many filenames.
-	 * @param base Optionally a package to base this package on.
-	 */
-	ClSourcePackage(const std::vector<std::string>& files, const std::string& options);
+    /**
+     * Create an empty package with the given options
+     */
+    ClSourcePackage(const std::string& options = std::string())
+        : ClSourcePackage(std::vector<std::string>(), options){};
 
-	/**
-	 * Create an empty package with the given options
-	 */
-	ClSourcePackage(const std::string& options = std::string()) : ClSourcePackage(std::vector<std::string>(), options) {};
+    /**
+     * Copy constructor
+     */
+    ClSourcePackage(const ClSourcePackage& src) : ClSourcePackage(src.files, src.options){};
 
-	/**
-	 * Copy constructor
-	 */
-	ClSourcePackage(const ClSourcePackage& src) : ClSourcePackage(src.files, src.options) {};
+    /**
+     * Add another source file to the list of sources.
+     */
+    ClSourcePackage operator<<(const std::string& file);
 
-	/**
-	 * Add another source file to the list of sources.
-	 */
-	ClSourcePackage operator <<(const std::string& file);
+    /**
+     * Add a predefined group of packages.
+     */
+    ClSourcePackage operator<<(const ClSourcePackage& package);
 
-	/**
-	 * Add a predefined group of packages.
-	 */
-	ClSourcePackage operator <<(const ClSourcePackage& package);
+    /**
+     * Allow assignment of packages
+     */
+    ClSourcePackage operator=(const ClSourcePackage& package);
 
-	/**
-	 * Allow assignment of packages
-	 */
-	ClSourcePackage operator =(const ClSourcePackage& package);
+    /**
+     * Get the list of files within the package.
+     */
+    const std::vector<std::string> getFiles() const;
 
-	/**
-	 * Get the list of files within the package.
-	 */
-	const std::vector<std::string> getFiles() const;
+    /**
+     * Get the list of files within the package.
+     */
+    const std::string getOptions() const;
 
-	/**
-	 * Get the list of files within the package.
-	 */
-	const std::string getOptions() const;
-
-private:
-	/**
-	 * Collection of all the filenames part of the package
-	 */
-	std::vector<std::string> files;
-	/**
-	 * Collection of all build options set for this package
-	 */
-	std::string options;
+  private:
+    /**
+     * Collection of all the filenames part of the package
+     */
+    std::vector<std::string> files;
+    /**
+     * Collection of all build options set for this package
+     */
+    std::string options;
 };
 
 /**
  * Parameter collection object for OpenCL compile.
  */
 class TmpClKernel {
+  public:
+    /**
+     * All purpose constructor.
+     */
+    TmpClKernel(const std::string kernel_name, const std::string build_options, const cl_context context,
+                cl_device_id device, const std::vector<std::string> files = std::vector<std::string>());
 
-public:
+    /**
+     * Conversion operator to a real OpenCL kernel object, will trigger build.
+     */
+    operator cl_kernel() const;
 
-	/**
-	 * All purpose constructor.
-	 */
-	TmpClKernel(const std::string kernel_name, const std::string build_options,
-	            const cl_context context, cl_device_id device,
-	            const std::vector<std::string> files = std::vector<std::string>());
+    /**
+     * Add another source file to the list of sources.
+     */
+    TmpClKernel operator<<(const std::string& file) const;
 
-	/**
-	 * Conversion operator to a real OpenCL kernel object, will trigger build.
-	 */
-	operator cl_kernel() const;
+    /**
+     * Add a predefined group of packages.
+     */
+    TmpClKernel operator<<(const ClSourcePackage& package) const;
 
-	/**
-	 * Add another source file to the list of sources.
-	 */
-	TmpClKernel operator <<(const std::string& file) const;
+  private:
+    /**
+     * The name of the kernel to compile.
+     */
+    const std::string kernel_name;
 
-	/**
-	 * Add a predefined group of packages.
-	 */
-	TmpClKernel operator <<(const ClSourcePackage& package) const;
+    /**
+     * The build options to use for the kernel.
+     */
+    const std::string build_options;
 
-private:
-	/**
-	 * The name of the kernel to compile.
-	 */
-	const std::string kernel_name;
+    /**
+     * The OpenCL context we are working in.
+     */
+    const cl_context context;
 
-	/**
-	 * The build options to use for the kernel.
-	 */
-	const std::string build_options;
+    /**
+     * The device to compile for.
+     */
+    cl_device_id device;
 
-	/**
-	 * The OpenCL context we are working in.
-	 */
-	const cl_context context;
+    /**
+     * The files required for compilation.
+     */
+    const std::vector<std::string> files;
 
-	/**
-	 * The device to compile for.
-	 */
-	cl_device_id device;
+    /**
+     * Print resource requirements of a kernel object.
+     *
+     * All information is dumped to the trace.
+     *
+     * @param kernel The kernel of which to query the information.
+     */
+    void printResourceRequirements(const cl_kernel kernel) const;
 
-	/**
-	 * The files required for compilation.
-	 */
-	const std::vector<std::string> files;
+    /**
+     * Generate an MD5 string uniquely identifying the OpenCL program binary.
+     */
+    std::string generateMD5() const;
 
-	/**
-	 * Print resource requirements of a kernel object.
-	 *
-	 * All information is dumped to the trace.
-	 *
-	 * @param kernel The kernel of which to query the information.
-	 */
-	void printResourceRequirements(const cl_kernel kernel) const;
+    void dumpBinary(cl_program program, std::string md5) const;
 
-	/**
-	 * Generate an MD5 string uniquely identifying the OpenCL program binary.
-	 */
-	std::string generateMD5() const;
+    cl_program loadBinary(std::string md5) const;
 
-	void dumpBinary(cl_program program, std::string md5) const;
+    cl_program loadSources() const;
 
-	cl_program loadBinary(std::string md5) const;
-
-	cl_program loadSources() const;
-
-	void buildProgram(cl_program) const;
+    void buildProgram(cl_program) const;
 };
 
 #endif /* _OPENCL_COMPILER_H_ */
