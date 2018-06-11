@@ -3,6 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2015,2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -56,7 +57,7 @@ namespace meta {
         std::string get_transportcoefficientKappaFilename() const noexcept;
 
       private:
-        po::options_description options;
+        InputparametersOptions options;
         int writefrequency;
         int savefrequency;       // This is the frequency for conf.xxxx and prng.xxxx
         int savepointfrequency;  // This is the frequency for conf.save and prng.save

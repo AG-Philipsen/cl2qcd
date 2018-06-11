@@ -1,9 +1,7 @@
 /** @file
+ * Input file handling implementation
  *
- * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015,2018 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -21,23 +19,18 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _META_PARAMETERS_BASIC_HPP_
-#define _META_PARAMETERS_BASIC_HPP_
+#include "parametersBasic.hpp"
 
-#include "../common_header_files/types.hpp"
+#include "sys/ioctl.h"
 
-#include <boost/program_options.hpp>
-#include <string>
-#include <vector>
-namespace po = boost::program_options;
+static unsigned short int getTerminalWidth()
+{
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    return w.ws_col;
+}
 
-namespace meta {
-
-    class InputparametersOptions : public po::options_description {
-      public:
-        InputparametersOptions(std::string optionsDescription);
-    };
-
-}  // namespace meta
-
-#endif
+meta::InputparametersOptions::InputparametersOptions(std::string optionsDescription)
+    : po::options_description(optionsDescription, getTerminalWidth() / 10 * 9)
+{
+}

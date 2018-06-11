@@ -3,7 +3,7 @@
  * Copyright (c) 2014,2018 Alessandro Sciarra
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -38,7 +38,7 @@ namespace meta {
         int get_pbp_measurements() const noexcept;
 
       private:
-        po::options_description options;
+        InputparametersOptions options;
 
         bool measure_transportcoefficient_kappa;
         bool measure_rectangles;

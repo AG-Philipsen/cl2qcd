@@ -3,6 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -32,7 +33,7 @@ namespace meta {
         double get_test_ref_value2() const noexcept;
 
       private:
-        po::options_description options;
+        InputparametersOptions options;
 
         double test_ref_value;
         double test_ref_value2;

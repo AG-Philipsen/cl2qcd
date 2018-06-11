@@ -3,6 +3,7 @@
 # Copyright (c) 2012,2013 Matthias Bach
 # Copyright (c) 2013,2014 Christopher Pinke
 # Copyright (c) 2016,2018 Alessandro Sciarra
+# Copyright (c) 2018 Francesca Cuteri
 #
 # This file is part of CL2QCD.
 #
@@ -24,6 +25,7 @@
 #
 
 add_library(meta
+	parametersBasic.cpp
 	parametersConfig.cpp
 	parametersIo.cpp
 	parametersGauge.cpp

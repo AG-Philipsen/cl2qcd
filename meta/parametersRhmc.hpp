@@ -3,6 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2015,2017,2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -46,7 +47,7 @@ namespace meta {
         bool get_read_rational_approximations_from_file() const noexcept;
 
       protected:
-        po::options_description options;
+        InputparametersOptions options;
         /** @TODO If the rational approximation is read from file than its parameters could differ
          *        from the following! This means, for example, that one could use get_md_approx_ord()
          *        to get a value that is not that loaded from the file!

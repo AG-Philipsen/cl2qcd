@@ -3,6 +3,7 @@
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -62,7 +63,7 @@ namespace meta {
         bool get_use_aniso() const noexcept;
 
       private:
-        po::options_description options;
+        InputparametersOptions options;
 
         size_t precision;
 
