@@ -96,7 +96,7 @@ readarray -t existingUserOrCommitterNamesAndEmails <<< "$(cat <(git log --all --
 readonly existingUserOrCommitterNamesAndEmails
 newUser=0
 for userOrCommitterNameAndEmail in "${existingUserOrCommitterNamesAndEmails[@]}"; do
-    if [ "$userOrCommitterNameAndEmail" = "$userName $userEmail" ] || [ "$userOrCommitterNameAndEmail" = "$committerName $committerEmail"]; then
+    if [ "$userOrCommitterNameAndEmail" = "$userName $userEmail" ] || [ "$userOrCommitterNameAndEmail" = "$committerName $committerEmail" ]; then
         newUser=1
         break
     fi
