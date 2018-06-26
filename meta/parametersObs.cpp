@@ -3,7 +3,7 @@
  * Copyright (c) 2014,2018 Alessandro Sciarra
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -70,11 +70,4 @@ meta::ParametersObs::ParametersObs() : options("Observables options")
 	("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
 	("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) );
     // clang-format on
-}
-
-meta::ParametersObs::~ParametersObs() = default;
-
-po::options_description& meta::ParametersObs::getOptions()
-{
-    return options;
 }

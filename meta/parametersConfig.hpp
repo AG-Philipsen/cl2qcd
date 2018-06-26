@@ -63,8 +63,6 @@ namespace meta {
         bool get_use_aniso() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         size_t precision;
 
         std::vector<int> selected_devices;
@@ -98,10 +96,10 @@ namespace meta {
 
       protected:
         ParametersConfig();
-        virtual ~ParametersConfig();
+        virtual ~ParametersConfig()               = default;
         ParametersConfig(ParametersConfig const&) = delete;
         ParametersConfig& operator=(ParametersConfig const&) = delete;
-        po::options_description& getOptions();
+        InputparametersOptions options;
 
         common::startcondition _startcondition;
     };

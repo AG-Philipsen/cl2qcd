@@ -3,6 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2015,2017,2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -110,11 +111,4 @@ meta::ParametersRhmc::ParametersRhmc() : options("RHMC options")
 	("approx_metropolis_file", po::value<std::string>(&metropolisTestRationalApproximationFilename)->default_value("Approx_Metropolis"))
 	("read_rational_approximations_from_file", po::value<bool>(&readRationalApproximationsFromFile)->default_value(true));
     // clang-format on
-}
-
-meta::ParametersRhmc::~ParametersRhmc() = default;
-
-po::options_description& meta::ParametersRhmc::getOptions()
-{
-    return options;
 }

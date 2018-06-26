@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -106,13 +106,6 @@ ParametersHmc::ParametersHmc() : options("HMC options")
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
 	("use_mp", po::value<bool>(&use_mp)->default_value(false));
     // clang-format on
-}
-
-meta::ParametersHmc::~ParametersHmc() = default;
-
-po::options_description& ParametersHmc::getOptions()
-{
-    return options;
 }
 
 bool ParametersHmc::get_use_gauge_only() const noexcept

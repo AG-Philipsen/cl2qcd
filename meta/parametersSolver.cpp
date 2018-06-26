@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -98,11 +98,4 @@ meta::ParametersSolver::ParametersSolver() : options("Solver options")
 	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
 	("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!");
     // clang-format on
-}
-
-meta::ParametersSolver::~ParametersSolver() = default;
-
-po::options_description& meta::ParametersSolver::getOptions()
-{
-    return options;
 }

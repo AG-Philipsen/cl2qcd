@@ -43,8 +43,6 @@ namespace meta {
         bool get_profile_solver() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         double solver_prec;
         double force_prec;
         int iter_refresh;
@@ -58,11 +56,12 @@ namespace meta {
 
       protected:
         ParametersSolver();
-        virtual ~ParametersSolver();
+        virtual ~ParametersSolver()               = default;
         ParametersSolver(ParametersSolver const&) = delete;
         ParametersSolver& operator=(ParametersSolver const&) = delete;
-        po::options_description& getOptions();
+        InputparametersOptions getAllOptions();
 
+        InputparametersOptions options;
         // at the moment, only 2 solvers are implemented..
         common::solver _solver;
         common::solver _solver_mp;

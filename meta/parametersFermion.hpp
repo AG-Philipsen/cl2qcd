@@ -49,8 +49,6 @@ namespace meta {
         bool get_use_merge_kernels_spinor() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         double kappa;
         double mass;  // staggered quark mass
         double mu;
@@ -70,11 +68,11 @@ namespace meta {
 
       protected:
         ParametersFermion();
-        virtual ~ParametersFermion();
+        virtual ~ParametersFermion()                = default;
         ParametersFermion(ParametersFermion const&) = delete;
         ParametersFermion& operator=(ParametersFermion const&) = delete;
-        po::options_description& getOptions();
 
+        InputparametersOptions options;
         common::action fermact;
         common::action fermact_mp;
     };

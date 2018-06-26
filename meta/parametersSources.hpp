@@ -39,8 +39,6 @@ namespace meta {
         common::sourcecontents get_sourcecontent() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         int num_sources;
         int source_x;
         int source_y;
@@ -50,11 +48,12 @@ namespace meta {
 
       protected:
         ParametersSources();
-        virtual ~ParametersSources();
+        virtual ~ParametersSources()                = default;
         ParametersSources(ParametersSources const&) = delete;
         ParametersSources& operator=(ParametersSources const&) = delete;
-        po::options_description& getOptions();
+        InputparametersOptions getAllOptions();
 
+        InputparametersOptions options;
         common::sourcetypes sourcetype;
         common::sourcecontents sourcecontent;
     };

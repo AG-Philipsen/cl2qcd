@@ -36,7 +36,6 @@ namespace meta {
         bool get_use_smearing() const noexcept;
 
       private:
-        InputparametersOptions options;
         double beta;
         double rho;
         int rho_iter;
@@ -44,11 +43,11 @@ namespace meta {
 
       protected:
         ParametersGauge();
-        virtual ~ParametersGauge();
+        virtual ~ParametersGauge()              = default;
         ParametersGauge(ParametersGauge const&) = delete;
         ParametersGauge& operator=(ParametersGauge const&) = delete;
-        po::options_description& getOptions();
 
+        InputparametersOptions options;
         common::action gaugeact;
     };
 

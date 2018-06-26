@@ -33,17 +33,16 @@ namespace meta {
         double get_test_ref_value2() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         double test_ref_value;
         double test_ref_value2;
 
       protected:
         ParametersTest();
-        virtual ~ParametersTest();
+        virtual ~ParametersTest()             = default;
         ParametersTest(ParametersTest const&) = delete;
         ParametersTest& operator=(ParametersTest const&) = delete;
-        po::options_description& getOptions();
+
+        InputparametersOptions options;
     };
 
 }  // namespace meta

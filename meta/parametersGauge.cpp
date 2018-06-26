@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -56,11 +56,4 @@ meta::ParametersGauge::ParametersGauge() : options("Gaugefield options")
 	("rho_iter", po::value<int>(&rho_iter)->default_value(0))
 	("gaugeact", po::value<std::string>()->default_value("wilson"));
     // clang-format on
-}
-
-meta::ParametersGauge::~ParametersGauge() = default;
-
-po::options_description& meta::ParametersGauge::getOptions()
-{
-    return options;
 }

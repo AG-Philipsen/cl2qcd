@@ -3,6 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2015,2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -180,11 +181,4 @@ meta::ParametersIo::ParametersIo() : options("IO options")
 	("rhmc_obs_prefix", po::value<std::string>(&rhmc_obs_prefix)->default_value("rhmc_output"), "Prefix for rhmc observables file")
 	("rhmc_obs_postfix", po::value<std::string>(&rhmc_obs_postfix)->default_value(""), "Postfix for rhmc observables file");
     // clang-format on
-}
-
-meta::ParametersIo::~ParametersIo() = default;
-
-po::options_description& meta::ParametersIo::getOptions()
-{
-    return options;
 }

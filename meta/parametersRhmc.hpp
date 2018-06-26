@@ -47,7 +47,6 @@ namespace meta {
         bool get_read_rational_approximations_from_file() const noexcept;
 
       protected:
-        InputparametersOptions options;
         /** @TODO If the rational approximation is read from file than its parameters could differ
          *        from the following! This means, for example, that one could use get_md_approx_ord()
          *        to get a value that is not that loaded from the file!
@@ -84,10 +83,11 @@ namespace meta {
 
       protected:
         ParametersRhmc();
-        virtual ~ParametersRhmc();
+        virtual ~ParametersRhmc()             = default;
         ParametersRhmc(ParametersRhmc const&) = delete;
         ParametersRhmc& operator=(ParametersRhmc const&) = delete;
-        po::options_description& getOptions();
+
+        InputparametersOptions options;
     };
 
 }  // namespace meta

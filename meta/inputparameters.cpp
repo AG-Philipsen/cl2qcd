@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2014,2015 Christopher Pinke
  * Copyright (c) 2014,2015,2018 Alessandro Sciarra
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -73,7 +73,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
      * First handle all the stuff that can only be done on the cmd-line.
      * We need that to get the option file.
      */
-    po::options_description cmd_opts("Generic options");
+    meta::InputparametersOptions cmd_opts("Generic options");
     // clang-format off
 	cmd_opts.add_options()
 		("help,h", "Produce this help message")
@@ -83,58 +83,57 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     po::positional_options_description pos_opts;
     pos_opts.add("input-file", 1);
 
-    po::options_description desc;
-    desc.add(cmd_opts).add(ParametersConfig::getOptions());
+    meta::InputparametersOptions desc("");
+    desc.add(cmd_opts).add(ParametersConfig::options);
 
     if (parameterSet == "su3heatbath") {
-        desc.add(ParametersIo::getOptions())
-            .add(ParametersGauge::getOptions())
-            .add(ParametersHeatbath::getOptions())
-            .add(ParametersObs::getOptions());
+        desc.add(ParametersIo::options)
+            .add(ParametersGauge::options)
+            .add(ParametersHeatbath::options)
+            .add(ParametersObs::options);
     } else if (parameterSet == "gaugeobservables") {
-        desc.add(ParametersIo::getOptions()).add(ParametersGauge::getOptions()).add(ParametersObs::getOptions());
+        desc.add(ParametersIo::options).add(ParametersGauge::options).add(ParametersObs::options);
     } else if (parameterSet == "inverter") {
-        desc.add(ParametersIo::getOptions())
-            .add(ParametersGauge::getOptions())
-            .add(ParametersFermion::getOptions())
-            .add(ParametersSolver::getOptions())
-            .add(ParametersSources::getOptions())
-            .add(ParametersRhmc::getOptions())  // This is for the num_tastes, not elegant... TODO: think another way!
-            .add(ParametersObs::getOptions());
+        desc.add(ParametersIo::options)
+            .add(ParametersGauge::options)
+            .add(ParametersFermion::options)
+            .add(ParametersSolver::options)
+            .add(ParametersSources::options)
+            .add(ParametersRhmc::options)  // This is for the num_tastes, not elegant... TODO: think another way!
+            .add(ParametersObs::options);
     } else if (parameterSet == "hmc") {
-        desc.add(ParametersIo::getOptions())
-            .add(ParametersGauge::getOptions())
-            .add(ParametersFermion::getOptions())
-            .add(ParametersSolver::getOptions())
-            .add(ParametersSources::getOptions())
-            .add(ParametersObs::getOptions())
-            .add(ParametersHeatbath::getOptions())  // This is for the thermalizationsteps, not elegant... TODO: think
-                                                    // another way!
-            .add(ParametersHmc::getOptions());
+        desc.add(ParametersIo::options)
+            .add(ParametersGauge::options)
+            .add(ParametersFermion::options)
+            .add(ParametersSolver::options)
+            .add(ParametersSources::options)
+            .add(ParametersObs::options)
+            .add(ParametersHeatbath::options)  // This is for the thermalizationsteps, not elegant... TODO: think
+                                               // another way!
+            .add(ParametersHmc::options);
     } else if (parameterSet == "rhmc") {
-        desc.add(ParametersIo::getOptions())
-            .add(ParametersGauge::getOptions())
-            .add(ParametersFermion::getOptions())
-            .add(ParametersSolver::getOptions())
-            .add(ParametersSources::getOptions())
-            .add(ParametersObs::getOptions())
-            .add(
-                ParametersHmc::getOptions())  // This is for several parameters, not elegant... TODO: think another way!
-            .add(ParametersHeatbath::getOptions())  // This is for the thermalizationsteps, not elegant... TODO: think
-                                                    // another way!
-            .add(ParametersRhmc::getOptions());
+        desc.add(ParametersIo::options)
+            .add(ParametersGauge::options)
+            .add(ParametersFermion::options)
+            .add(ParametersSolver::options)
+            .add(ParametersSources::options)
+            .add(ParametersObs::options)
+            .add(ParametersHmc::options)  // This is for several parameters, not elegant... TODO: think another way!
+            .add(ParametersHeatbath::options)  // This is for the thermalizationsteps, not elegant... TODO: think
+                                               // another way!
+            .add(ParametersRhmc::options);
     } else  // default: add all options
     {
-        desc.add(ParametersIo::getOptions())
-            .add(ParametersGauge::getOptions())
-            .add(ParametersHeatbath::getOptions())
-            .add(ParametersFermion::getOptions())
-            .add(ParametersSolver::getOptions())
-            .add(ParametersSources::getOptions())
-            .add(ParametersObs::getOptions())
-            .add(ParametersHmc::getOptions())
-            .add(ParametersRhmc::getOptions())
-            .add(ParametersTest::getOptions());
+        desc.add(ParametersIo::options)
+            .add(ParametersGauge::options)
+            .add(ParametersHeatbath::options)
+            .add(ParametersFermion::options)
+            .add(ParametersSolver::options)
+            .add(ParametersSources::options)
+            .add(ParametersObs::options)
+            .add(ParametersHmc::options)
+            .add(ParametersRhmc::options)
+            .add(ParametersTest::options);
     }
 
     po::variables_map vm;

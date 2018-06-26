@@ -3,6 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -50,11 +51,4 @@ meta::ParametersHeatbath::ParametersHeatbath() : options("Heatbath options")
 	//todo: is this used?
 	("xi", po::value<int>(&xi)->default_value(1));
     // clang-format on
-}
-
-meta::ParametersHeatbath::~ParametersHeatbath() = default;
-
-po::options_description& meta::ParametersHeatbath::getOptions()
-{
-    return options;
 }

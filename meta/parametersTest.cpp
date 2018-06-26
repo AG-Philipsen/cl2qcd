@@ -3,6 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -38,11 +39,4 @@ meta::ParametersTest::ParametersTest() : options("Test options")
 	("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
 	("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
     // clang-format on
-}
-
-meta::ParametersTest::~ParametersTest() = default;
-
-po::options_description& meta::ParametersTest::getOptions()
-{
-    return options;
 }

@@ -38,8 +38,6 @@ namespace meta {
         int get_pbp_measurements() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         bool measure_transportcoefficient_kappa;
         bool measure_rectangles;
         bool measure_correlators;
@@ -49,11 +47,11 @@ namespace meta {
 
       protected:
         ParametersObs();
-        virtual ~ParametersObs();
+        virtual ~ParametersObs()            = default;
         ParametersObs(ParametersObs const&) = delete;
         ParametersObs& operator=(ParametersObs const&) = delete;
-        po::options_description& getOptions();
 
+        InputparametersOptions options;
         common::pbp_version pbp_version_;
     };
 

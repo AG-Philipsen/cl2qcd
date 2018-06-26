@@ -3,6 +3,7 @@
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -167,11 +168,4 @@ meta::ParametersConfig::ParametersConfig() : options("Configuration options")
 	//todo: this is not used ?!
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false));
     // clang-format on
-}
-
-meta::ParametersConfig::~ParametersConfig() = default;
-
-po::options_description& meta::ParametersConfig::getOptions()
-{
-    return options;
 }

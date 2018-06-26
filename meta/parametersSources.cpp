@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -70,11 +70,4 @@ meta::ParametersSources::ParametersSources() : options("Source options")
 	("source_t", po::value<int>(&source_t)->default_value(0))
 	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
     // clang-format on
-}
-
-meta::ParametersSources::~ParametersSources() = default;
-
-po::options_description& meta::ParametersSources::getOptions()
-{
-    return options;
 }

@@ -57,7 +57,6 @@ namespace meta {
         std::string get_transportcoefficientKappaFilename() const noexcept;
 
       private:
-        InputparametersOptions options;
         int writefrequency;
         int savefrequency;       // This is the frequency for conf.xxxx and prng.xxxx
         int savepointfrequency;  // This is the frequency for conf.save and prng.save
@@ -87,10 +86,11 @@ namespace meta {
 
       protected:
         ParametersIo();
-        virtual ~ParametersIo();
+        virtual ~ParametersIo()           = default;
         ParametersIo(ParametersIo const&) = delete;
         ParametersIo& operator=(ParametersIo const&) = delete;
-        po::options_description& getOptions();
+
+        InputparametersOptions options;
     };
 
 }  // namespace meta

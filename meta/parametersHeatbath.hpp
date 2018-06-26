@@ -35,8 +35,6 @@ namespace meta {
         int get_xi() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         int thermalizationsteps;
         int heatbathsteps;
         int overrelaxsteps;
@@ -44,10 +42,11 @@ namespace meta {
 
       protected:
         ParametersHeatbath();
-        virtual ~ParametersHeatbath();
+        virtual ~ParametersHeatbath()                 = default;
         ParametersHeatbath(ParametersHeatbath const&) = delete;
         ParametersHeatbath& operator=(ParametersHeatbath const&) = delete;
-        po::options_description& getOptions();
+
+        InputparametersOptions options;
     };
 
 }  // namespace meta

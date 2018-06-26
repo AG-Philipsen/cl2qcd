@@ -40,8 +40,6 @@ namespace meta {
         bool get_use_mp() const noexcept;
 
       private:
-        InputparametersOptions options;
-
         double tau;
         bool reversibility_check;
         int integrationsteps0;
@@ -57,11 +55,11 @@ namespace meta {
 
       protected:
         ParametersHmc();
-        virtual ~ParametersHmc();
+        virtual ~ParametersHmc()            = default;
         ParametersHmc(ParametersHmc const&) = delete;
         ParametersHmc& operator=(ParametersHmc const&) = delete;
-        po::options_description& getOptions();
 
+        InputparametersOptions options;
         common::integrator integrator0;
         common::integrator integrator1;
         common::integrator integrator2;
