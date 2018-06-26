@@ -104,7 +104,7 @@ function CapitalizeFirstLetterFirstLine() {
 }
 
 function RemovePointAtTheEndFirstLine() {
-    sed -i '1s/[.!?]\+$//g' "$1"
+    sed -i '1s/[:;,.!?]\+$//g' "$1"
 }
 
 function IsFirstLineNotStartingWithLetter() { #Assume no trailing spaces, since removed

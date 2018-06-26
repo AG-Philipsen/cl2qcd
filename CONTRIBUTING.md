@@ -155,7 +155,7 @@ This hooks enforces the [commit rules](#commit-rules), together with some more s
   * any following line after the second has more than 72 characters.
 * The commit message is changed according to the following cases,
   * a small letter at the beginning of the first line is capitalised;
-  * any character among `.?!` at the end of the first line is repetitively removed (e.g. `commit..!!!` becomes `commit`);
+  * any character among `:;,.?!` at the end of the first line is repetitively removed (e.g. `commit..!!!` becomes `commit`);
   * trailing spaces at begin and end of the first two lines are removed.
 
 #### Useful information
