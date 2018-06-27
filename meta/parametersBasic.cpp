@@ -30,7 +30,26 @@ static unsigned short int getTerminalWidth()
     return w.ws_col;
 }
 
-meta::InputparametersOptions::InputparametersOptions(std::string optionsDescription)
-    : po::options_description(optionsDescription, getTerminalWidth() / 10 * 9)
+unsigned short int getHelperWidth()
 {
+    unsigned short int threshold = getTerminalWidth() / 10 * 9;
+    return (threshold > 210) ? 210 : threshold;
+}
+
+meta::InputparametersOptions::InputparametersOptions(std::string optionsDescription)
+    : meta::InputparametersOptions(optionsDescription, getHelperWidth(), getHelperWidth() / 3)
+{
+}
+
+meta::InputparametersOptions::InputparametersOptions(std::string optionsDescriptionIn, unsigned int lineLengthIn,
+                                                     unsigned int minimumDescriptionLengthIn)
+    : po::options_description(optionsDescriptionIn, lineLengthIn, minimumDescriptionLengthIn), lineLength(lineLengthIn)
+{
+}
+
+void meta::InputparametersOptions::printOptionsInCustomizedWay(std::ostream& stream) const
+{
+    unsigned short int maxOptionWidth = get_option_column_width();
+    unsigned short int optionWidth    = (maxOptionWidth < lineLength / 4) ? lineLength / 4 : maxOptionWidth + 5;
+    print(stream, optionWidth);
 }

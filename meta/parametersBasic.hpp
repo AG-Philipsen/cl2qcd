@@ -36,6 +36,12 @@ namespace meta {
     class InputparametersOptions : public po::options_description {
       public:
         InputparametersOptions(std::string optionsDescription);
+        void printOptionsInCustomizedWay(std::ostream& stream) const;
+
+      private:
+        InputparametersOptions(std::string optionsDescriptionIn, unsigned int lineLengthIn,
+                               unsigned int minimumDescriptionLengthIn);
+        unsigned int lineLength;  // Store even if privately present in parent
     };
 
 }  // namespace meta

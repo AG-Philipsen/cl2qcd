@@ -142,7 +142,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             "help")) {  // see
                         // http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options
                         // as to why this is done before po::notifiy(vm)
-        std::cout << desc << '\n';
+        desc.printOptionsInCustomizedWay(std::cout);
         throw Inputparameters::parse_aborted();
     }
 
