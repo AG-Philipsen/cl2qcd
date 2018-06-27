@@ -2,6 +2,7 @@
  * Input file handling implementation
  *
  * Copyright (c) 2018 Francesca Cuteri
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,7 +22,9 @@
 
 #include "parametersBasic.hpp"
 
-#include "sys/ioctl.h"
+#include "../executables/exceptions.hpp"
+
+#include <sys/ioctl.h>
 
 static unsigned short int getTerminalWidth()
 {
@@ -52,4 +55,27 @@ void meta::InputparametersOptions::printOptionsInCustomizedWay(std::ostream& str
     unsigned short int maxOptionWidth = get_option_column_width();
     unsigned short int optionWidth    = (maxOptionWidth < lineLength / 4) ? lineLength / 4 : maxOptionWidth + 5;
     print(stream, optionWidth);
+}
+
+meta::InputparametersOptions&
+meta::InputparametersOptions::keepOnlySomeOptions(std::initializer_list<std::string> whichOptions)
+{
+    if (whichOptions.size() == 0)
+        throw Print_Error_Message("No options to be kept passed!", __FILE__, __LINE__);
+
+    std::vector<boost::shared_ptr<po::option_description>>&
+        listOfOptions = const_cast<std::vector<boost::shared_ptr<po::option_description>>&>(options());
+    std::vector<boost::shared_ptr<po::option_description>> newList{};
+    for (auto requiredOption : whichOptions) {
+        auto it = std::find_if(listOfOptions.begin(), listOfOptions.end(),
+                               [&requiredOption](boost::shared_ptr<po::option_description> ptr) {
+                                   return ptr->canonical_display_name() == requiredOption;
+                               });
+        if (it == listOfOptions.end())
+            throw Print_Error_Message("Required option \"" + requiredOption + "\" not found!", __FILE__, __LINE__);
+        else
+            newList.push_back(*it);
+    }
+    listOfOptions = std::move(newList);
+    return *this;
 }

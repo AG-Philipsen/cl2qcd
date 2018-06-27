@@ -37,6 +37,34 @@ namespace meta {
       public:
         InputparametersOptions(std::string optionsDescription);
         void printOptionsInCustomizedWay(std::ostream& stream) const;
+        /**
+         * This method is meant to be used in meta::Inputparameters in order to possibly extract only some options from
+         * the parent ones, because in some executables not all the options of a parent are meaningful.
+         * To implement this method, one has to deal with the boost implementation of po::options_description which
+         * cannot be changed. In particular, such a class contain some constant members and this automatically forbids
+         * any copy/assignment of the class. We therefore use the po::options_description::options method to get a
+         * reference to the options and we delete there those we do not want to keep. Unfortunately, this is not
+         * straightforward, since the po::options_description::options method returns a constant reference and, hence,
+         * we must cast away const.
+         *
+         * ATTENTION: Reading the po::options_description implementation and, in particular, the two methods
+         *            po::options_description::add, it should be clear that an object of type po::options_description
+         *            is more complicated than a simple collection of options, since it contains a private member of
+         *            type std::vector<boost::shared_pointer<po::options_description>> and this is to allow to collect
+         *            group of options (like we do in meta::Inputparameters). In general, the array containing all the
+         *            single options is a union of all groups plus the options which are not in any group but which
+         *            belong to the class itself. Since the array of options is indeed an object of type
+         *            std::vector<boost::shared_pointer<po::option_description>> (note the singular in
+         *            option_description), then when the group vector is nonempty, there will be pairs of shared
+         *            pointers pointing to the same po::option_description (one in the group and one in the options).
+         *            This breaks down the implementation of this method, which deletes only options from the options
+         *            collection.
+         *
+         * CONCLUSION: Use it to delete options from the class collection ONLY, and not to delete options from collected
+         *             groups! In meta::Inputparameters, for instance, this method is used on the parent's member of
+         *             type InputparametersOptions, only.
+         */
+        InputparametersOptions& keepOnlySomeOptions(std::initializer_list<std::string> whichOptions);
 
       private:
         InputparametersOptions(std::string optionsDescriptionIn, unsigned int lineLengthIn,
