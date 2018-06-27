@@ -68,7 +68,7 @@ static void add_option_aliases(meta::ConfigFileNormalizer* const);
 
 Inputparameters::Inputparameters(int argc, const char** argv, std::string parameterSet)
 {
-    logger.info() << "read in parameters...";
+    logger.debug() << "Read in parameters...";
     /**
      * First handle all the stuff that can only be done on the cmd-line.
      * We need that to get the option file.
@@ -143,7 +143,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                         // http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options
                         // as to why this is done before po::notifiy(vm)
         desc.printOptionsInCustomizedWay(std::cout);
-        throw Inputparameters::parse_aborted();
+        throw Inputparameters::help_required();
     }
 
     if (vm.count("input-file")) {

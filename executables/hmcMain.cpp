@@ -40,6 +40,8 @@ int main(int argc, const char* argv[])
     } catch (Invalid_Parameters& es) {
         logger.fatal() << es.what();
         exit(1);
+    } catch (meta::Inputparameters::help_required& e) {
+        std::cout << '\n';
     }
 
     return 0;

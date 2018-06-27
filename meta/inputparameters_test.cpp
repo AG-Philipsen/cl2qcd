@@ -340,35 +340,35 @@ BOOST_AUTO_TEST_CASE(aliases)
 BOOST_AUTO_TEST_CASE(help)
 {
     const char* _params[] = {"foo", "--help"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::help_required);
 }
 
 BOOST_AUTO_TEST_CASE(hmcParameters)
 {
     const char* _params[] = {"foo", "--help"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "hmc"), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "hmc"), Inputparameters::help_required);
 }
 
 BOOST_AUTO_TEST_CASE(rhmcParameters)
 {
     const char* _params[] = {"foo", "--help"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "rhmc"), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "rhmc"), Inputparameters::help_required);
 }
 
 BOOST_AUTO_TEST_CASE(heatbathParameters)
 {
     const char* _params[] = {"foo", "--help"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "su3heatbath"), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "su3heatbath"), Inputparameters::help_required);
 }
 
 BOOST_AUTO_TEST_CASE(inverterParameters)
 {
     const char* _params[] = {"foo", "--help"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "inverter"), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "inverter"), Inputparameters::help_required);
 }
 
 BOOST_AUTO_TEST_CASE(gaugeobservablesParameters)
 {
     const char* _params[] = {"foo", "--help"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "gaugeobservables"), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params, "gaugeobservables"), Inputparameters::help_required);
 }

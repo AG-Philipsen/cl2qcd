@@ -69,6 +69,8 @@ namespace meta {
          */
         struct parse_aborted {
         };
+        struct help_required {
+        };
 
         /**
          * Construct from command line and config file.
