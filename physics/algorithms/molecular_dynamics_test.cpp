@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
     using namespace physics::lattices;
     using namespace physics::algorithms;
     {
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
     }
 
     {
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
     }
 
     {
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 BOOST_AUTO_TEST_CASE(mdUpdateStaggeredRootedSpinorfieldEo)
 {
     using namespace physics::lattices;
-    const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
+    const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--nDevices=1"};
     meta::Inputparameters params(4, _params);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
     hardware::HardwareParametersImplementation hP(&params);
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(mdUpdateStaggeredRootedSpinorfieldEo)
 BOOST_AUTO_TEST_CASE(mdUpdateStaggeredRootedSpinorfieldEoWithPseudofermions)
 {
     using namespace physics::lattices;
-    const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1", "--num_pseudofermions=2"};
+    const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--nDevices=1", "--nPseudoFermions=2"};
     meta::Inputparameters params(5, _params);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
     hardware::HardwareParametersImplementation hP(&params);
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
     using namespace physics::lattices;
     using namespace physics::algorithms;
     {
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
     }
 
     {
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -498,7 +498,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -529,7 +529,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
+        const char* _params[] = {"foo", "--nTime=4", "--kappaMP=.25"};
         meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -555,7 +555,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
+        const char* _params[] = {"foo", "--nTime=4", "--kappaMP=.25"};
         meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -611,7 +611,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);

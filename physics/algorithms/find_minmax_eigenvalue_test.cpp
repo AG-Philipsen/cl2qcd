@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(max)
 
     hmc_float ref_max_eig = 5.9887256245527069609;
 
-    const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335", "--num_dev=1"};
+    const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--mass=1.01335", "--nDevices=1"};
     meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(min)
 
     hmc_float ref_min_eig = 1.053927941164244;
 
-    const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335", "--num_dev=1"};
+    const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--mass=1.01335", "--nDevices=1"};
     meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(maxmin)
     hmc_float ref_max_eig = 5.2827838704124030;
     hmc_float ref_min_eig = 0.3485295092571166;
 
-    const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--num_dev=1"};
+    const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--mass=0.567", "--nDevices=1"};
     meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);

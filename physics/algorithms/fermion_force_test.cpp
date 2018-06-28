@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--use_mp=true", "--kappa_mp=.25"};
+        const char* _params[] = {"foo", "--nTime=4", "--useMP=true", "--kappaMP=.25"};
         meta::Inputparameters params(4, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--use_mp=true", "--kappa_mp=.25"};
+        const char* _params[] = {"foo", "--nTime=4", "--useMP=true", "--kappaMP=.25"};
         meta::Inputparameters params(4, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);

@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
 {
     try {
         std::pair<int, std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv,
-                                                                                        {"--enable_profiling=true"});
+                                                                                        {"--enableProfiling=true"});
         dslashBenchmark dslashBenchmarkInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
         dslashBenchmarkInstance.benchmark();
     }  // try

@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(M_wilson)
     // physics::lattices::Spinorfield& in, hmc_float kappa = ARG_DEF);
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
     // physics::lattices::Spinorfield& in, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=16", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
     // physics::lattices::Spinorfield& in, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=16", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(M_tm_inverse_sitediagonal)
     // physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF);
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=16", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(M_tm_sitediagnoal)
     // in, hmc_float mubar = ARG_DEF);
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=16", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(M_tm_inverse_sitediagonal_minus)
     // physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF);
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=16", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(M_tm_sitediagonal_minus)
     // physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF);
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
+        const char* _params[] = {"foo", "--nTime=16", "--fermionAction=twistedmass"};
         meta::Inputparameters params(3, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE(dslash)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(dslash)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);

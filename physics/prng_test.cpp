@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(build)
 
     BOOST_AUTO_TEST_CASE(brokenInputFile_brokenTag)
     {
-        const char* _params[] = {"foo", "--initial_prng_state=prngstate_brokenTag"};
+        const char* _params[] = {"foo", "--startingPrng=prngstate_brokenTag"};
         meta::Inputparameters parameters(2, _params);
         physics::PrngParametersImplementation prngParameters(parameters);
         hardware::HardwareParametersImplementation hP(&parameters);
@@ -83,7 +83,7 @@ void verifyBuffersAreDifferent(const hardware::buffers::PRNGBuffer* buf1, const 
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-    const char* _params[] = {"foo", "--host_seed=13"};
+    const char* _params[] = {"foo", "--hostSeed=13"};
     meta::Inputparameters parameters(2, _params);
     physics::PrngParametersImplementation prngParameters(parameters);
     hardware::HardwareParametersImplementation hP(&parameters);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(initialization)
     hardware::System system(hP, kP);
     PRNG prng(system, &prngParameters);
 
-    const char* _params2[] = {"foo", "--host_seed=14"};
+    const char* _params2[] = {"foo", "--hostSeed=14"};
     meta::Inputparameters parameters2(2, _params2);
     physics::PrngParametersImplementation prngParameters2(parameters2);
     hardware::HardwareParametersImplementation hP2(&parameters2);
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 BOOST_AUTO_TEST_CASE(store_and_resume)
 {
-    const char* _params[] = {"foo", "--host_seed=46"};
+    const char* _params[] = {"foo", "--hostSeed=46"};
     meta::Inputparameters parameters(2, _params);
     physics::PrngParametersImplementation prngParameters(parameters);
     hardware::HardwareParametersImplementation hP(&parameters);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 
     double tmp = prng.get_double();
 
-    const char* _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
+    const char* _params2[] = {"foo", "--startingPrng=tmp.prngstate"};
     meta::Inputparameters parameters2(2, _params2);
     physics::PrngParametersImplementation prngParameters2(parameters2);
     hardware::HardwareParametersImplementation hP2(&parameters2);

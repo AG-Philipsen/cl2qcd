@@ -90,14 +90,14 @@ BOOST_AUTO_TEST_SUITE(PLAQUETTE)
     BOOST_AUTO_TEST_CASE(PLAQUETTE_1)
     {
         double referenceValue = 1.;
-        const char* _params[] = {"foo", "--startcondition=cold"};
+        const char* _params[] = {"foo", "--startCondition=cold"};
         PlaquetteTester(2, _params, referenceValue);
     }
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_2)
     {
         double referenceValue = 0.57107711169452713;
-        const char* _params[] = {"foo", "--startcondition=continue", "--sourcefile=conf.00200", "--nt=4"};
+        const char* _params[] = {"foo", "--startCondition=continue", "--startingConf=conf.00200", "--nt=4"};
         PlaquetteTester(4, _params, referenceValue);
     }
 
@@ -118,22 +118,22 @@ BOOST_AUTO_TEST_SUITE(RECTANGLES)
     BOOST_AUTO_TEST_CASE(RECTANGLES_1)
     {
         double referenceValue                     = 1.;
-        const char* _paramsWithWrongGaugeAction[] = {"foo", "--startcondition=cold", "--gaugeact=wilson"};
+        const char* _paramsWithWrongGaugeAction[] = {"foo", "--startCondition=cold", "--gaugeAction=wilson"};
         BOOST_REQUIRE_THROW(RectanglesTester(3, _paramsWithWrongGaugeAction, referenceValue), std::logic_error);
     }
 
     BOOST_AUTO_TEST_CASE(RECTANGLES_2)
     {
         double referenceValue = 6144.;
-        const char* _params[] = {"foo", "--startcondition=cold", "--gaugeact=tlsym"};
+        const char* _params[] = {"foo", "--startCondition=cold", "--gaugeAction=tlsym"};
         RectanglesTester(3, _params, referenceValue);
     }
 
     BOOST_AUTO_TEST_CASE(RECTANGLES_3)
     {
         double referenceValue = 1103.2398401620451;
-        const char* _params[] = {"foo", "--startcondition=continue", "--sourcefile=conf.00200", "--nt=4",
-                                 "--gaugeact=tlsym"};
+        const char* _params[] = {"foo", "--startCondition=continue", "--startingConf=conf.00200", "--nt=4",
+                                 "--gaugeAction=tlsym"};
         RectanglesTester(5, _params, referenceValue);
     }
 
@@ -155,14 +155,14 @@ BOOST_AUTO_TEST_SUITE(POLYAKOVLOOP)
     BOOST_AUTO_TEST_CASE(POLYAKOVLOOP_1)
     {
         hmc_complex referenceValue = {1., 0.};
-        const char* _params[]      = {"foo", "--startcondition=cold"};
+        const char* _params[]      = {"foo", "--startCondition=cold"};
         PolyakovloopTester(2, _params, referenceValue);
     }
 
     BOOST_AUTO_TEST_CASE(POLYAKOVLOOP_2)
     {
         hmc_complex referenceValue = {-0.11349672123636857, 0.22828243566855227};
-        const char* _params[]      = {"foo", "--startcondition=continue", "--sourcefile=conf.00200", "--nt=4"};
+        const char* _params[]      = {"foo", "--startCondition=continue", "--startingConf=conf.00200", "--nt=4"};
         PolyakovloopTester(4, _params, referenceValue);
     }
 
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(ALL_PLAQUETTES_1)
 {
-    const char* _params[] = {"foo", "--startcondition=cold"};
+    const char* _params[] = {"foo", "--startCondition=cold"};
     meta::Inputparameters parameters(2, _params);
     physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
     physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(ALL_PLAQUETTES_1)
 
 BOOST_AUTO_TEST_CASE(PLAQUETTES_WITHOUT_NORMALIZATION)
 {
-    const char* _params[] = {"foo", "--startcondition=cold", "--nt=4", "--ns=4"};
+    const char* _params[] = {"foo", "--startCondition=cold", "--nt=4", "--ns=4"};
     meta::Inputparameters parameters(2, _params);
     physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
     physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);

@@ -73,7 +73,7 @@ test_fermionmatrix_stagg(const hmc_float refs[4])
         // Test with cold links, periodic BC, random field, 8**4 lattice
         logger.info() << "First test...";
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg", "--mass=1.", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nSpace=8", "--fermionAction=rooted_stagg", "--mass=1.", "--nDevices=1"};
         meta::Inputparameters params(5, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);
@@ -109,7 +109,7 @@ test_fermionmatrix_stagg(const hmc_float refs[4])
         // Test with hot links, periodic BC, random field, 4**4 lattice
         logger.info() << "Second test...";
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--mass=1.", "--nDevices=1"};
         meta::Inputparameters params(5, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);
@@ -150,7 +150,7 @@ test_fermionmatrix_stagg<physics::fermionmatrix::D_KS_eo>(const hmc_float refs[4
         // Test with cold links, periodic BC, random field, 8**4 lattice
         logger.info() << "First test...";
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nSpace=8", "--fermionAction=rooted_stagg", "--nDevices=1"};
         meta::Inputparameters params(4, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);
@@ -187,7 +187,7 @@ test_fermionmatrix_stagg<physics::fermionmatrix::D_KS_eo>(const hmc_float refs[4
         // Test with hot links, periodic BC, random field, 4**4 lattice
         logger.info() << "Second test...";
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--nDevices=1"};
         meta::Inputparameters params(4, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);

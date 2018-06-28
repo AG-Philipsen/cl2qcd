@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--nDevices=1"};
         meta::Inputparameters params(4, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--nspace=8", "--fermact=rooted_stagg", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nTime=16", "--nSpace=8", "--fermionAction=rooted_stagg", "--nDevices=1"};
         meta::Inputparameters params(5, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--nDevices=1"};
         meta::Inputparameters params(4, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -124,11 +124,11 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
     {
         using namespace physics::lattices;
         const char* _params[] = {"foo",
-                                 "--nspace=8",
-                                 "--fermact=rooted_stagg",
-                                 "--use_chem_pot_im=true",
-                                 "--chem_pot_im=0.5678",
-                                 "--num_dev=1"};
+                                 "--nSpace=8",
+                                 "--fermionAction=rooted_stagg",
+                                 "--useChemPotIm=true",
+                                 "--chemPotIm=0.5678",
+                                 "--nDevices=1"};
         meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -161,12 +161,12 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
     {
         using namespace physics::lattices;
         const char* _params[] = {"foo",
-                                 "--ntime=4",
-                                 "--fermact=rooted_stagg",
-                                 "--use_chem_pot_im=true",
-                                 "--chem_pot_im=0.5678",
-                                 "--theta_fermion_temporal=1.",
-                                 "--num_dev=1"};
+                                 "--nTime=4",
+                                 "--fermionAction=rooted_stagg",
+                                 "--useChemPotIm=true",
+                                 "--chemPotIm=0.5678",
+                                 "--thetaFermionTemporal=1.",
+                                 "--nDevices=1"};
         meta::Inputparameters params(7, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEo)
     Rational_Approximation approx(8, 1, 2, 1.e-5, 1);
 
     {
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.125", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--mass=0.125", "--nDevices=1"};
         meta::Inputparameters params(5, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -241,12 +241,12 @@ BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEo)
         using namespace physics::lattices;
         using namespace physics::algorithms;
         const char* _params[] = {"foo",
-                                 "--ntime=4",
-                                 "--fermact=rooted_stagg",
-                                 "--use_chem_pot_im=true",
+                                 "--nTime=4",
+                                 "--fermionAction=rooted_stagg",
+                                 "--useChemPotIm=true",
                                  "--mass=0.125",
-                                 "--chem_pot_im=0.5678",
-                                 "--num_dev=1"};
+                                 "--chemPotIm=0.5678",
+                                 "--nDevices=1"};
         meta::Inputparameters params(7, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -289,8 +289,8 @@ BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEoWithPseudofermions)
     Rational_Approximation approx(8, 1, 2, 1.e-5, 1);
 
     {
-        const char* _params[] = {"foo",          "--ntime=4",   "--fermact=rooted_stagg",
-                                 "--mass=0.125", "--num_dev=1", "--num_pseudofermions=2"};
+        const char* _params[] = {"foo",          "--nTime=4",    "--fermionAction=rooted_stagg",
+                                 "--mass=0.125", "--nDevices=1", "--nPseudoFermions=2"};
         meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -330,13 +330,13 @@ BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEoWithPseudofermions)
         using namespace physics::lattices;
         using namespace physics::algorithms;
         const char* _params[] = {"foo",
-                                 "--ntime=4",
-                                 "--fermact=rooted_stagg",
-                                 "--use_chem_pot_im=true",
+                                 "--nTime=4",
+                                 "--fermionAction=rooted_stagg",
+                                 "--useChemPotIm=true",
                                  "--mass=0.125",
-                                 "--chem_pot_im=0.5678",
-                                 "--num_dev=1",
-                                 "--num_pseudofermions=2"};
+                                 "--chemPotIm=0.5678",
+                                 "--nDevices=1",
+                                 "--nPseudoFermions=2"};
         meta::Inputparameters params(8, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);

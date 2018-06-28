@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16", "--gaugeact=tlsym"};
+        const char* _params[] = {"foo", "--nTime=16", "--gaugeAction=tlsym"};
         meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4", "--gaugeact=tlsym"};
+        const char* _params[] = {"foo", "--nTime=4", "--gaugeAction=tlsym"};
         meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(calc_tot_force)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(calc_tot_force_eo)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
     using namespace physics::algorithms;
     Rational_Approximation approx(8, 1, 2, 1.e-5, 1);
     {
-        const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.125", "--num_dev=1"};
+        const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--mass=0.125", "--nDevices=1"};
         meta::Inputparameters params(5, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -259,8 +259,12 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
     }
 
     {
-        const char* _params[] = {"foo",          "--ntime=4",  "--theta_fermion_temporal=1", "--fermact=rooted_stagg",
-                                 "--mass=0.125", "--num_dev=1"};
+        const char* _params[] = {"foo",
+                                 "--nTime=4",
+                                 "--thetaFermionTemporal=1",
+                                 "--fermionAction=rooted_stagg",
+                                 "--mass=0.125",
+                                 "--nDevices=1"};
         meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -296,13 +300,13 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 
     {
         const char* _params[] = {"foo",
-                                 "--ntime=4",
-                                 "--theta_fermion_temporal=1",
-                                 "--fermact=rooted_stagg",
-                                 "--use_chem_pot_im=true",
-                                 "--chem_pot_im=0.5678",
+                                 "--nTime=4",
+                                 "--thetaFermionTemporal=1",
+                                 "--fermionAction=rooted_stagg",
+                                 "--useChemPotIm=true",
+                                 "--chemPotIm=0.5678",
                                  "--mass=0.125",
-                                 "--num_dev=1"};
+                                 "--nDevices=1"};
         meta::Inputparameters params(8, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         hardware::HardwareParametersImplementation hP(&params);

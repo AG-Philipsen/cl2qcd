@@ -137,9 +137,9 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
     Sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
     // do not consider the checksum in this test
     const char* tmp[] = {"foo",
-                         "--nspace=3",
-                         "--ntime=5",
-                         "--ignore_checksum_errors=true",
+                         "--nSpace=3",
+                         "--nTime=5",
+                         "--ignoreChecksumErrors=true",
                          "--beta=-12.345678",
                          "--kappa=-56.7890",
                          "--mu=-56.7890"};
@@ -223,8 +223,8 @@ class MatrixSu3Field {
   public:
     MatrixSu3Field(uint ntime, uint nspace)
     {
-        std::string nspaceString = "--nspace=" + boost::lexical_cast<std::string>(nspace);
-        std::string ntimeString  = "--ntime=" + boost::lexical_cast<std::string>(ntime);
+        std::string nspaceString = "--nSpace=" + boost::lexical_cast<std::string>(nspace);
+        std::string ntimeString  = "--nTime=" + boost::lexical_cast<std::string>(ntime);
         const char* tmp[]        = {"foo", nspaceString.c_str(), ntimeString.c_str()};
         parameters               = new meta::Inputparameters(3, tmp);
         numberOfElements         = getNumberOfElements_gaugefield(parameters);

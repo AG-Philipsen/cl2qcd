@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
     BOOST_AUTO_TEST_CASE(INV_ARGUMENT_FERMION_ACTION)
     {
         for (int i = 0; i < (int)actionNames.size(); i++) {
-            testInvalidFermionActionAndVersion("--fermact=" + actionNames[i]);
+            testInvalidFermionActionAndVersion("--fermionAction=" + actionNames[i]);
         }
     }
 
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
     {
         actionNames.push_back("wilson");
         for (int i = 0; i < (int)actionNames.size(); i++) {
-            testInvalidFermionActionAndVersion("--fermact=" + actionNames[i], "--pbp_version=tm_one_end_trick");
+            testInvalidFermionActionAndVersion("--fermionAction=" + actionNames[i], "--pbp_version=tm_one_end_trick");
         }
     }
 
@@ -108,14 +108,14 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
                          std::string eoOptionIn = "false", std::string startconditionOptionIn = "cold",
                          std::string sourcefileOptionIn = "conf.00200")
     {
-        std::string numberOfSources_option = "--num_sources=" + boost::lexical_cast<std::string>(numberOfSources);
-        std::string fermactOption          = "--fermact=" + fermactOptionIn;
-        std::string sourceTypeOption       = "--sourcetype=" + sourceTypeOptionIn;
-        std::string sourceContentOption    = "--sourcecontent=one";
+        std::string numberOfSources_option = "--nSources=" + boost::lexical_cast<std::string>(numberOfSources);
+        std::string fermactOption          = "--fermionAction=" + fermactOptionIn;
+        std::string sourceTypeOption       = "--sourceType=" + sourceTypeOptionIn;
+        std::string sourceContentOption    = "--sourceContent=one";
         std::string pbpVersionOption       = "--pbp_version=" + pbpVersionOptionIn;
-        std::string startconditionOption   = "--startcondition=" + startconditionOptionIn;
-        std::string sourcefileOption       = "--sourcefile=" + sourcefileOptionIn;
-        std::string eoOption               = "--use_eo=" + eoOptionIn;
+        std::string startconditionOption   = "--startCondition=" + startconditionOptionIn;
+        std::string sourcefileOption       = "--startingConf=" + sourcefileOptionIn;
+        std::string eoOption               = "--useEOP=" + eoOptionIn;
 
         int numberOfOptions = 14;
 

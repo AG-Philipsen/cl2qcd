@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEo)
 {
     using namespace physics::lattices;
     physics::algorithms::Rational_Approximation approx(8, 1, 2, 1.e-5, 1);
-    const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
+    const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--nDevices=1"};
     meta::Inputparameters params(4, _params);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
     hardware::HardwareParametersImplementation hP(&params);
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEoWithPseudofermions)
 {
     using namespace physics::lattices;
     physics::algorithms::Rational_Approximation approx(8, 1, 2, 1.e-5, 1);
-    const char* _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1", "--num_pseudofermions=2"};
+    const char* _params[] = {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--nDevices=1", "--nPseudoFermions=2"};
     meta::Inputparameters params(5, _params);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
     hardware::HardwareParametersImplementation hP(&params);

@@ -47,19 +47,19 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
     using namespace physics::lattices;
 
     std::vector<const char*> options(1, "foo");
-    options.push_back("--ntime=4");
-    options.push_back("--num_dev=1");
-    options.push_back("--fermact=rooted_stagg");
-    options.push_back("--num_tastes=2");
+    options.push_back("--nTime=4");
+    options.push_back("--nDevices=1");
+    options.push_back("--fermionAction=rooted_stagg");
+    options.push_back("--nTastes=2");
     options.push_back("--mass=0.1");
-    options.push_back("--theta_fermion_spatial=0");
+    options.push_back("--thetaFermionSpatial=0");
     if (thetaT)
-        options.push_back("--theta_fermion_temporal=1");
+        options.push_back("--thetaFermionTemporal=1");
     else
-        options.push_back("--theta_fermion_temporal=0");
-    options.push_back("--num_sources=10");
-    options.push_back("--sourcetype=volume");
-    std::string tmp = "--sourcecontent=" + content;
+        options.push_back("--thetaFermionTemporal=0");
+    options.push_back("--nSources=10");
+    options.push_back("--sourceType=volume");
+    std::string tmp = "--sourceContent=" + content;
     options.push_back(tmp.c_str());
 
     meta::Inputparameters params(11, &(options[0]));

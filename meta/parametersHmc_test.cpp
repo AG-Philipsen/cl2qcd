@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 
 BOOST_AUTO_TEST_CASE(command_line1)
 {
-  const char* _params[] = {"foo", "--use_aniso=1", "--use_mp=true", "--use_smearing=false", "--nspace=32", "--ntime=12", "--use_gpu=false", "--use_cpu=false"};
+  const char* _params[] = {"foo", "--useAniso=1", "--useMP=true", "--useSmearing=false", "--nSpace=32", "--nTime=12", "--useGpu=false", "--useCpu=false"};
   ParametersHmc params(8, _params);
   BOOST_REQUIRE_EQUAL(params.get_use_aniso(), true);
   BOOST_REQUIRE_EQUAL(params.get_use_mp(), true);
@@ -190,26 +190,26 @@ BOOST_AUTO_TEST_CASE(command_line2)
 
 BOOST_AUTO_TEST_CASE(command_line3)
 {
-  const char* _params[] = {"foo", "--startcondition=foo"};
+  const char* _params[] = {"foo", "--startCondition=foo"};
   BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
 }
 
 BOOST_AUTO_TEST_CASE(command_line4)
 {
-  const char* _params[] = {"foo", "--fermact=foo"};
+  const char* _params[] = {"foo", "--fermionAction=foo"};
   BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
 }
 
 BOOST_AUTO_TEST_CASE(command_line5)
 {
-  const char* _params[] = {"foo", "--disable-ocl-compiler-opt=true"};
+  const char* _params[] = {"foo", "--disableOclCompilerOptimization=true"};
   Inputparameters params(2, _params);
   BOOST_REQUIRE_EQUAL(params.is_ocl_compiler_opt_disabled(), true);
 }
 
 BOOST_AUTO_TEST_CASE(command_line6)
 {
-  const char* _params[] = {"foo", "--log-level=ERROR"};
+  const char* _params[] = {"foo", "--logLevel=ERROR"};
   Inputparameters params(2, _params);
   BOOST_REQUIRE_EQUAL(params.get_log_level(), "ERROR");
 }

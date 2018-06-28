@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(point_source_0)
 {
     using namespace physics::lattices;
 
-    const char* params[] = {"foo", "--sourcetype=point", "--corr_dir=0"};
+    const char* params[] = {"foo", "--sourceType=point", "--correlatorDirection=0"};
 
     hmc_float ps_tmp[] = {5.9989365191736104, 5.9685966494875613, 5.9273621601759441, 5.9971283038020733,
                           5.9813369771401304, 5.9760321595370245, 6.0879077700116371, 6.0659567780266324};
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(point_source_3)
 {
     using namespace physics::lattices;
 
-    const char* params[] = {"foo", "--sourcetype=point", "--corr_dir=3"};
+    const char* params[] = {"foo", "--sourceType=point", "--correlatorDirection=3"};
 
     hmc_float ps_tmp[] = {6.0056739949017723, 6.0049719331029232, 5.9919404833842922, 5.9990422472883189};
     std::vector<hmc_float> ps(ps_tmp, ps_tmp + sizeof(ps_tmp) / sizeof(hmc_float));
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(stochastic_source_0)
 {
     using namespace physics::lattices;
 
-    const char* params[] = {"foo", "--sourcetype=volume", "--corr_dir=0"};
+    const char* params[] = {"foo", "--sourceType=volume", "--correlatorDirection=0"};
 
     hmc_float ps_tmp[] = {5.998936519,        5.9685966494875613, 5.9273621601759441, 5.9971283038020733,
                           5.9813369771401304, 5.9760321595370245, 6.0879077700116371, 6.0659567780266324};
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(stochastic_source_3)
 {
     using namespace physics::lattices;
 
-    const char* params[] = {"foo", "--sourcetype=volume", "--corr_dir=3"};
+    const char* params[] = {"foo", "--sourceType=volume", "--correlatorDirection=3"};
 
     hmc_float ps_tmp[] = {24595.308692803472, 24592.45084, 24539.27566, 24568.2908};
     std::vector<hmc_float> ps(ps_tmp, ps_tmp + sizeof(ps_tmp) / sizeof(hmc_float));

@@ -100,8 +100,12 @@ BOOST_AUTO_TEST_CASE(point_source)
 {
     using namespace physics::lattices;
 
-    const char* params[] = {"foo",          "--sourcetype=point", "--num_sources=3", "--fermact=rooted_stagg",
-                            "--corr_dir=0", "--num_dev=1"};
+    const char* params[] = {"foo",
+                            "--sourceType=point",
+                            "--nSources=3",
+                            "--fermionAction=rooted_stagg",
+                            "--correlatorDirection=0",
+                            "--nDevices=1"};
 
     hmc_float referenceValuePerTimesliceZero = 0.;
     std::vector<hmc_float> referenceValueZero(8, referenceValuePerTimesliceZero);

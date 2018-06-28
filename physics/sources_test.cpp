@@ -41,10 +41,10 @@ static void test_sources(std::string type, int num_sources)
     using namespace physics::lattices;
 
     std::stringstream tmp;
-    tmp << "--num_sources=";
+    tmp << "--nSources=";
     tmp << num_sources;
     std::string n_sources_string  = tmp.str();
-    std::string sourcetype_string = std::string("--sourcetype=") + type;
+    std::string sourcetype_string = std::string("--sourceType=") + type;
     const char* _params[]         = {"foo", n_sources_string.c_str(), sourcetype_string.c_str()};
     meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
@@ -66,11 +66,12 @@ static void test_staggered_sources(std::string type, int num_sources)
     using namespace physics::lattices;
 
     std::stringstream tmp;
-    tmp << "--num_sources=";
+    tmp << "--nSources=";
     tmp << num_sources;
     std::string n_sources_string  = tmp.str();
-    std::string sourcetype_string = std::string("--sourcetype=") + type;
-    const char* _params[] = {"foo", n_sources_string.c_str(), sourcetype_string.c_str(), "--fermact=rooted_stagg"};
+    std::string sourcetype_string = std::string("--sourceType=") + type;
+    const char* _params[]         = {"foo", n_sources_string.c_str(), sourcetype_string.c_str(),
+                             "--fermionAction=rooted_stagg"};
     meta::Inputparameters params(4, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -91,10 +92,10 @@ static void test_volume_source_stagg(std::string content)
     using namespace physics::lattices;
 
     std::vector<const char*> options(1, "foo");
-    options.push_back("--nspace=8");
-    options.push_back("--fermact=rooted_stagg");
-    options.push_back("--sourcetype=volume");
-    std::string tmp = "--sourcecontent=" + content;
+    options.push_back("--nSpace=8");
+    options.push_back("--fermionAction=rooted_stagg");
+    options.push_back("--sourceType=volume");
+    std::string tmp = "--sourceContent=" + content;
     options.push_back(tmp.c_str());
 
     meta::Inputparameters params(5, &(options[0]));

@@ -97,7 +97,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);
@@ -124,7 +124,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);
@@ -156,7 +156,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 {
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);
@@ -182,7 +182,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 
     {
         using namespace physics::lattices;
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         GaugefieldParametersImplementation gaugefieldParameters(&params);
         hardware::HardwareParametersImplementation hP(&params);

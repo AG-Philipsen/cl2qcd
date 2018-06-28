@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(initializationWithPseudofermions)
 {
     using namespace physics::lattices;
 
-    const char* _params[] = {"foo", "--num_pseudofermions=3", "--fermact=rooted_stagg"};
+    const char* _params[] = {"foo", "--nPseudoFermions=3", "--fermionAction=rooted_stagg"};
     meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(rangeBasedForLoopOnPseudofermions)
 {
     using namespace physics::lattices;
 
-    const char* _params[] = {"foo", "--num_pseudofermions=3", "--fermact=rooted_stagg"};
+    const char* _params[] = {"foo", "--nPseudoFermions=3", "--fermionAction=rooted_stagg"};
     meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(rescale)
     Rational_Approximation approx(15, 1, 4, 1e-5, 1, false);
 
     const char* _params[] =
-        {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
+        {"foo", "--nTime=4", "--fermionAction=rooted_stagg", "--mass=0.567", "--conservative=false", "--nDevices=1"};
     meta::Inputparameters params(6, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);

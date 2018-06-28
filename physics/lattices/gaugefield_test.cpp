@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(initialization)
     using namespace physics::lattices;
 
     {
-        const char* _params[] = {"foo", "--ntime=8"};
+        const char* _params[] = {"foo", "--nTime=8"};
         meta::Inputparameters params(2, _params);
         const GaugefieldParametersImplementation parametersTmp{&params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(initialization)
     }
 
     {
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         const GaugefieldParametersImplementation parametersTmp{&params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 {
     using namespace physics::lattices;
 
-    const char* _params[] = {"foo", "--gaugeact=wilson", "--ntime=4"};
+    const char* _params[] = {"foo", "--gaugeAction=wilson", "--nTime=4"};
     meta::Inputparameters params(3, _params);
     const GaugefieldParametersImplementation parametersTmp{&params};
     hardware::HardwareParametersImplementation hP(&params);
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
     Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
     BOOST_CHECK_THROW(physics::observables::measureRectangles(&gf, gaugeobservablesParameters);, std::logic_error);
 
-    const char* _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
+    const char* _params2[] = {"foo", "--gaugeAction=tlsym", "--nTime=4"};
     meta::Inputparameters params2(3, _params2);
     const GaugefieldParametersImplementation parametersTmp2{&params2};
     hardware::System system2(params2);
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
     using namespace physics::lattices;
 
     {
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         const GaugefieldParametersImplementation parametersTmp{&params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
     }
 
     {
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         const GaugefieldParametersImplementation parametersTmp{&params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
     // simple test, gaugeobservables should not get changed by halo exchange
     // if the original gaugefield is given
     {
-        const char* _params[] = {"foo", "--ntime=16"};
+        const char* _params[] = {"foo", "--nTime=16"};
         meta::Inputparameters params(2, _params);
         const GaugefieldParametersImplementation parametersTmp{&params};
         hardware::HardwareParametersImplementation hP(&params);
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
     }
 
     {
-        const char* _params[] = {"foo", "--ntime=4"};
+        const char* _params[] = {"foo", "--nTime=4"};
         meta::Inputparameters params(2, _params);
         const GaugefieldParametersImplementation parametersTmp{&params};
         hardware::HardwareParametersImplementation hP(&params);

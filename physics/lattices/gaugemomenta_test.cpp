@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
     hmc_float orig_squarenorm, new_squarenorm;
 
     // simple test, squarenorm should not get changed by halo exchange
-    const char* _params[] = {"foo", "--ntime=16"};
+    const char* _params[] = {"foo", "--nTime=16"};
     meta::Inputparameters params(2, _params);
     physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
     hardware::HardwareParametersImplementation hP(&params);

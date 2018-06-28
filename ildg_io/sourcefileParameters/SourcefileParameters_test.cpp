@@ -118,8 +118,8 @@ BOOST_AUTO_TEST_CASE(initFromParameters)
     double plaquette       = -4.321;
     std::string hmcVersion = "3.95";
     Checksum checksum(1, 2);
-    const char* _params[] = {"foo",       "--ntime=41", "--nspace=65", "--kappa=-12.345",
-                             "--prec=32", "--beta=4.5", "--mu=23.41"};
+    const char* _params[] = {"foo",        "--nTime=41", "--nSpace=65", "--kappa=-12.345", "--confPrecision=32",
+                             "--beta=4.5", "--mu=23.41"};
     meta::Inputparameters parameters(7, _params);
     const physics::lattices::GaugefieldParametersImplementation tmp(&parameters);
     Inputparameters test2(&tmp);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstParameters_exception)
     double plaquette       = -4.321;
     std::string hmcVersion = "3.95";
     Checksum checksum(1, 2);
-    const char* _params[]  = {"foo",        "--ntime=41",      "--nspace=65", "--prec=32",
+    const char* _params[]  = {"foo",        "--nTime=41",      "--nSpace=65", "--confPrecision=32",
                              "--beta=4.5", "--kappa=-12.345", "--mu=23.41"};
     int numberOfParameters = 7;
     meta::Inputparameters parameters(numberOfParameters, _params);
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_noExceptionByParameters)
     Checksum checksum(1, 2);
     Sourcefileparameters values;
 
-    const char* _params[] = {"foo", "--ignore_checksum_errors=true"};
+    const char* _params[] = {"foo", "--ignoreChecksumErrors=true"};
 
     meta::Inputparameters parameters(2, _params);
     const physics::lattices::GaugefieldParametersImplementation tmp(&parameters);
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exceptionByParameters)
     Checksum checksum(1, 2);
     Sourcefileparameters values;
 
-    const char* _params[] = {"foo", "--ignore_checksum_errors=false"};
+    const char* _params[] = {"foo", "--ignoreChecksumErrors=false"};
     meta::Inputparameters parameters(2, _params);
     const physics::lattices::GaugefieldParametersImplementation tmp(&parameters);
     Inputparameters test2(&tmp);
