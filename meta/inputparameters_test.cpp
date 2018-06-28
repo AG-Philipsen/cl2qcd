@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2017,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -146,7 +146,6 @@ void checkDefaults(const Inputparameters& params)
     BOOST_REQUIRE_EQUAL(params.get_corr_dir(), 3);
 
     BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), false);
-    BOOST_REQUIRE_EQUAL(params.get_profile_solver(), false);
     BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 0.);
     BOOST_REQUIRE_EQUAL(params.get_test_ref_value2(), 0.);
 
@@ -267,7 +266,6 @@ BOOST_AUTO_TEST_CASE(input_file2)
     BOOST_REQUIRE_EQUAL(params.get_corr_dir(), 2);
 
     BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), true);
-    BOOST_REQUIRE_EQUAL(params.get_profile_solver(), true);
     BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 1.337);
     BOOST_REQUIRE_EQUAL(params.get_test_ref_value2(), 2.448);
 

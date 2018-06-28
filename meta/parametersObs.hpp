@@ -52,7 +52,7 @@ namespace meta {
         ParametersObs& operator=(ParametersObs const&) = delete;
 
         InputparametersOptions options;
-        common::pbp_version pbp_version_;
+        std::string pbp_version_;
     };
 
 }  // namespace meta

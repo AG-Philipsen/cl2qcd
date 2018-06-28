@@ -4,7 +4,7 @@
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
  * Copyright (c) 2013,2014,2016,2018 Alessandro Sciarra
- * Copyright (c) 2015 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2015 Paul Frederik Depta
  *
  * This file is part of CL2QCD.
@@ -257,9 +257,6 @@ static void print_info_fermion(const meta::Inputparameters& params)
         logger.info() << "## cgm_max  = " << params.get_cgmax();
     }
 
-    if (params.get_profile_solver() == true)
-        logger.warn() << "## Profiling of solver activated. This may influence the overall performance time!";
-
     if (params.get_use_merge_kernels_fermion() == true)
         logger.info() << "## Use merged fermionmatrix kernels where implemented!!";
 
@@ -339,9 +336,6 @@ static void print_info_fermion(std::ostream* os, const meta::Inputparameters& pa
         *os << "## Use Multi-shifted CG-solver for inversions" << endl;
         *os << "## cgm_max  = " << params.get_cgmax() << endl;
     }
-
-    if (params.get_profile_solver() == true)
-        *os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
 
     if (params.get_use_merge_kernels_fermion() == true)
         *os << "## Use merged fermionmatrix kernels where implemented!!" << endl;

@@ -23,6 +23,13 @@
 
 #include "parametersSources.hpp"
 
+#include "../executables/exceptions.hpp"
+
+#include <boost/algorithm/string.hpp>
+
+static common::sourcetypes translateSourceTypeToEnum(std::string);
+static common::sourcecontents translateSourceContentToEnum(std::string);
+
 int meta::ParametersSources::get_num_sources() const noexcept
 {
     return num_sources;
@@ -50,19 +57,19 @@ bool meta::ParametersSources::get_place_sources_on_host() const noexcept
 
 common::sourcetypes meta::ParametersSources::get_sourcetype() const noexcept
 {
-    return sourcetype;
+    return translateSourceTypeToEnum(sourcetype);
 }
 common::sourcecontents meta::ParametersSources::get_sourcecontent() const noexcept
 {
-    return sourcecontent;
+    return translateSourceContentToEnum(sourcecontent);
 }
 
 meta::ParametersSources::ParametersSources() : options("Source options")
 {
     // clang-format off
 	options.add_options()
-	("sourceType",  po::value<std::string>()->default_value("point"), "Which type of source to be used in the inverter (one among 'point', 'volume', 'timeslice', 'zslice').")
-	("sourceContent",  po::value<std::string>()->default_value("one"), "Which ype of content to be used with sources in the inverter (one among 'one', 'z4', 'gaussian' and 'z2').")
+	("sourceType",  po::value<std::string>(&sourcetype)->default_value("point"), "Which type of source to be used in the inverter (one among 'point', 'volume', 'timeslice', 'zslice').")
+	("sourceContent",  po::value<std::string>(&sourcecontent)->default_value("one"), "Which ype of content to be used with sources in the inverter (one among 'one', 'z4', 'gaussian' and 'z2').")
 	("nSources", po::value<int>(&num_sources)->default_value(12), "The number of sources to be used in the inverter.")
 	("sourceX", po::value<int>(&source_x)->default_value(0), "The x coordinate for the position of a point source.")
 	("sourceY", po::value<int>(&source_y)->default_value(0), "The y coordinate for the position of a point source.")
@@ -70,4 +77,38 @@ meta::ParametersSources::ParametersSources() : options("Source options")
 	("sourceT", po::value<int>(&source_t)->default_value(0), "The t coordinate for the position of either a point source or a timeslice source.")
 	("placeSourcesOnHost", po::value<bool>(&place_sources_on_host)->default_value(false), "Whether the buffer for sources is to remain on the host (this allows to avoid memory limits if many buffers are required).");
     // clang-format on
+}
+
+static common::sourcetypes translateSourceTypeToEnum(std::string s)
+{
+    boost::algorithm::to_lower(s);
+    std::map<std::string, common::sourcetypes> m;
+    m["point"]     = common::point;
+    m["volume"]    = common::volume;
+    m["timeslice"] = common::timeslice;
+    m["zslice"]    = common::zslice;
+
+    common::sourcetypes a = m[s];
+    if (a) {  // map returns 0 if element is not found
+        return a;
+    } else {
+        throw Invalid_Parameters("Invalid source type!", "point, volume, timeslice, zslice", s);
+    }
+}
+
+static common::sourcecontents translateSourceContentToEnum(std::string s)
+{
+    boost::algorithm::to_lower(s);
+    std::map<std::string, common::sourcecontents> m;
+    m["one"]      = common::one;
+    m["z4"]       = common::z4;
+    m["gaussian"] = common::gaussian;
+    m["z2"]       = common::z2;
+
+    common::sourcecontents a = m[s];
+    if (a) {  // map returns 0 if element is not found
+        return a;
+    } else {
+        throw Invalid_Parameters("Invalid source content!", "one, z4, gaussian, z2", s);
+    }
 }

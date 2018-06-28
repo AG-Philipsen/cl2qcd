@@ -60,9 +60,9 @@ namespace meta {
         ParametersHmc& operator=(ParametersHmc const&) = delete;
 
         InputparametersOptions options;
-        common::integrator integrator0;
-        common::integrator integrator1;
-        common::integrator integrator2;
+        std::string integrator0;
+        std::string integrator1;
+        std::string integrator2;
     };
 
 }  // namespace meta

@@ -73,8 +73,8 @@ namespace meta {
         ParametersFermion& operator=(ParametersFermion const&) = delete;
 
         InputparametersOptions options;
-        common::action fermact;
-        common::action fermact_mp;
+        std::string fermact;
+        std::string fermact_mp;
     };
 
 }  // namespace meta

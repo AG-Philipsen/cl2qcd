@@ -101,7 +101,7 @@ namespace meta {
         ParametersConfig& operator=(ParametersConfig const&) = delete;
         InputparametersOptions options;
 
-        common::startcondition _startcondition;
+        std::string _startcondition;
     };
 
 }  // namespace meta

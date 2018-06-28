@@ -23,6 +23,12 @@
 
 #include "parametersGauge.hpp"
 
+#include "../executables/exceptions.hpp"
+
+#include <boost/algorithm/string.hpp>
+
+static common::action translateGaugeActionToEnum(std::string);
+
 // gaugefield parameters
 double meta::ParametersGauge::get_beta() const noexcept
 {
@@ -38,7 +44,7 @@ int meta::ParametersGauge::get_rho_iter() const noexcept
 }
 common::action meta::ParametersGauge::get_gaugeact() const noexcept
 {
-    return gaugeact;
+    return translateGaugeActionToEnum(gaugeact);
 }
 
 bool meta::ParametersGauge::get_use_smearing() const noexcept
@@ -54,6 +60,23 @@ meta::ParametersGauge::ParametersGauge() : options("Gaugefield options")
 	("useSmearing", po::value<bool>(&use_smearing)->default_value(false),"Whether to apply stout smearing to the gaugefield.")
 	("smearingFactor", po::value<double>(&rho)->default_value(0.),"The weight factor associated with the staples in stout smearing.")
 	("nSmearingSteps", po::value<int>(&rho_iter)->default_value(0),"The number of stout-smearing steps.")
-	("gaugeAction", po::value<std::string>()->default_value("wilson"),"Which type of gauge action to use (e.g. wilson, tlsym, iwasaki, dbw2).");
+	("gaugeAction", po::value<std::string>(&gaugeact)->default_value("wilson"),"Which type of gauge action to use (e.g. wilson, tlsym, iwasaki, dbw2).");
     // clang-format on
+}
+
+static common::action translateGaugeActionToEnum(std::string s)
+{
+    boost::algorithm::to_lower(s);
+    std::map<std::string, common::action> m;
+    m["wilson"]  = common::action::wilson;
+    m["tlsym"]   = common::action::tlsym;
+    m["iwasaki"] = common::action::iwasaki;
+    m["dbw2"]    = common::action::dbw2;
+
+    common::action a = m[s];
+    if (a) {  // map returns 0 if element is not found
+        return a;
+    } else {
+        throw Invalid_Parameters("Unkown gauge action!", "wilson, tlsym, iwasaki, dbw2", s);
+    }
 }

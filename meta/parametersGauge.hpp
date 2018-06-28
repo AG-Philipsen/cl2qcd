@@ -48,7 +48,7 @@ namespace meta {
         ParametersGauge& operator=(ParametersGauge const&) = delete;
 
         InputparametersOptions options;
-        common::action gaugeact;
+        std::string gaugeact;
     };
 
 }  // namespace meta

@@ -4,6 +4,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -160,7 +161,6 @@ BOOST_AUTO_TEST_CASE(input_file2)
   BOOST_REQUIRE_EQUAL(params.get_corr_dir(), 2);
 
   BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), true);
-  BOOST_REQUIRE_EQUAL(params.get_profile_solver(), true);
   BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 1.337);
   BOOST_REQUIRE_EQUAL(params.get_test_ref_value2(), 2.448);
 

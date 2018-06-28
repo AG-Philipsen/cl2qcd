@@ -40,7 +40,6 @@ namespace meta {
         int get_cg_minimum_iteration_count() const noexcept;
         int get_cgmax() const noexcept;
         int get_cgmax_mp() const noexcept;
-        bool get_profile_solver() const noexcept;
 
       private:
         double solver_prec;
@@ -52,7 +51,6 @@ namespace meta {
         int cg_iteration_block_size;
         bool cg_use_async_copy;
         int cg_minimum_iteration_count;
-        bool profile_solver;
 
       protected:
         ParametersSolver();
@@ -63,8 +61,8 @@ namespace meta {
 
         InputparametersOptions options;
         // at the moment, only 2 solvers are implemented..
-        common::solver _solver;
-        common::solver _solver_mp;
+        std::string _solver;
+        std::string _solver_mp;
     };
 
 }  // namespace meta

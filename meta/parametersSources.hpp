@@ -54,8 +54,8 @@ namespace meta {
         InputparametersOptions getAllOptions();
 
         InputparametersOptions options;
-        common::sourcetypes sourcetype;
-        common::sourcecontents sourcecontent;
+        std::string sourcetype;
+        std::string sourcecontent;
     };
 
 }  // namespace meta

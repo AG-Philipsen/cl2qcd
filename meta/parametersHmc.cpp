@@ -23,11 +23,15 @@
 
 #include "parametersHmc.hpp"
 
+#include "../executables/exceptions.hpp"
 #include "../host_functionality/logger.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <stdexcept>
 
 using namespace meta;
+
+static common::integrator translateIntegratorToEnum(std::string);
 
 double ParametersHmc::get_tau() const noexcept
 {
@@ -62,11 +66,11 @@ common::integrator ParametersHmc::get_integrator(size_t timescale) const noexcep
 {
     switch (timescale) {
         case 0:
-            return integrator0;
+            return translateIntegratorToEnum(integrator0);
         case 1:
-            return integrator1;
+            return translateIntegratorToEnum(integrator1);
         case 2:
-            return integrator2;
+            return translateIntegratorToEnum(integrator2);
         default:
             throw std::out_of_range("No such timescale");
     }
@@ -85,6 +89,16 @@ double ParametersHmc::get_lambda(size_t timescale) const noexcept
     }
 }
 
+bool ParametersHmc::get_use_gauge_only() const noexcept
+{
+    return use_gauge_only;
+}
+
+bool ParametersHmc::get_use_mp() const noexcept
+{
+    return use_mp;
+}
+
 ParametersHmc::ParametersHmc() : options("HMC options")
 {
     // clang-format off
@@ -96,9 +110,9 @@ ParametersHmc::ParametersHmc() : options("HMC options")
 	("integrationSteps2", po::value<int>(&integrationsteps2)->default_value(10),"The number of integration steps for timescale 2.")
 	("nHmcSteps", po::value<int>(&hmcsteps)->default_value(10),"The number of hmc steps (i.e. the number of configuration updates in the Markov chain).")
 	("nTimescales", po::value<int>(&num_timescales)->default_value(1),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different timescales must use the same integrator.")
-	("integrator0", po::value<std::string>()->default_value("leapfrog"),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
-	("integrator1", po::value<std::string>()->default_value("leapfrog"),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
-	("integrator2", po::value<std::string>()->default_value("leapfrog"),"The integration scheme for timescale 2 (one among leapfrog and twomn).")
+	("integrator0", po::value<std::string>(&integrator0)->default_value("leapfrog"),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
+	("integrator1", po::value<std::string>(&integrator1)->default_value("leapfrog"),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
+	("integrator2", po::value<std::string>(&integrator2)->default_value("leapfrog"),"The integration scheme for timescale 2 (one among leapfrog and twomn).")
 	// this is the optimal value...
 	("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836),"The lambda parameter for timescale 0 (for the twomn integrator).")
 	("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836),"The lambda parameter for timescale 1 (for the twomn integrator).")
@@ -108,12 +122,18 @@ ParametersHmc::ParametersHmc() : options("HMC options")
     // clang-format on
 }
 
-bool ParametersHmc::get_use_gauge_only() const noexcept
+static common::integrator translateIntegratorToEnum(std::string s)
 {
-    return use_gauge_only;
-}
+    boost::algorithm::to_lower(s);
+    std::map<std::string, common::integrator> m;
+    m["leapfrog"] = common::leapfrog;
+    m["twomn"]    = common::twomn;
+    m["2mn"]      = common::twomn;
 
-bool ParametersHmc::get_use_mp() const noexcept
-{
-    return use_mp;
+    common::integrator a = m[s];
+    if (a) {
+        return a;
+    } else {
+        throw Invalid_Parameters("Unkown integrator!", "leapfrog, twomn or 2mn", s);
+    }
 }

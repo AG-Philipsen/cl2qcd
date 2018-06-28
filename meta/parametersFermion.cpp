@@ -23,6 +23,12 @@
 
 #include "parametersFermion.hpp"
 
+#include "../executables/exceptions.hpp"
+
+#include <boost/algorithm/string.hpp>
+
+static common::action translateFermionActionToEnum(std::string);
+
 bool meta::ParametersFermion::get_use_chem_pot_re() const noexcept
 {
     return use_chem_pot_re;
@@ -34,11 +40,11 @@ bool meta::ParametersFermion::get_use_chem_pot_im() const noexcept
 
 common::action meta::ParametersFermion::get_fermact() const noexcept
 {
-    return fermact;
+    return translateFermionActionToEnum(fermact);
 }
 common::action meta::ParametersFermion::get_fermact_mp() const noexcept
 {
-    return fermact_mp;
+    return translateFermionActionToEnum(fermact_mp);
 }
 double meta::ParametersFermion::get_kappa() const noexcept
 {
@@ -103,8 +109,8 @@ meta::ParametersFermion::ParametersFermion() : options("Fermion options")
 {
     // clang-format off
 	options.add_options()
-	("fermionAction", po::value<std::string>()->default_value("wilson"),"Which type of fermion action to use (e.g. wilson, twistedmass, rooted_stagg).")
-	("fermionActionMP", po::value<std::string>()->default_value("wilson"),"Which type of fermion action to use in the Mass Preconditioning trick when it is switched on (e.g. wilson).")
+	("fermionAction", po::value<std::string>(&fermact)->default_value("wilson"),"Which type of fermion action to use (e.g. wilson, twistedmass, rooted_stagg).")
+	("fermionActionMP", po::value<std::string>(&fermact_mp)->default_value("wilson"),"Which type of fermion action to use in the Mass Preconditioning trick when it is switched on (e.g. wilson).")
 	//todo: change this default value!
 	("kappa", po::value<double>(&kappa)->default_value(0.125),"The hopping parameter in in the 'wilson' action.")
 	("mass", po::value<double>(&mass)->default_value(0.1),"The bare quark mass in the 'rooted_stagg' action.")
@@ -123,4 +129,21 @@ meta::ParametersFermion::ParametersFermion() : options("Fermion options")
 	("useKernelMergingSpinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Whether to use kernel merging for spinor kernels.")
 	("useKernelMergingFermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Whether to use kernel merging for fermion kernels.");
     // clang-format on
+}
+
+static common::action translateFermionActionToEnum(std::string s)
+{
+    boost::algorithm::to_lower(s);
+    std::map<std::string, common::action> m;
+    m["wilson"]       = common::action::wilson;
+    m["clover"]       = common::action::clover;
+    m["twistedmass"]  = common::action::twistedmass;
+    m["rooted_stagg"] = common::action::rooted_stagg;
+
+    common::action a = m[s];
+    if (a) {  // map returns 0 if element is not found
+        return a;
+    } else {
+        throw Invalid_Parameters("Unkown fermion action!", "wilson, clover, twistedmass, rooted_stagg", s);
+    }
 }
