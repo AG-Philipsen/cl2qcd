@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -29,7 +30,8 @@ int main(int argc, const char* argv[])
 {
     try {
         std::pair<int, std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv,
-                                                                                        {"--fermact=rooted_stagg"});
+                                                                                        {"--fermionAction=rooted_"
+                                                                                         "stagg"});
         rhmcExecutable rhmcInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
         rhmcInstance.generateConfigurations();
     }  // try
