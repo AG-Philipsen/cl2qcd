@@ -36,7 +36,7 @@ meta::ParametersTest::ParametersTest() : options("Test options")
 {
     // clang-format off
 	options.add_options()
-	("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
-	("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
+	("testRefVal", po::value<double>(&test_ref_value)->default_value(0.), "The reference value for the test.")
+	("testRefVal2", po::value<double>(&test_ref_value2)->default_value(0.), "Another reference value for the test.");
     // clang-format on
 }

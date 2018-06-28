@@ -61,13 +61,13 @@ meta::ParametersSources::ParametersSources() : options("Source options")
 {
     // clang-format off
 	options.add_options()
-	("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
-	("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
-	("num_sources", po::value<int>(&num_sources)->default_value(12))
-	("source_x", po::value<int>(&source_x)->default_value(0))
-	("source_y", po::value<int>(&source_y)->default_value(0))
-	("source_z", po::value<int>(&source_z)->default_value(0))
-	("source_t", po::value<int>(&source_t)->default_value(0))
-	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
+	("sourceType",  po::value<std::string>()->default_value("point"), "Which type of source to be used in the inverter (one among 'point', 'volume', 'timeslice', 'zslice').")
+	("sourceContent",  po::value<std::string>()->default_value("one"), "Which ype of content to be used with sources in the inverter (one among 'one', 'z4', 'gaussian' and 'z2').")
+	("nSources", po::value<int>(&num_sources)->default_value(12), "The number of sources to be used in the inverter.")
+	("sourceX", po::value<int>(&source_x)->default_value(0), "The x coordinate for the position of a point source.")
+	("sourceY", po::value<int>(&source_y)->default_value(0), "The y coordinate for the position of a point source.")
+	("sourceZ", po::value<int>(&source_z)->default_value(0), "The z coordinate for the position of either a point source or a zslice source.")
+	("sourceT", po::value<int>(&source_t)->default_value(0), "The t coordinate for the position of either a point source or a timeslice source.")
+	("placeSourcesOnHost", po::value<bool>(&place_sources_on_host)->default_value(false), "Whether the buffer for sources is to remain on the host (this allows to avoid memory limits if many buffers are required).");
     // clang-format on
 }

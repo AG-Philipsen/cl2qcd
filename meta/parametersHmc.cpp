@@ -89,22 +89,22 @@ ParametersHmc::ParametersHmc() : options("HMC options")
 {
     // clang-format off
 	options.add_options()
-	("tau", po::value<double>(&tau)->default_value(0.5))
-	("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
-	("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
-	("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
-	("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
-	("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
-	("num_timescales", po::value<int>(&num_timescales)->default_value(1))
-	("integrator0", po::value<std::string>()->default_value("leapfrog"))
-	("integrator1", po::value<std::string>()->default_value("leapfrog"))
-	("integrator2", po::value<std::string>()->default_value("leapfrog"))
+	("tau", po::value<double>(&tau)->default_value(0.5),"The total time of integration.")
+	("reversibilityCheck", po::value<bool>(&reversibility_check)->default_value(false),"Whether to check reversibility violation in the integrator by integrating back in time.")
+	("integrationSteps0", po::value<int>(&integrationsteps0)->default_value(10),"The number of integration steps for timescale 0.")
+	("integrationSteps1", po::value<int>(&integrationsteps1)->default_value(10),"The number of integration steps for timescale 1.")
+	("integrationSteps2", po::value<int>(&integrationsteps2)->default_value(10),"The number of integration steps for timescale 2.")
+	("nHmcSteps", po::value<int>(&hmcsteps)->default_value(10),"The number of hmc steps (i.e. the number of configuration updates in the Markov chain).")
+	("nTimescales", po::value<int>(&num_timescales)->default_value(1),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different timescales must use the same integrator.")
+	("integrator0", po::value<std::string>()->default_value("leapfrog"),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
+	("integrator1", po::value<std::string>()->default_value("leapfrog"),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
+	("integrator2", po::value<std::string>()->default_value("leapfrog"),"The integration scheme for timescale 2 (one among leapfrog and twomn).")
 	// this is the optimal value...
-	("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
-	("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
-	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
-	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
-	("use_mp", po::value<bool>(&use_mp)->default_value(false));
+	("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836),"The lambda parameter for timescale 0 (for the twomn integrator).")
+	("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836),"The lambda parameter for timescale 1 (for the twomn integrator).")
+	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836),"The lambda parameter for timescale 2 (for the twomn integrator).")
+	("useGaugeOnly", po::value<bool>(&use_gauge_only)->default_value(false),"Whether to simulate pure gauge theory with HMC. In this case 'nTimescales' has to be set to 1.")
+	("useMP", po::value<bool>(&use_mp)->default_value(false),"Whether to use the Mass Preconditioning trick.");
     // clang-format on
 }
 

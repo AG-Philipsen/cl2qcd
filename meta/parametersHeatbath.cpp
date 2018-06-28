@@ -45,10 +45,10 @@ meta::ParametersHeatbath::ParametersHeatbath() : options("Heatbath options")
     // clang-format off
 	options.add_options()
 	//todo: this is also needed in the HMC!
-	("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
-	("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
-	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
-	//todo: is this used?
-	("xi", po::value<int>(&xi)->default_value(1));
+	("nThermalizationSteps", po::value<int>(&thermalizationsteps)->default_value(0), "The number of thermalization steps (for the SU(3) Heatbath executable).")
+	("nHeatbathSteps", po::value<int>(&heatbathsteps)->default_value(1000),"The number of heat bath steps (i.e. the number of configuration updates in the Markov chain).")
+	("nOverrelaxSteps", po::value<int>(&overrelaxsteps)->default_value(1),"The number of overrelaxation steps in the update of a gaugefield configuration.")
+	//todo: is this used? It sets XI_0 for the heat bath kernel!
+	("xi", po::value<int>(&xi)->default_value(1), "The anisotropy coefficient.");
     // clang-format on
 }

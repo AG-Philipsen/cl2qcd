@@ -76,8 +76,8 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     meta::InputparametersOptions cmd_opts("Generic options");
     // clang-format off
 	cmd_opts.add_options()
-		("help,h", "Produce this help message")
-		("input-file", po::value<std::string>(), "File containing the input parameters");
+		("help,h", "Produce helper for the specific executable.")
+		("input-file", po::value<std::string>(), "The path of the file containing the input parameters.");
     // clang-format on
     // TODO add log-level etc
     po::positional_options_description pos_opts;
@@ -300,7 +300,7 @@ static common::pbp_version get_pbp_version(std::string s)
     if (a) {  // map returns 0 if element is not found
         return a;
     } else {
-        std::cout << s << " is not a valid pvp_version." << std::endl;
+        std::cout << s << " is not a valid pbp_version." << std::endl;
         throw Inputparameters::parse_aborted();
     }
 }
