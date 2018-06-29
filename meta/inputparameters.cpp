@@ -139,15 +139,15 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 
 static void add_option_aliases(meta::ConfigFileNormalizer* const normalizer)
 {
-    normalizer->add_alias("NS", "nspace");
-    normalizer->add_alias("NT", "ntime");
-    normalizer->add_alias("use_evenodd", "use_eo");
-    normalizer->add_alias("thermsteps", "thermalization");
-    normalizer->add_alias("thermalizationsteps", "thermalization");
-    normalizer->add_alias("puregauge", "use_gauge_only");
-    normalizer->add_alias("PGT", "use_gauge_only");
-    normalizer->add_alias("test_ref_value", "test_ref_val");
-    normalizer->add_alias("test_ref_value2", "test_ref_val2");
-    normalizer->add_alias("ThetaT", "theta_fermion_temporal");
-    normalizer->add_alias("ThetaS", "theta_fermion_spatial");
+    normalizer->add_alias("NS", "nSpace");
+    normalizer->add_alias("NT", "nTime");
+    normalizer->add_alias("use_evenodd", "useEO");
+    normalizer->add_alias("thermsteps", "nThermalizationSteps");
+    normalizer->add_alias("thermalizationsteps", "nThermalizationSteps");
+    normalizer->add_alias("puregauge", "useGaugeOnly");
+    normalizer->add_alias("PGT", "useGaugeOnly");
+    normalizer->add_alias("test_ref_value", "testRefVal");
+    normalizer->add_alias("test_ref_value2", "testRefVal2");
+    normalizer->add_alias("ThetaT", "thetaFermionTemporal");
+    normalizer->add_alias("ThetaS", "thetaFermionSpatial");
 }
