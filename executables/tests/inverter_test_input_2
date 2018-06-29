@@ -1,10 +1,10 @@
-NS=4
-NT=4
-prec=64
+nSpace=4
+nTime=4
+confPrecision=64
 
 kappa=.15
 mu=4.
 
-startcondition=continue
-sourcefile=conf.00200
-fermact=TWISTEDMASS
+startCondition=continue
+initialConf=conf.00200
+fermionAction=TWISTEDMASS

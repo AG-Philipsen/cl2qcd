@@ -29,7 +29,7 @@ gaugeAction = IWASAKI
 # heatbath parameters
 nThermalizationSteps = 10
 nHeatbathSteps = 100
-nOverrelaxSteps = 10
+nOverrelaxationSteps = 10
 xi = 2
 measureTransportCoefficientKappa = true
 
@@ -86,5 +86,5 @@ testRefVal = 1.337
 testRefVal2 = 2.448
 
 useKernelMergingSpinor = true
-useKernelMergingFermion = true
+useKernelMergingFermionMatrix = true
 useReconstruct12 = true

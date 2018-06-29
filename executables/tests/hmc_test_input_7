@@ -1,35 +1,33 @@
 ##################################################################
-##	This is 
+##	This is
 ##		hmc_test_input_7
 ##	It performs one hmc-step with tau = 0.01 starting from
 ##	a cold config
 ##
 ##################################################################
-NS=4
-NT=4
-use_rec12=0
-use_gpu=0
-prec=64
+nSpace=4
+nTime=4
+useReconstruct12=0
+useGPU=0
+confPrecision=64
 
 kappa=.15
 mu=4.
-cgmax=1000
+cgMaxIterations=1000
 beta=6
-startcondition=cold
-savefrequency=10
-fermact=TWISTEDMASS
+startCondition=cold
+createCheckpointEvery=10
+fermionAction=TWISTEDMASS
 
 #solver-parameters
-use_evenodd=yes
+useEO=yes
 solver=cg
 
 #HMC-parameters
-hmcsteps=1
-num_timescales=2
+nHmcSteps=1
+nTimeScales=2
 tau=0.01
 integrator0=2MN
-integrationsteps0=2
+integrationSteps0=2
 integrator1=2MN
-integrationsteps1=10
-
-
+integrationSteps1=10

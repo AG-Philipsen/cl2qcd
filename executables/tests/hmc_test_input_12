@@ -1,28 +1,28 @@
 #global settings
-NS=4
-NT=4
-use_rec12=0
-use_gpu=0
-prec=64
+nSpace=4
+nTime=4
+useReconstruct12=0
+useGPU=0
+confPrecision=64
 
 #fermion-parameters
 kappa=.1
 mu=0.5
-cgmax=1000
+cgMaxIterations=1000
 beta=5.69
-startcondition=continue
-sourcefile=conf.00200
-savefrequency=100
-fermact=TWISTEDMASS
+startCondition=continue
+initialConf=conf.00200
+createCheckpointEvery=100
+fermionAction=TWISTEDMASS
 
 #solver-parameters
-use_evenodd=no
+useEO=no
 solver=cg
 
 #HMC-parameters
-hmcsteps=1
-integrationsteps0=16
-num_timescales=1
+nHmcSteps=1
+integrationSteps0=16
+nTimeScales=1
 tau=0.5
 
-use_same_rnd_numbers=true
+useSameRandomNumbers=true

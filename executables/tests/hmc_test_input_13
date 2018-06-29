@@ -1,23 +1,23 @@
 #global settings
-NS=4
-NT=4
-prec=64
-use_gpu=0
+nSpace=4
+nTime=4
+confPrecision=64
+useGPU=0
 
 #fermion-parameters
 beta=5.69
-startcondition=cold
-# startcondition=continue
-sourcefile=conf.00200
+startCondition=cold
+# startCondition=continue
+initialConf=conf.00200
 
 #HMC-parameters
-hmcsteps=1
-integrationsteps0=2000
-num_timescales=1
+nHmcSteps=1
+integrationSteps0=2000
+nTimeScales=1
 tau=0.5
 
 #gauge parameters
-gaugeact=wilson
-puregauge=true
+gaugeAction=wilson
+useGaugeOnly=true
 
-use_same_rnd_numbers=true
+useSameRandomNumbers=true

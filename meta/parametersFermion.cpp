@@ -127,7 +127,7 @@ meta::ParametersFermion::ParametersFermion() : options("Fermion options")
 	("useChemicalPotentialIm", po::value<bool>(&use_chem_pot_im)->default_value(false),"Whether to switch on a nonzero imaginary part of the baryon chemical potential.")
 	("useEO", po::value<bool>(&use_eo)->default_value(true),"Whether to switch on Even Odd preconditioning.")
 	("useKernelMergingSpinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Whether to use kernel merging for spinor kernels.")
-	("useKernelMergingFermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Whether to use kernel merging for fermion kernels.");
+	("useKernelMergingFermionMatrix", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Whether to use kernel merging for fermion matrix kernels.");
     // clang-format on
 }
 

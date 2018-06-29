@@ -1,16 +1,16 @@
 #global parameters
-NS=4
-NT=4
-use_rec12=0
-use_gpu=0
-prec=64
+nSpace=4
+nTime=4
+useReconstruct12=0
+useGPU=0
+confPrecision=64
 readsource=cold
 
 beta=6.00
-thermalizationsteps=0
-heatbathsteps=1000
-sourcefile=conf.save
-writefrequency=1
+nThermalizationSteps=0
+nHeatbathSteps=1000
+initialConf=conf.save
+onlineMeasureEvery=1
 
 # 4^4file:
 #Plaquette: 0.622595987170167

@@ -1,5 +1,5 @@
 ##################################################################
-##	This is 
+##	This is
 ##	 + rhmc_test_input_09
 ##
 ##	It performs one rhmc-step with tau = 0.01 with:
@@ -10,28 +10,28 @@
 ##
 ##################################################################
 
-startcondition=cold
-num_timescales=1
+startCondition=cold
+nTimeScales=1
 integrator0=twomn
-integrationsteps0=10
-ThetaT=0
+integrationSteps0=10
+thetaFermionTemporal=0
 
 #These parameters are in common to all tests
-NS=4
-NT=4
+nSpace=4
+nTime=4
 beta=6
 mass=0.13
-ThetaS=0
-use_eo=true
-use_rec12=0
-use_gpu=0
-prec=64
-rhmcsteps=1
-cgmax=1000
+thetaFermionSpatial=0
+useEO=true
+useReconstruct12=0
+useGPU=0
+confPrecision=64
+nRhmcSteps=1
+cgMaxIterations=1000
 tau=0.01
-savefrequency=10
-sourcetype=volume
-measure_correlators=0
+createCheckpointEvery=10
+sourceType=volume
+measureCorrelators=0
 
 #NOTE: tau so small is to make the algorithm accept the new configuration and have
 #      then the plaquette value slightly changed. It would be better to increase the

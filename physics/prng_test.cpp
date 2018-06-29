@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(build)
 
     BOOST_AUTO_TEST_CASE(brokenInputFile_brokenTag)
     {
-        const char* _params[] = {"foo", "--startingPrng=prngstate_brokenTag"};
+        const char* _params[] = {"foo", "--initialPRNG=prngstate_brokenTag"};
         meta::Inputparameters parameters(2, _params);
         physics::PrngParametersImplementation prngParameters(parameters);
         hardware::HardwareParametersImplementation hP(&parameters);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 
     double tmp = prng.get_double();
 
-    const char* _params2[] = {"foo", "--startingPrng=tmp.prngstate"};
+    const char* _params2[] = {"foo", "--initialPRNG=tmp.prngstate"};
     meta::Inputparameters parameters2(2, _params2);
     physics::PrngParametersImplementation prngParameters2(parameters2);
     hardware::HardwareParametersImplementation hP2(&parameters2);
