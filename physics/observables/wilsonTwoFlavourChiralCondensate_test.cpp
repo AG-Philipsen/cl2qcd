@@ -28,6 +28,7 @@
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
+#include "../interfacesHandler.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/test/unit_test.hpp>
@@ -131,8 +132,8 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         }
 
         const char* _params[] = {"foo",
-                                 "--nt=4",
-                                 "--ns=4",
+                                 "--nTime=4",
+                                 "--nSpace=4",
                                  "--kappa=0.15",
                                  "--mu=4.",
                                  "--measure_pbp=true",
