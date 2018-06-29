@@ -48,11 +48,11 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     // clang-format off
 	cmd_opts.add_options()
 		("help,h", "Produce helper for the specific executable.")
-		("input-file", po::value<std::string>(), "The path of the file containing the input parameters.");
+		("inputFile", po::value<std::string>(), "The path of the file containing the input parameters.");
     // clang-format on
     // TODO add log-level etc
     po::positional_options_description pos_opts;
-    pos_opts.add("input-file", 1);
+    pos_opts.add("inputFile", 1);
 
     meta::InputparametersOptions desc("");
     desc.add(cmd_opts).add(ParametersConfig::options);
@@ -117,8 +117,8 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
         throw Inputparameters::help_required();
     }
 
-    if (vm.count("input-file")) {
-        std::string config_file = vm["input-file"].as<std::string>();
+    if (vm.count("inputFile")) {
+        std::string config_file = vm["inputFile"].as<std::string>();
         ConfigFileNormalizer normalizer;
         add_option_aliases(&normalizer);
         // add stuff from input file

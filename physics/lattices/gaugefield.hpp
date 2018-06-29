@@ -44,7 +44,7 @@ namespace physics {
         class Gaugefield {
           public:
             /**
-             * Construct a gaugefield based on the input-files of the system
+             * Construct a gaugefield based on the input files of the system
              */
             Gaugefield(const hardware::System&, const GaugefieldParametersInterface* parameters, const physics::PRNG&);
 
@@ -84,7 +84,7 @@ namespace physics {
             void saveToSpecificFile(int number);
             /**
              * Save gaugefield to a file with given name
-             * @param[in] outputfile name of file
+             * @param[in] outputfilename of file
              * @param[in] number The trajectory number to be stored in the file
              */
             void save(std::string outputfile, int number);

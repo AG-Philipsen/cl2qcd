@@ -277,8 +277,8 @@ BOOST_AUTO_TEST_CASE(input_file2)
 
 BOOST_AUTO_TEST_CASE(command_line1)
 {
-    const char* _params[] = {"foo",         "--useAniso=1", "--useMP=true",   "--useSmearing=false",
-                             "--nSpace=32", "--nTime=12",   "--useGpu=false", "--useCpu=false"};
+    const char* _params[] = {"foo",         "--useAnisotropy=1", "--useMP=true",   "--useSmearing=false",
+                             "--nSpace=32", "--nTime=12",        "--useGPU=false", "--useCPU=false"};
     Inputparameters params(8, _params);
     BOOST_REQUIRE_EQUAL(params.get_use_aniso(), true);
     BOOST_REQUIRE_EQUAL(params.get_use_mp(), true);

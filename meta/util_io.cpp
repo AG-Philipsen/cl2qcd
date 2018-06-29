@@ -266,7 +266,7 @@ static void print_info_fermion(const meta::Inputparameters& params)
     // print extra warning if BC are set to default since this is a serious source of errors...
     if (params.get_theta_fermion_spatial() == 0. && params.get_theta_fermion_temporal() == 0.) {
         logger.warn() << "NOTE: BCs have been set to periodic values by default!!\n\t\t\t  To change this use e.g. "
-                         "ThetaT/ThetaS in the input-file.";
+                         "ThetaT/ThetaS in the input file.";
     }
 }
 
@@ -346,7 +346,7 @@ static void print_info_fermion(std::ostream* os, const meta::Inputparameters& pa
     // print extra warning if BC are set to default since this is a serious source of errors...
     if (params.get_theta_fermion_spatial() == 0. && params.get_theta_fermion_temporal() == 0.) {
         *os << "NOTE: BCs have been set to periodic values by default!!\n\t\t\t  To change this use e.g. ThetaT/ThetaS "
-               "in the input-file."
+               "in the input file."
             << endl;
     }
 }
@@ -474,7 +474,7 @@ void meta::print_info_hmc(const Inputparameters& params)
         logger.info() << "## use PureGaugeTheory in HMC!";
     } else if (params.get_use_gauge_only() && params.get_num_timescales() > 1) {
         logger.fatal() << "PureGaugeTheory can only be used with one timescale!\nPlease change the "
-                          "input-file!\nAborting...";
+                          "input file!\nAborting...";
         throw out_of_range("Too many timescales");
     }
     // integrator infos
@@ -536,7 +536,7 @@ void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
     if (params.get_use_gauge_only() && params.get_num_timescales() == 1) {
         *os << "## use PureGaugeTheory in HMC!" << endl;
     } else if (params.get_use_gauge_only() && params.get_num_timescales() > 1) {
-        *os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting..."
+        *os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input file!\nAborting..."
             << endl;
         throw out_of_range("Too many timescales");
     }
@@ -621,7 +621,7 @@ void meta::print_info_rhmc(const Inputparameters& params)
         logger.warn() << "## use PureGaugeTheory in RHMC!";
     } else if (params.get_use_gauge_only() && params.get_num_timescales() > 1) {
         logger.fatal() << "PureGaugeTheory can only be used with one timescale!\nPlease change the "
-                          "input-file!\nAborting...";
+                          "input file!\nAborting...";
         throw out_of_range("Too many timescales");
     }
     // integrator infos
@@ -709,7 +709,7 @@ void meta::print_info_rhmc(std::ostream* os, const Inputparameters& params)
     if (params.get_use_gauge_only() && params.get_num_timescales() == 1) {
         *os << "## use PureGaugeTheory in RHMC!" << endl;
     } else if (params.get_use_gauge_only() && params.get_num_timescales() > 1) {
-        *os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting..."
+        *os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input file!\nAborting..."
             << endl;
         throw out_of_range("Too many timescales");
     }

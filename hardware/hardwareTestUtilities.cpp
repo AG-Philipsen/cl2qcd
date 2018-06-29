@@ -36,7 +36,7 @@ std::pair<bool, bool> checkForBoostRuntimeArguments()
         logger.info() << "Found " << num_par << " runtime arguments, checking for gpu and rec12 options...";
         for (int i = 1; i < num_par; i++) {
             std::string currentArgument = boost::unit_test::framework::master_test_suite().argv[i];
-            if (currentArgument.find("--useGpu") != std::string::npos) {
+            if (currentArgument.find("--useGPU") != std::string::npos) {
                 if (currentArgument.find("true") != std::string::npos) {
                     useGpu = true;
                 }

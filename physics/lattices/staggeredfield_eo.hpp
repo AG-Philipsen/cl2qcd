@@ -49,7 +49,7 @@ namespace physics {
         class Staggeredfield_eo {
           public:
             /**
-             * Construct a staggeredfield based on the input-files of the system
+             * Construct a staggeredfield based on the input files of the system
              */
             Staggeredfield_eo(const hardware::System&, const StaggeredfieldEoParametersInterface&);
 

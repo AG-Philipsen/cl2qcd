@@ -147,11 +147,11 @@ meta::ParametersConfig::ParametersConfig() : options("Configuration options")
 {
     // clang-format off
 	options.add_options()
-	("confPrecision", po::value<size_t>(&precision)->default_value(sizeof(double) * 8), "The precision for the storage of gauge configurations in conf files.")
+	("confPrecision", po::value<size_t>(&precision)->default_value(sizeof(double) * 8), "The precision in bit for the storage of gauge configurations in conf files.")
 	("deviceId", po::value<std::vector<int>>(&selected_devices), "The ID number of a device to use. Can be specified multiple times to use multiple devices.")
 	("nDevices", po::value<int>(&device_count)->default_value(0), "The maximum number of devices to use.")
-	("useGpu", po::value<bool>(&use_gpu)->default_value(true), "Whether to use GPUs.")
-	("useCpu", po::value<bool>(&use_cpu)->default_value(true), "Whether to use CPUs.")
+	("useGPU", po::value<bool>(&use_gpu)->default_value(true), "Whether to use GPUs.")
+	("useCPU", po::value<bool>(&use_cpu)->default_value(true), "Whether to use CPUs.")
 	("enableProfiling", po::value<bool>(&enable_profiling)->default_value(false), "Whether to profile kernel execution. This option implies slower performance due to synchronization after each kernel call.")
 	("nSpace", po::value<int>(&nspace)->default_value(4), "The spatial extent of the lattice.")
 	("nTime", po::value<int>(&ntime)->default_value(8), "The temporal extent of the lattice.")
@@ -168,11 +168,11 @@ meta::ParametersConfig::ParametersConfig() : options("Configuration options")
 	("readFromConfNumber", po::value<int>(&config_read_start)->default_value(0), "The number to begin with when using more than one gaugefield configuration at once.")
 	("readUntilConfNumber", po::value<int>(&config_read_end)->default_value(1), "The number to end at when using more than one gaugefield configuration at once.")
 	("readConfsEvery", po::value<int>(&config_read_incr)->default_value(1), "The increment for the gaugefield configuration number when using more than one gaugefield configuration at once.")
-	("splitCpu", po::value<bool>(&split_cpu)->default_value(false), "Whether to split the CPU into multiple devices to avoid numa issues. This option requires OpenCL 1.2 at least.")
+	("splitCPU", po::value<bool>(&split_cpu)->default_value(false), "Whether to split the CPU into multiple devices to avoid numa issues. This option requires OpenCL 1.2 at least.")
 	("benchmarkIterations", po::value<int>(&benchmarksteps)->default_value(500), "The number of times a kernel is executed for benchmark purposes.")
 	("ignoreChecksumErrors", po::value<bool>(&ignore_checksum_errors)->default_value(false), "Whether to ignore checksum errors, e.g. reading conf files.")
 	//todo: this is not used ?! -> It sets _ANISO_ for the heat bath kernel. It should be moved to parametersHeatbath
-	("useAniso", po::value<bool>(&use_aniso)->default_value(false));
+	("useAnisotropy", po::value<bool>(&use_aniso)->default_value(false));
     // clang-format on
 }
 

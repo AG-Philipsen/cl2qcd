@@ -49,7 +49,7 @@ namespace physics {
         class Spinorfield {
           public:
             /**
-             * Construct a gaugefield based on the input-files of the system
+             * Construct a Spinorfield based on the input files of the system
              */
             Spinorfield(const hardware::System&, const SpinorfieldParametersInterface&,
                         const bool place_on_host = false);

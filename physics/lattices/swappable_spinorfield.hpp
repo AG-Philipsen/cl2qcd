@@ -41,7 +41,7 @@ namespace physics {
         class SwappableSpinorfield : public Spinorfield, public Swappable {
           public:
             /**
-             * Construct a gaugefield based on the input-files of the system
+             * Construct a SwappableSpinorfield based on the input files of the system
              */
             SwappableSpinorfield(
                 const hardware::System&,

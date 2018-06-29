@@ -50,7 +50,7 @@ namespace physics {
 
           public:
             /**
-             * Construct a gaugefield based on the input-files of the system
+             * Construct a Spinorfield_eo based on the input files of the system
              */
             Spinorfield_eo(const hardware::System&,
                            const SpinorfieldEoParametersInterface& spinorfieldEoParametersInterface);

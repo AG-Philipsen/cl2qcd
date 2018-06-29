@@ -41,7 +41,7 @@ namespace physics {
         class Rooted_Staggeredfield_eo {
           public:
             /**
-             * Construct a rooted staggeredfield based on the input-files of the system
+             * Construct a rooted staggeredfield based on the input files of the system
              */
             Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&);
             Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&,

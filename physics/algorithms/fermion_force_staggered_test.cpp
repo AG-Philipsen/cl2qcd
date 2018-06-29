@@ -126,8 +126,8 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
         const char* _params[] = {"foo",
                                  "--nSpace=8",
                                  "--fermionAction=rooted_stagg",
-                                 "--useChemPotIm=true",
-                                 "--chemPotIm=0.5678",
+                                 "--useChemicalPotentialIm=true",
+                                 "--chemicalPotentialIm=0.5678",
                                  "--nDevices=1"};
         meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
@@ -163,8 +163,8 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
         const char* _params[] = {"foo",
                                  "--nTime=4",
                                  "--fermionAction=rooted_stagg",
-                                 "--useChemPotIm=true",
-                                 "--chemPotIm=0.5678",
+                                 "--useChemicalPotentialIm=true",
+                                 "--chemicalPotentialIm=0.5678",
                                  "--thetaFermionTemporal=1.",
                                  "--nDevices=1"};
         meta::Inputparameters params(7, _params);
@@ -243,9 +243,9 @@ BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEo)
         const char* _params[] = {"foo",
                                  "--nTime=4",
                                  "--fermionAction=rooted_stagg",
-                                 "--useChemPotIm=true",
+                                 "--useChemicalPotentialIm=true",
                                  "--mass=0.125",
-                                 "--chemPotIm=0.5678",
+                                 "--chemicalPotentialIm=0.5678",
                                  "--nDevices=1"};
         meta::Inputparameters params(7, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
@@ -332,9 +332,9 @@ BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEoWithPseudofermions)
         const char* _params[] = {"foo",
                                  "--nTime=4",
                                  "--fermionAction=rooted_stagg",
-                                 "--useChemPotIm=true",
+                                 "--useChemicalPotentialIm=true",
                                  "--mass=0.125",
-                                 "--chemPotIm=0.5678",
+                                 "--chemicalPotentialIm=0.5678",
                                  "--nDevices=1",
                                  "--nPseudoFermions=2"};
         meta::Inputparameters params(8, _params);

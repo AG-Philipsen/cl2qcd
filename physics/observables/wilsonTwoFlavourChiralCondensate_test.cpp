@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         std::string pbpVersionOption       = "--pbp_version=" + pbpVersionOptionIn;
         std::string startconditionOption   = "--startCondition=" + startconditionOptionIn;
         std::string sourcefileOption       = "--startingConf=" + sourcefileOptionIn;
-        std::string eoOption               = "--useEOP=" + eoOptionIn;
+        std::string eoOption               = "--useEO=" + eoOptionIn;
 
         int numberOfOptions = 14;
 

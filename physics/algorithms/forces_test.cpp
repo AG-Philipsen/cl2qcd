@@ -303,8 +303,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
                                  "--nTime=4",
                                  "--thetaFermionTemporal=1",
                                  "--fermionAction=rooted_stagg",
-                                 "--useChemPotIm=true",
-                                 "--chemPotIm=0.5678",
+                                 "--useChemicalPotentialIm=true",
+                                 "--chemicalPotentialIm=0.5678",
                                  "--mass=0.125",
                                  "--nDevices=1"};
         meta::Inputparameters params(8, _params);

@@ -56,7 +56,7 @@ meta::ParametersGauge::ParametersGauge() : options("Gaugefield options")
 {
     // clang-format off
 	options.add_options()
-	("beta", po::value<double>(&beta)->default_value(4.0),"The coupling in the gauge action.")
+	("beta", po::value<double>(&beta)->default_value(4.0),"The beta-coupling in the gauge action.")
 	("useSmearing", po::value<bool>(&use_smearing)->default_value(false),"Whether to apply stout smearing to the gaugefield.")
 	("smearingFactor", po::value<double>(&rho)->default_value(0.),"The weight factor associated with the staples in stout smearing.")
 	("nSmearingSteps", po::value<int>(&rho_iter)->default_value(0),"The number of stout-smearing steps.")

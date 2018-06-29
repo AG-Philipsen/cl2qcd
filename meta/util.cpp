@@ -153,7 +153,7 @@ std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters,
                 break;
             default:
                 throw std::invalid_argument(
-                    "Unknown start condition selected. Don't know how to generate proper observable file name.");
+                    "Unknown start condition selected. Don't know how to generate proper observable filename.");
         }
     }
 }
@@ -175,7 +175,7 @@ std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std
                 break;
             default:
                 throw std::invalid_argument(
-                    "Unknown start condition selected. Don't know how to generate proper observable file name.");
+                    "Unknown start condition selected. Don't know how to generate proper observable filename.");
         }
     }
 }
@@ -197,7 +197,7 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
                 break;
             default:
                 throw std::invalid_argument(
-                    "Unknown start condition selected. Don't know how to generate proper observable file name.");
+                    "Unknown start condition selected. Don't know how to generate proper observable filename.");
         }
     }
 }
@@ -219,7 +219,7 @@ std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std:
                 break;
             default:
                 throw std::invalid_argument(
-                    "Unknown start condition selected. Don't know how to generate proper observable file name.");
+                    "Unknown start condition selected. Don't know how to generate proper observable filename.");
         }
     }
 }
