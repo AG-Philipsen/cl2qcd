@@ -128,7 +128,7 @@ void rhmcExecutable::writeRhmcLogfile()
 void rhmcExecutable::setIterationParameters()
 {
     generationExecutable::setIterationParameters();
-    generationSteps += parameters.get_rhmcsteps();
+    nextToLastGenerationTraj += parameters.get_rhmcsteps();
 }
 
 void rhmcExecutable::thermalizeAccordingToSpecificAlgorithm()
@@ -167,10 +167,11 @@ void rhmcExecutable::printRhmcObservablesToFile(const std::string& filename)
     outputToFile.open(filename.c_str(), std::ios::out | std::ios::app);
     if (!outputToFile.is_open())
         throw File_Exception(filename);
-    const std::streamsize shortPrecision = 4, longPrecision = 15;
-    const std::streamsize shortWidth = shortPrecision + 6,
-                          longWidth  = longPrecision + 10;  //+1 is always needed for the period, +4 is for e+XX in case
-                                                            // of extreme values, +10 to give some breath
+    const std::streamsize shortPrecision = 4;
+    const std::streamsize longPrecision  = 15;
+    const std::streamsize shortWidth     = shortPrecision + 6;
+    const std::streamsize longWidth      = longPrecision + 10;  // +1 is always needed for the period, +4 is for e+XX
+                                                                // in case of extreme values, +10 to give some breath
     outputToFile.precision(longPrecision);
     outputToFile << std::setw(8) << iteration  // statistics up to 1e8-1
                  << ' ' << std::setw(longWidth) << observables.plaq << ' ' << std::setw(longWidth) << observables.tplaq

@@ -33,12 +33,12 @@ generationExecutable::generationExecutable(int argc, const char* argv[], std::st
 void generationExecutable::setIterationParameters()
 {
     // NOTE: this is 0 in case of cold or hot start
-    iteration           = gaugefield->get_trajectoryNumberAtInit();
-    thermalizationSteps = iteration + parameters.get_thermalizationsteps();
-    generationSteps     = thermalizationSteps;  // this is temp.: in each child it is incremented by the nr of tr.
-    writeFrequency      = parameters.get_writefrequency();
-    saveFrequency       = parameters.get_savefrequency();
-    savePointFrequency  = parameters.get_savepointfrequency();
+    iteration                    = gaugefield->get_trajectoryNumberAtInit();
+    nextToLastThermalizationTraj = iteration + parameters.get_thermalizationsteps();
+    nextToLastGenerationTraj     = nextToLastThermalizationTraj;  // In each child it is incremented by the nr of tr.
+    writeFrequency               = parameters.get_writefrequency();
+    saveFrequency                = parameters.get_savefrequency();
+    savePointFrequency           = parameters.get_savepointfrequency();
 }
 
 void generationExecutable::saveGaugefield()
@@ -73,17 +73,11 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
     logger.info() << "Start thermalization (" << parameters.get_thermalizationsteps() << " tr.)...";
-    physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration,
-                                                                interfacesHandler
-                                                                    ->getGaugeObservablesParametersInterface());
-    // With this try and catch the warning is printed only if the user wants to make thermalization steps, not always,
-    // but this makes sense
-    try {
-        for (; iteration < thermalizationSteps; iteration++) {
-            thermalizeAccordingToSpecificAlgorithm();
-        }
-    } catch (Print_Error_Message& exception) {
-        logger.warn() << "The thermalization is not yet implemented!  It is just skipped.";
+    for (; iteration < nextToLastThermalizationTraj; iteration++) {
+        thermalizeAccordingToSpecificAlgorithm();  // <- this could throw if not implemented!
+        physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration,
+                                                                    interfacesHandler
+                                                                        ->getGaugeObservablesParametersInterface());
     }
     logger.info() << "...thermalization done";
 }
@@ -91,7 +85,7 @@ void generationExecutable::thermalize()
 void generationExecutable::generate()
 {
     logger.info() << "Start generation of configurations...";
-    for (; iteration < generationSteps; iteration++) {
+    for (; iteration < nextToLastGenerationTraj; iteration++) {
         generateAccordingToSpecificAlgorithm();
         performOnlineMeasurements();
         saveGaugefield();

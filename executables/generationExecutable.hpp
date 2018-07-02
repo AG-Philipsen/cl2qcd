@@ -39,8 +39,8 @@ class generationExecutable : public generalExecutable {
     int writeFrequency;
     int saveFrequency;
     int savePointFrequency;
-    int thermalizationSteps;
-    int generationSteps;
+    int nextToLastThermalizationTraj;
+    int nextToLastGenerationTraj;
     int iteration;
     //     std::string filenameForGaugeobservables;
 

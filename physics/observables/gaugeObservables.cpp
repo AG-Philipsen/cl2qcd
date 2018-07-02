@@ -94,12 +94,15 @@ void gaugeObservables::writePlaqAndPolyToFile(int iter, const std::string& filen
     outputToFile.open(filename.c_str(), std::ios::app);
     if (!outputToFile.is_open())
         throw File_Exception(filename);
-    outputToFile.width(8);
-    outputToFile << iter << "\t";
-    outputToFile.precision(15);
-    outputToFile << plaquettes.plaquette << "\t" << plaquettes.temporalPlaquette << "\t" << plaquettes.spatialPlaquette
-                 << "\t" << polyakov.re << "\t" << polyakov.im << "\t"
-                 << sqrt(polyakov.re * polyakov.re + polyakov.im * polyakov.im) << std::endl;
+    const std::streamsize longPrecision = 15;
+    const std::streamsize longWidth     = longPrecision + 10;  // +1 is always needed for the period, +4 is for e+XX
+                                                               // in case of extreme values, +10 to give some breath
+    outputToFile.precision(longPrecision);
+    outputToFile << std::setw(8) << iter  // statistics up to 1e8-1
+                 << ' ' << std::setw(longWidth) << plaquettes.plaquette << ' ' << std::setw(longWidth)
+                 << plaquettes.temporalPlaquette << ' ' << std::setw(longWidth) << plaquettes.spatialPlaquette << ' '
+                 << std::setw(longWidth) << polyakov.re << ' ' << std::setw(longWidth) << polyakov.im << ' '
+                 << std::setw(longWidth) << sqrt(polyakov.re * polyakov.re + polyakov.im * polyakov.im) << std::endl;
     outputToFile.close();
 }
 

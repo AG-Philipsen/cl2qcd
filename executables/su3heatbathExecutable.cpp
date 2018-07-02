@@ -52,7 +52,7 @@ inline void su3heatbathExecutable::writeSu3heatbathLogfile()
 void su3heatbathExecutable::setIterationParameters()
 {
     generationExecutable::setIterationParameters();
-    generationSteps += parameters.get_heatbathsteps();
+    nextToLastGenerationTraj += parameters.get_heatbathsteps();
     overrelaxSteps = parameters.get_overrelaxsteps();
 }
 
