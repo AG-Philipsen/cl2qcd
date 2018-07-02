@@ -33,12 +33,14 @@ namespace meta {
         int get_heatbathsteps() const noexcept;
         int get_overrelaxsteps() const noexcept;
         int get_xi() const noexcept;
+        bool get_use_aniso() const noexcept;
 
       private:
         int thermalizationsteps;
         int heatbathsteps;
         int overrelaxsteps;
         int xi;
+        bool use_aniso;
 
       protected:
         ParametersHeatbath();

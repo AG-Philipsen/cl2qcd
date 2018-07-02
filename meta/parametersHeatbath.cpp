@@ -40,6 +40,11 @@ int meta::ParametersHeatbath::get_xi() const noexcept
     return xi;
 }
 
+bool meta::ParametersHeatbath::get_use_aniso() const noexcept
+{
+    return use_aniso;
+}
+
 meta::ParametersHeatbath::ParametersHeatbath() : options("Heatbath options")
 {
     // clang-format off
@@ -48,7 +53,7 @@ meta::ParametersHeatbath::ParametersHeatbath() : options("Heatbath options")
     ("nThermalizationSteps", po::value<int>(&thermalizationsteps)->default_value(0), "The number of thermalization steps (for the SU(3) Heatbath executable).")
     ("nHeatbathSteps", po::value<int>(&heatbathsteps)->default_value(1000),"The number of heat bath steps (i.e. the number of configuration updates in the Markov chain).")
     ("nOverrelaxationSteps", po::value<int>(&overrelaxsteps)->default_value(1),"The number of overrelaxation steps in the update of a gaugefield configuration.")
-    //todo: is this used? It sets XI_0 for the heat bath kernel!
+    ("useAnisotropy", po::value<bool>(&use_aniso)->default_value(false), "Whether to use an anisotropic lattice, having a lattice spacing different in time and in space directions.")
     ("xi", po::value<int>(&xi)->default_value(1), "The anisotropy coefficient.");
     // clang-format on
 }

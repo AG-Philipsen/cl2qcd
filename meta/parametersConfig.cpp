@@ -55,11 +55,6 @@ bool meta::ParametersConfig::get_enable_profiling() const noexcept
     return enable_profiling;
 }
 
-bool meta::ParametersConfig::get_use_aniso() const noexcept
-{
-    return use_aniso;
-}
-
 int meta::ParametersConfig::get_nspace() const noexcept
 {
     return nspace;
@@ -170,9 +165,7 @@ meta::ParametersConfig::ParametersConfig() : options("Configuration options")
     ("readConfsEvery", po::value<int>(&config_read_incr)->default_value(1), "The increment for the gaugefield configuration number when using more than one gaugefield configuration at once.")
     ("splitCPU", po::value<bool>(&split_cpu)->default_value(false), "Whether to split the CPU into multiple devices to avoid numa issues. This option requires OpenCL 1.2 at least.")
     ("benchmarkIterations", po::value<int>(&benchmarksteps)->default_value(500), "The number of times a kernel is executed for benchmark purposes.")
-    ("ignoreChecksumErrors", po::value<bool>(&ignore_checksum_errors)->default_value(false), "Whether to ignore checksum errors, e.g. reading conf files.")
-    //todo: this is not used ?! -> It sets _ANISO_ for the heat bath kernel. It should be moved to parametersHeatbath
-    ("useAnisotropy", po::value<bool>(&use_aniso)->default_value(false));
+    ("ignoreChecksumErrors", po::value<bool>(&ignore_checksum_errors)->default_value(false), "Whether to ignore checksum errors, e.g. reading conf files.");
     // clang-format on
 }
 

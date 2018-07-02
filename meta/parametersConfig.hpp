@@ -60,8 +60,6 @@ namespace meta {
         bool get_split_cpu() const noexcept;
         int get_benchmarksteps() const noexcept;
 
-        bool get_use_aniso() const noexcept;
-
       private:
         size_t precision;
 
@@ -71,7 +69,6 @@ namespace meta {
         bool use_cpu;
         bool enable_profiling;
 
-        bool use_aniso;
         int nspace;
         int ntime;
 
