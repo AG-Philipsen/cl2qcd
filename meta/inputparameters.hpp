@@ -4,6 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2014 Christopher Pinke
  * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -80,6 +81,9 @@ namespace meta {
          * @throws parse_aborted
          */
         Inputparameters(int argc, const char** argv, std::string parameterSet = "allParameters");
+
+      private:
+        void ChecksOnInputParameters() const;
     };
 }  // namespace meta
 

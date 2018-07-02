@@ -58,6 +58,7 @@ namespace meta {
         ParametersSolver(ParametersSolver const&) = delete;
         ParametersSolver& operator=(ParametersSolver const&) = delete;
         InputparametersOptions getAllOptions();
+        common::solver translateSolversToEnum() const;
 
         InputparametersOptions options;
         // at the moment, only 2 solvers are implemented..

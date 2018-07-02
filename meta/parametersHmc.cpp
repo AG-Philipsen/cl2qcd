@@ -137,3 +137,10 @@ static common::integrator translateIntegratorToEnum(std::string s)
         throw Invalid_Parameters("Unkown integrator!", "leapfrog, twomn or 2mn", s);
     }
 }
+
+common::integrator meta::ParametersHmc::translateIntegratorsToEnum() const
+{
+    translateIntegratorToEnum(integrator0);
+    translateIntegratorToEnum(integrator1);
+    translateIntegratorToEnum(integrator2);
+}

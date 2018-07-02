@@ -28,6 +28,7 @@
 #include "inputparameters.hpp"
 
 #include "../common_header_files/types.hpp"
+#include "../executables/exceptions.hpp"
 
 #include <boost/test/unit_test.hpp>
 
@@ -291,19 +292,19 @@ BOOST_AUTO_TEST_CASE(command_line1)
 BOOST_AUTO_TEST_CASE(command_line2)
 {
     const char* _params[] = {"foo", "--integrator0=foo"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Invalid_Parameters);
 }
 
 BOOST_AUTO_TEST_CASE(command_line3)
 {
     const char* _params[] = {"foo", "--startCondition=foo"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Invalid_Parameters);
 }
 
 BOOST_AUTO_TEST_CASE(command_line4)
 {
     const char* _params[] = {"foo", "--fermionAction=foo"};
-    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
+    BOOST_REQUIRE_THROW(Inputparameters(2, _params), Invalid_Parameters);
 }
 
 BOOST_AUTO_TEST_CASE(command_line5)

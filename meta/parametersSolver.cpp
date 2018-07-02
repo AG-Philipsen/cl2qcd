@@ -113,3 +113,9 @@ static common::solver translateSolverToEnum(std::string s)
         throw Invalid_Parameters("Unkown solver!", "cg, bicgstab, bicgstab_save", s);
     }
 }
+
+common::solver meta::ParametersSolver::translateSolversToEnum() const
+{
+    translateSolverToEnum(_solver);
+    translateSolverToEnum(_solver_mp);
+}

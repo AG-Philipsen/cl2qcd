@@ -96,8 +96,9 @@ namespace meta {
         virtual ~ParametersConfig()               = default;
         ParametersConfig(ParametersConfig const&) = delete;
         ParametersConfig& operator=(ParametersConfig const&) = delete;
-        InputparametersOptions options;
+        common::startcondition translateStartConditionToEnum() const;
 
+        InputparametersOptions options;
         std::string _startcondition;
     };
 

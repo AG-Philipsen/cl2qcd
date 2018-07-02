@@ -27,8 +27,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-static common::startcondition translateStartConditionToEnum(std::string);
-
 size_t meta::ParametersConfig::get_precision() const noexcept
 {
     return precision;
@@ -66,7 +64,7 @@ int meta::ParametersConfig::get_ntime() const noexcept
 
 common::startcondition meta::ParametersConfig::get_startcondition() const noexcept
 {
-    return translateStartConditionToEnum(_startcondition);
+    return translateStartConditionToEnum();
 }
 
 std::string meta::ParametersConfig::get_sourcefile() const noexcept
@@ -169,8 +167,9 @@ meta::ParametersConfig::ParametersConfig() : options("Configuration options")
     // clang-format on
 }
 
-static common::startcondition translateStartConditionToEnum(std::string s)
+common::startcondition meta::ParametersConfig::translateStartConditionToEnum() const
 {
+    std::string s = _startcondition;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::startcondition> m;
     m["cold_start"]        = common::cold_start;

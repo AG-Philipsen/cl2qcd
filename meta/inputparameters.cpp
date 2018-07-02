@@ -37,6 +37,18 @@ using namespace meta;
  */
 static void add_option_aliases(meta::ConfigFileNormalizer* const);
 
+void meta::Inputparameters::ChecksOnInputParameters() const
+{
+    (void)ParametersGauge::translateGaugeActionToEnum();
+    (void)ParametersConfig::translateStartConditionToEnum();
+    (void)ParametersFermion::translateFermionActionsToEnum();
+    (void)ParametersHmc::translateIntegratorsToEnum();
+    (void)ParametersObs::translatePbpVersionToEnum();
+    (void)ParametersSolver::translateSolversToEnum();
+    (void)ParametersSources::translateSourceContentToEnum();
+    (void)ParametersSources::translateSourceTypeToEnum();
+}
+
 Inputparameters::Inputparameters(int argc, const char** argv, std::string parameterSet)
 {
     logger.debug() << "Read in parameters...";
@@ -133,6 +145,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     }
 
     po::notify(vm);  // checks whether all required arguments are set
+    ChecksOnInputParameters();
 }
 
 static void add_option_aliases(meta::ConfigFileNormalizer* const normalizer)

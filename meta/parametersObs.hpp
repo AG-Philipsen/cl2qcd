@@ -50,6 +50,7 @@ namespace meta {
         virtual ~ParametersObs()            = default;
         ParametersObs(ParametersObs const&) = delete;
         ParametersObs& operator=(ParametersObs const&) = delete;
+        common::pbp_version translatePbpVersionToEnum() const;
 
         InputparametersOptions options;
         std::string pbp_version_;

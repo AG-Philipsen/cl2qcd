@@ -27,9 +27,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-static common::sourcetypes translateSourceTypeToEnum(std::string);
-static common::sourcecontents translateSourceContentToEnum(std::string);
-
 int meta::ParametersSources::get_num_sources() const noexcept
 {
     return num_sources;
@@ -57,11 +54,11 @@ bool meta::ParametersSources::get_place_sources_on_host() const noexcept
 
 common::sourcetypes meta::ParametersSources::get_sourcetype() const noexcept
 {
-    return translateSourceTypeToEnum(sourcetype);
+    return translateSourceTypeToEnum();
 }
 common::sourcecontents meta::ParametersSources::get_sourcecontent() const noexcept
 {
-    return translateSourceContentToEnum(sourcecontent);
+    return translateSourceContentToEnum();
 }
 
 meta::ParametersSources::ParametersSources() : options("Source options")
@@ -79,8 +76,9 @@ meta::ParametersSources::ParametersSources() : options("Source options")
     // clang-format on
 }
 
-static common::sourcetypes translateSourceTypeToEnum(std::string s)
+common::sourcetypes meta::ParametersSources::translateSourceTypeToEnum() const
 {
+    std::string s = sourcetype;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::sourcetypes> m;
     m["point"]     = common::point;
@@ -96,8 +94,9 @@ static common::sourcetypes translateSourceTypeToEnum(std::string s)
     }
 }
 
-static common::sourcecontents translateSourceContentToEnum(std::string s)
+common::sourcecontents meta::ParametersSources::translateSourceContentToEnum() const
 {
+    std::string s = sourcecontent;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::sourcecontents> m;
     m["one"]      = common::one;

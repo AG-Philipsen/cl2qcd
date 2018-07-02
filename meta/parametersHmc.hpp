@@ -58,6 +58,7 @@ namespace meta {
         virtual ~ParametersHmc()            = default;
         ParametersHmc(ParametersHmc const&) = delete;
         ParametersHmc& operator=(ParametersHmc const&) = delete;
+        common::integrator translateIntegratorsToEnum() const;
 
         InputparametersOptions options;
         std::string integrator0;

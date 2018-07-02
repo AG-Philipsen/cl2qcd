@@ -27,8 +27,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-static common::pbp_version translatePbpVersionToEnum(std::string);
-
 bool meta::ParametersObs::get_measure_transportcoefficient_kappa() const noexcept
 {
     return measure_transportcoefficient_kappa;
@@ -51,7 +49,7 @@ bool meta::ParametersObs::get_measure_pbp() const noexcept
 
 common::pbp_version meta::ParametersObs::get_pbp_version() const noexcept
 {
-    return translatePbpVersionToEnum(pbp_version_);
+    return translatePbpVersionToEnum();
 }
 
 int meta::ParametersObs::get_corr_dir() const noexcept
@@ -78,8 +76,9 @@ meta::ParametersObs::ParametersObs() : options("Observables options")
     // clang-format on
 }
 
-static common::pbp_version translatePbpVersionToEnum(std::string s)
+common::pbp_version meta::ParametersObs::translatePbpVersionToEnum() const
 {
+    std::string s = pbp_version_;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::pbp_version> m;
     m["std"]              = common::std;

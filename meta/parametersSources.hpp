@@ -52,6 +52,8 @@ namespace meta {
         ParametersSources(ParametersSources const&) = delete;
         ParametersSources& operator=(ParametersSources const&) = delete;
         InputparametersOptions getAllOptions();
+        common::sourcetypes translateSourceTypeToEnum() const;
+        common::sourcecontents translateSourceContentToEnum() const;
 
         InputparametersOptions options;
         std::string sourcetype;

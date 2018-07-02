@@ -27,8 +27,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-static common::action translateGaugeActionToEnum(std::string);
-
 // gaugefield parameters
 double meta::ParametersGauge::get_beta() const noexcept
 {
@@ -44,7 +42,7 @@ int meta::ParametersGauge::get_rho_iter() const noexcept
 }
 common::action meta::ParametersGauge::get_gaugeact() const noexcept
 {
-    return translateGaugeActionToEnum(gaugeact);
+    return translateGaugeActionToEnum();
 }
 
 bool meta::ParametersGauge::get_use_smearing() const noexcept
@@ -64,8 +62,9 @@ meta::ParametersGauge::ParametersGauge() : options("Gaugefield options")
     // clang-format on
 }
 
-static common::action translateGaugeActionToEnum(std::string s)
+common::action meta::ParametersGauge::translateGaugeActionToEnum() const
 {
+    std::string s = gaugeact;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::action> m;
     m["wilson"]  = common::action::wilson;

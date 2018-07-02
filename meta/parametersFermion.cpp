@@ -147,3 +147,9 @@ static common::action translateFermionActionToEnum(std::string s)
         throw Invalid_Parameters("Unkown fermion action!", "wilson, clover, twistedmass, rooted_stagg", s);
     }
 }
+
+common::action meta::ParametersFermion::translateFermionActionsToEnum() const
+{
+    translateFermionActionToEnum(fermact);
+    translateFermionActionToEnum(fermact_mp);
+}
