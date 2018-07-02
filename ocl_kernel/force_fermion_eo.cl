@@ -25,8 +25,8 @@
 
 // Here, two cases are possible:
 // evenodd = ODD or EVEN
-//	EVEN corresponds to case where an odd site of Y is connected to an even site of X (because if x is odd x+mu is even)
-//	ODD is just the other way around.
+//    EVEN corresponds to case where an odd site of Y is connected to an even site of X (if x is odd x+mu is even)
+//    ODD is just the other way around.
 // The difference to the non-eo kernel is that one has to calculate the eo position of the "plus" spinor out of the
 // neighbour coordinates on each occasion. This is done just like in the dslash_eo kernel!
 __kernel void fermion_force_eo_0(__global const Matrixsu3StorageType* const restrict field,

@@ -35,8 +35,8 @@ double meta::ParametersTest::get_test_ref_value2() const noexcept
 meta::ParametersTest::ParametersTest() : options("Test options")
 {
     // clang-format off
-	options.add_options()
-	("testRefVal", po::value<double>(&test_ref_value)->default_value(0.), "The reference value for the test.")
-	("testRefVal2", po::value<double>(&test_ref_value2)->default_value(0.), "Another reference value for the test.");
+    options.add_options()
+    ("testRefVal", po::value<double>(&test_ref_value)->default_value(0.), "The reference value for the test.")
+    ("testRefVal2", po::value<double>(&test_ref_value2)->default_value(0.), "Another reference value for the test.");
     // clang-format on
 }

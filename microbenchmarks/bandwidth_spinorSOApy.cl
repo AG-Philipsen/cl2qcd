@@ -41,9 +41,9 @@ alignedDpComplex make_alignedDpComplex(const hmc_float re, const hmc_float im)
 }
 
 // typedef struct {
-//	alignedDpComplex e0;
-//	alignedDpComplex e1;
-//	alignedDpComplex e2;
+//    alignedDpComplex e0;
+//    alignedDpComplex e1;
+//    alignedDpComplex e2;
 //} __attribute((aligned(16))) aligned16DpSu3vec;
 
 #define aligned16DpSu3vec su3vec
@@ -55,10 +55,10 @@ make_aligned16DpSu3vec(const alignedDpComplex e0, const alignedDpComplex e1, con
 }
 
 // typedef struct {
-//	aligned16DpSu3vec e0;
-//	aligned16DpSu3vec e1;
-//	aligned16DpSu3vec e2;
-//	aligned16DpSu3vec e3;
+//    aligned16DpSu3vec e0;
+//    aligned16DpSu3vec e1;
+//    aligned16DpSu3vec e2;
+//    aligned16DpSu3vec e3;
 //} dpSpinor;
 
 #define dpSpinor spinor

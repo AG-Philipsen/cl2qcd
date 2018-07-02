@@ -110,7 +110,7 @@ void hardware::lattices::Gaugemomenta::import(const ae* const host) const
             auto device  = buffer->get_device();
             ae* mem_host = new ae[buffer->get_elements()];
 
-            //			//todo: put these calls into own fct.! With smart pointers?
+            //            //todo: put these calls into own fct.! With smart pointers?
             TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(ae),
                                                     device->getHaloExtent());
             memcpy(&mem_host[tmp2.getMainPartIndex_destination()], &host[tmp2.getMainPartIndex_source()],

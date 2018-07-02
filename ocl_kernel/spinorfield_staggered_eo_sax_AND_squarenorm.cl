@@ -41,12 +41,12 @@ __kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStora
     const int group_id    = get_group_id(0);
     const int idx         = get_local_id(0);
 
-    // 	if(id == 0){
-    // 	  for(uint i=0; i<num_fields; i++)
-    // 	    sqnorms[i]=0.0;
-    // 	}
-    // 	//sync threads
-    // 	barrier(CLK_LOCAL_MEM_FENCE);
+    //     if(id == 0){
+    //       for(uint i=0; i<num_fields; i++)
+    //         sqnorms[i]=0.0;
+    //     }
+    //     //sync threads
+    //     barrier(CLK_LOCAL_MEM_FENCE);
 
     /* Here we have to give up having a completely general kernel, since we cannot allocate an array in
      * the private memory with num_fields components (num_fields is not known at compilation time,

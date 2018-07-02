@@ -21,9 +21,9 @@
 
 // Here, two cases are possible:
 // evenodd = ODD or EVEN
-//	ODD corresponds to the D_oe case: Dslash acts on even indices (the "x+mu" in the formulae) and the function
-//	saves the outcoming spinor with an odd index.
-//	EVEN is then D_eo.
+//    ODD corresponds to the D_oe case: Dslash acts on even indices (the "x+mu" in the formulae) and the function
+//    saves the outcoming spinor with an odd index.
+//    EVEN is then D_eo.
 
 void dslash_eo_for_site(__global const spinorStorageType* const restrict in,
                         __global spinorStorageType* const restrict out,

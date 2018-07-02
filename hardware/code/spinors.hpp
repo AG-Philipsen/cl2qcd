@@ -120,7 +120,7 @@ namespace hardware {
              * Copy an even-odd preconditioned spinorfield to the given buffer.
              *
              * @param buf A buffer of at least get_eoprec_spinorfield_buffer_size() bytes which will
-             *            be filled with the spinorfield in an implementation chosen format.
+             *        be filled with the spinorfield in an implementation chosen format.
              * @param source An array of spinors representing an even-odd field.
              */
             void
@@ -159,7 +159,7 @@ namespace hardware {
 
             /**
              * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
-             * 	It may be made private again in the future!
+             *        It may be made private again in the future!
              */
           public:
             Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters,

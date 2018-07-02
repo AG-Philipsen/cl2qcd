@@ -63,7 +63,7 @@ void test_staggered_correlator(const char* _params[], const std::vector<hmc_floa
     using namespace physics::lattices;
 
     meta::Inputparameters params(6, _params);
-    hardware::HardwareParametersImplementation hP(&params);  //	Ns = 4, Nt = 8.
+    hardware::HardwareParametersImplementation hP(&params);  //    Ns = 4, Nt = 8.
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
     physics::InterfacesHandlerImplementation interfacesHandler{params};

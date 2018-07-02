@@ -54,8 +54,8 @@ namespace hardware {
 
             /**
              * Calculate the correlator on the device.
-             * TODO: In future, if different correlators are added, think whether to do as in Wilson, overloading, or in
-             * a different way!
+             * TODO: In future, if different correlators are added, think whether to do as in Wilson,
+             *       overloading, or in a different way!
              */
             void pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float>* correlator,
                                         const hardware::buffers::SU3vec* invertedSourcesEven,
@@ -98,7 +98,7 @@ namespace hardware {
 
             /**
              * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
-             * 	It may be made private again in the future!
+             *        It may be made private again in the future!
              */
           public:
             Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParams,

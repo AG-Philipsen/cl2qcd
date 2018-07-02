@@ -108,26 +108,26 @@ bool meta::ParametersFermion::get_use_merge_kernels_spinor() const noexcept
 meta::ParametersFermion::ParametersFermion() : options("Fermion options")
 {
     // clang-format off
-	options.add_options()
-	("fermionAction", po::value<std::string>(&fermact)->default_value("wilson"),"Which type of fermion action to use (e.g. wilson, twistedmass, rooted_stagg).")
-	("fermionActionMP", po::value<std::string>(&fermact_mp)->default_value("wilson"),"Which type of fermion action to use in the Mass Preconditioning trick when it is switched on (e.g. wilson).")
-	//todo: change this default value!
-	("kappa", po::value<double>(&kappa)->default_value(0.125),"The hopping parameter in in the 'wilson' action.")
-	("mass", po::value<double>(&mass)->default_value(0.1),"The bare quark mass in the 'rooted_stagg' action.")
-	("mu", po::value<double>(&mu)->default_value(0.006),"The twisted mass parameter in the 'twistedmass' action.")
-	("csw", po::value<double>(&csw)->default_value(0.),"The clover coefficient in the 'clover' action.")
-	("kappaMP", po::value<double>(&kappa_mp)->default_value(0.125),"The hopping parameter in the 'wilson' action part with Mass Preconditioning.")
-	("muMP", po::value<double>(&mu_mp)->default_value(0.006),"The twisted mass parameter in the 'twistedmass' action part with Mass Preconditioning.")
-	("cswMP", po::value<double>(&csw_mp)->default_value(0.),"The clover coefficient in the 'clover' action part with Mass Preconditioning.")
-	("thetaFermionSpatial", po::value<double>(&theta_fermion_spatial)->default_value(0.),"The fermion boundary condition phase in spatial direction (e.g. 0 or 1 for periodic or anti-periodic BC, respectively).")
-	("thetaFermionTemporal", po::value<double>(&theta_fermion_temporal)->default_value(0.),"The fermion boundary condition phase in temporal direction (e.g. 0 or 1 for periodic or anti-periodic BC, respectively).")
-	("chemicalPotentialRe", po::value<double>(&chem_pot_re)->default_value(0.),"The value of the real part of the baryon chemical potential.")
-	("chemicalPotentialIm", po::value<double>(&chem_pot_im)->default_value(0.),"The value of the imaginary part of the baryon chemical potential.")
-	("useChemicalPotentialRe", po::value<bool>(&use_chem_pot_re)->default_value(false),"Whether to switch on a nonzero real part of the baryon chemical potential.")
-	("useChemicalPotentialIm", po::value<bool>(&use_chem_pot_im)->default_value(false),"Whether to switch on a nonzero imaginary part of the baryon chemical potential.")
-	("useEO", po::value<bool>(&use_eo)->default_value(true),"Whether to switch on Even Odd preconditioning.")
-	("useKernelMergingSpinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Whether to use kernel merging for spinor kernels.")
-	("useKernelMergingFermionMatrix", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Whether to use kernel merging for fermion matrix kernels.");
+    options.add_options()
+    ("fermionAction", po::value<std::string>(&fermact)->default_value("wilson"),"Which type of fermion action to use (e.g. wilson, twistedmass, rooted_stagg).")
+    ("fermionActionMP", po::value<std::string>(&fermact_mp)->default_value("wilson"),"Which type of fermion action to use in the Mass Preconditioning trick when it is switched on (e.g. wilson).")
+    //todo: change this default value!
+    ("kappa", po::value<double>(&kappa)->default_value(0.125),"The hopping parameter in in the 'wilson' action.")
+    ("mass", po::value<double>(&mass)->default_value(0.1),"The bare quark mass in the 'rooted_stagg' action.")
+    ("mu", po::value<double>(&mu)->default_value(0.006),"The twisted mass parameter in the 'twistedmass' action.")
+    ("csw", po::value<double>(&csw)->default_value(0.),"The clover coefficient in the 'clover' action.")
+    ("kappaMP", po::value<double>(&kappa_mp)->default_value(0.125),"The hopping parameter in the 'wilson' action part with Mass Preconditioning.")
+    ("muMP", po::value<double>(&mu_mp)->default_value(0.006),"The twisted mass parameter in the 'twistedmass' action part with Mass Preconditioning.")
+    ("cswMP", po::value<double>(&csw_mp)->default_value(0.),"The clover coefficient in the 'clover' action part with Mass Preconditioning.")
+    ("thetaFermionSpatial", po::value<double>(&theta_fermion_spatial)->default_value(0.),"The fermion boundary condition phase in spatial direction (e.g. 0 or 1 for periodic or anti-periodic BC, respectively).")
+    ("thetaFermionTemporal", po::value<double>(&theta_fermion_temporal)->default_value(0.),"The fermion boundary condition phase in temporal direction (e.g. 0 or 1 for periodic or anti-periodic BC, respectively).")
+    ("chemicalPotentialRe", po::value<double>(&chem_pot_re)->default_value(0.),"The value of the real part of the baryon chemical potential.")
+    ("chemicalPotentialIm", po::value<double>(&chem_pot_im)->default_value(0.),"The value of the imaginary part of the baryon chemical potential.")
+    ("useChemicalPotentialRe", po::value<bool>(&use_chem_pot_re)->default_value(false),"Whether to switch on a nonzero real part of the baryon chemical potential.")
+    ("useChemicalPotentialIm", po::value<bool>(&use_chem_pot_im)->default_value(false),"Whether to switch on a nonzero imaginary part of the baryon chemical potential.")
+    ("useEO", po::value<bool>(&use_eo)->default_value(true),"Whether to switch on Even Odd preconditioning.")
+    ("useKernelMergingSpinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Whether to use kernel merging for spinor kernels.")
+    ("useKernelMergingFermionMatrix", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Whether to use kernel merging for fermion matrix kernels.");
     // clang-format on
 }
 

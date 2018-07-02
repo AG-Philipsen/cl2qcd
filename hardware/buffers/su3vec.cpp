@@ -116,38 +116,38 @@ void hardware::buffers::SU3vec::dump(su3vec* ptr, const size_t elems, const size
 
 void hardware::buffers::Spinor::load_raw(const void * ptr, size_t bytes, size_t offset) const
 {
-	logger.trace() << "Loading raw data into Spinor buffer.";
-	Buffer::load(ptr, bytes, offset);
+    logger.trace() << "Loading raw data into Spinor buffer.";
+    Buffer::load(ptr, bytes, offset);
 }
 
 void hardware::buffers::Spinor::dump_raw(void * ptr, size_t bytes, size_t offset) const
 {
-	logger.trace() << "Dumping raw data from Spinor buffer.";
-	Buffer::dump(ptr, bytes, offset);
+    logger.trace() << "Dumping raw data from Spinor buffer.";
+    Buffer::dump(ptr, bytes, offset);
 }
 
 void hardware::buffers::Spinor::loadRect_raw(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
 {
-	logger.trace() << "Loading raw data into Spinor buffer.";
-	Buffer::load_rect(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+    logger.trace() << "Loading raw data into Spinor buffer.";
+    Buffer::load_rect(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
 }
 
 void hardware::buffers::Spinor::dumpRect_raw(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
 {
-	logger.trace() << "Dumping raw data from Spinor buffer.";
-	Buffer::dump_rect(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+    logger.trace() << "Dumping raw data from Spinor buffer.";
+    Buffer::dump_rect(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
 }
 
 hardware::SynchronizationEvent hardware::buffers::Spinor::loadRect_rawAsync(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const
 {
-	logger.trace() << "Loading raw data into Spinor buffer.";
-	return Buffer::load_rectAsync(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
+    logger.trace() << "Loading raw data into Spinor buffer.";
+    return Buffer::load_rectAsync(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
 }
 
 hardware::SynchronizationEvent hardware::buffers::Spinor::dumpRect_rawAsync(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const
 {
-	logger.trace() << "Dumping raw data from Spinor buffer.";
-	return Buffer::dump_rectAsync(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
+    logger.trace() << "Dumping raw data from Spinor buffer.";
+    return Buffer::dump_rectAsync(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
 }
 */
 

@@ -40,7 +40,7 @@ hmc_complex calculate_avps_correlator(const spinor in)
     return correlator;
 }
 
-/*	this is the axial vector 4th component with pseudoscalar (AVPS) correlator in t-direction
+/*    this is the axial vector 4th component with pseudoscalar (AVPS) correlator in t-direction
 
     C = tr((D^(-1)(n|m))^dagger * gamma4 * D^(-1)(n|m)), where m is the source position and n is the sink position
 

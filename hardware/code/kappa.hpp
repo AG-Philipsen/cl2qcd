@@ -71,7 +71,7 @@ namespace hardware {
 
             /**
              * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
-             * 	It may be made private again in the future!
+             *        It may be made private again in the future!
              */
           public:
             Kappa(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device* device);

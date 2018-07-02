@@ -35,11 +35,11 @@ hardware::buffers::ProxyBufferCache::~ProxyBufferCache()
     // leave it to the runtime to clean up. we cannot be sure we are executed before cl-finish, and in that case we
     // segfault
     // TODO make sure this is run before clfinish
-    //	for(auto entry: cache) {
-    //		for(auto buffer: entry.second) {
-    //			delete buffer;
-    //		}
-    //	}
+    //    for(auto entry: cache) {
+    //        for(auto buffer: entry.second) {
+    //            delete buffer;
+    //        }
+    //    }
 }
 
 hardware::buffers::ProxyBufferCache& hardware::buffers::ProxyBufferCache::getInstance()

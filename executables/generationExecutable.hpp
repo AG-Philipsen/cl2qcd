@@ -42,7 +42,7 @@ class generationExecutable : public generalExecutable {
     int thermalizationSteps;
     int generationSteps;
     int iteration;
-    // 	std::string filenameForGaugeobservables;
+    //     std::string filenameForGaugeobservables;
 
     /**
      * Sets member variables that control the iterations during

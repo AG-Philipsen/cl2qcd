@@ -291,11 +291,11 @@ cl_int clSetKernelArg(cl_kernel, cl_uint, size_t, const hardware::buffers::Buffe
 //#include <type_traits>
 // template<typename T> inline cl_int clSetKernelArg(cl_kernel kernel, cl_uint idx, size_t bytes, const T * arg)
 //{
-//	// Check that we don't pass managment objects
-//	static_assert(!std::is_convertible<T, const cl_mem *>::value, "You should pass a pointer to cl_mem, not the
+//    // Check that we don't pass managment objects
+//    static_assert(!std::is_convertible<T, const cl_mem *>::value, "You should pass a pointer to cl_mem, not the
 // managment object itself to the kernel.");
-//	// Invoke the original OpenCL function
-//	clSetKernelArg(kernel, idx, bytes, static_cast<const void *>(arg));
+//    // Invoke the original OpenCL function
+//    clSetKernelArg(kernel, idx, bytes, static_cast<const void *>(arg));
 //}
 
 #endif /* _HARDWARE_BUFFERS_BUFFER_ */

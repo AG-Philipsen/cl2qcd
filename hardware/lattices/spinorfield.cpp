@@ -84,7 +84,7 @@ void hardware::lattices::Spinorfield::import(const spinor* const host) const
         for (auto const buffer : buffers) {
             auto device = buffer->get_device();
 
-            //			//todo: put these calls into own fct.!
+            //            //todo: put these calls into own fct.!
             TemporalParallelizationHandlerNonLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(),
                                                        sizeof(spinor), device->getHaloExtent());
             buffer->load(&host[tmp2.getMainPartIndex_source()], tmp2.getMainPartSize());

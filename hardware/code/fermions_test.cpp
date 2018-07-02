@@ -27,7 +27,7 @@
 
 /** todo:
  * - the way the reference values are passed is not nice, it should be somehow done automatically.
- * 		Especially that one has to call the lattice volume explicitely is not nice
+ *         Especially that one has to call the lattice volume explicitely is not nice
  */
 const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, const SpinorFillType spinorFillTypeIn,
                                                        const GaugefieldFillType gaugefieldFillTypeIn,

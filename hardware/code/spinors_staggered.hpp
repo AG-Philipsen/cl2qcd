@@ -310,7 +310,7 @@ namespace hardware {
              * "sax_vectorized_and_squarenorm_eoprec" ended.
              * @param out The result of the reduction
              * @param tmp_buf The vector containing the results of the local (i.e. within each group)
-             *                reductions.
+             *        reductions.
              * @param numeqs The number of different squarenorms
              */
             void sax_vectorized_squarenorm_reduction(const hardware::buffers::Plain<hmc_float>* out,
@@ -416,7 +416,7 @@ namespace hardware {
 
             /**
              * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
-             * 	It may be made private again in the future!
+             *        It may be made private again in the future!
              */
           public:
             Spinors_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters,

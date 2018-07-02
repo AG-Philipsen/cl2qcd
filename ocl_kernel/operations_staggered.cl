@@ -68,8 +68,8 @@ int get_staggered_phase(const int n, const int dir)
 {
     coord_spatial coord = get_coord_spatial(n);
     switch (dir) {
-            // 		case XDIR:
-            // 			return 1;
+            //         case XDIR:
+            //             return 1;
         case YDIR:
             return 1 - 2 * ((coord.x) % 2);
         case ZDIR:

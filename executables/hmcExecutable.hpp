@@ -39,7 +39,7 @@ class hmcExecutable : public generationExecutable {
     ~hmcExecutable();
 
   protected:
-    // 	const std::string filenameForHmcLogfile = "hmc.log";
+    //     const std::string filenameForHmcLogfile = "hmc.log";
     double acceptanceRate = 0;
     hmc_observables observables;
 

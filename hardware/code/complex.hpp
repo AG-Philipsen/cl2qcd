@@ -120,7 +120,7 @@ namespace hardware {
             get_work_sizes(const cl_kernel kernel, size_t* ls, size_t* gs, cl_uint* num_groups) const override;
             /**
              * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
-             * 	It may be made private again in the future!
+             *        It may be made private again in the future!
              */
           public:
             Complex(const hardware::code::OpenClKernelParametersInterface& kernelParameters,

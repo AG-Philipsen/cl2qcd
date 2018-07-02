@@ -115,15 +115,15 @@ int main(int argc, char** argv)
 {
     po::options_description desc("Allowed options");
     // clang-format off
-	desc.add_options()
-	("help,h", "Produce this help message")
-	("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
-	("stepelements,se", po::value<cl_ulong>(), "Step size for element count sweeping")
-	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups")
-	("groups,g", po::value<cl_ulong>(), "Specify a fixed number of groups.")
-	("stepthreads,st", po::value<cl_ulong>()->default_value(0), "Step size for thread per group sweeping")
-	("single", "Copy only a single element per thread")
-	("type,d", po::value<std::string>()->default_value("float"), "The data type to copy");
+    desc.add_options()
+    ("help,h", "Produce this help message")
+    ("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
+    ("stepelements,se", po::value<cl_ulong>(), "Step size for element count sweeping")
+    ("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups")
+    ("groups,g", po::value<cl_ulong>(), "Specify a fixed number of groups.")
+    ("stepthreads,st", po::value<cl_ulong>()->default_value(0), "Step size for thread per group sweeping")
+    ("single", "Copy only a single element per thread")
+    ("type,d", po::value<std::string>()->default_value("float"), "The data type to copy");
     // clang-format on
 
     po::variables_map vm;

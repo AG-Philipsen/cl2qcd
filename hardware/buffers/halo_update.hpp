@@ -179,17 +179,17 @@ hardware::buffers::extract_boundary(hardware::Transfer* transfer, const BUFFER* 
     return transfer->load(buffer, buffer_origin, region, buffer_row_pitch, buffer_slice_pitch, event);
 
     // Original code kept for documentation purposes:
-    //	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
-    //		logger.trace() << "Reading lane " << lane;
-    //		size_t lane_offset = lane * buffer->get_lane_stride();
-    //		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
-    //			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
-    //			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
-    //			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " <<
-    // dev_offset; 			buffer->dump_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS *
+    //    for(size_t lane = 0; lane < NUM_LANES; ++lane) {
+    //        logger.trace() << "Reading lane " << lane;
+    //        size_t lane_offset = lane * buffer->get_lane_stride();
+    //        for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
+    //            size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
+    //            size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+    //            logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " <<
+    // dev_offset;             buffer->dump_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS *
     // STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
-    //		}
-    //	}
+    //        }
+    //    }
 }
 
 template<typename BUFFER>
@@ -213,17 +213,17 @@ hardware::buffers::send_halo(hardware::Transfer* transfer, const BUFFER* buffer,
     return transfer->dump(buffer, buffer_origin, region, buffer_row_pitch, buffer_slice_pitch, event);
 
     // Original code kept for documentation purposes:
-    //	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
-    //		logger.trace() << "Sending lane " << lane;
-    //		size_t lane_offset = lane * buffer->get_lane_stride();
-    //		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
-    //			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
-    //			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
-    //			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " <<
-    // dev_offset; 			buffer->load_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS *
+    //    for(size_t lane = 0; lane < NUM_LANES; ++lane) {
+    //        logger.trace() << "Sending lane " << lane;
+    //        size_t lane_offset = lane * buffer->get_lane_stride();
+    //        for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
+    //            size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
+    //            size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+    //            logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " <<
+    // dev_offset;             buffer->load_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS *
     // STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
-    //		}
-    //	}
+    //        }
+    //    }
 }
 
 namespace hardware {

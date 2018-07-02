@@ -187,7 +187,7 @@ namespace hardware {
 
             /**
              * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
-             * 	It may be made private again in the future!
+             *        It may be made private again in the future!
              */
           public:
             Real(const hardware::code::OpenClKernelParametersInterface& kernelParameters,

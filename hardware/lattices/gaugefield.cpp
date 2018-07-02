@@ -71,11 +71,11 @@ void hardware::lattices::Gaugefield::release_buffers(std::vector<const hardware:
 void hardware::lattices::Gaugefield::send_gaugefield_to_buffers(const Matrixsu3* const gf_host)
 {
     logger.trace() << "importing gaugefield";
-    // 	if(buffers.size() == 1) {
-    // 		auto device = buffers[0]->get_device();
-    // 		device->getGaugefieldCode()->importGaugefield(buffers[0], gf_host);
-    // 		device->synchronize();
-    // 	} else {
+    //     if(buffers.size() == 1) {
+    //         auto device = buffers[0]->get_device();
+    //         device->getGaugefieldCode()->importGaugefield(buffers[0], gf_host);
+    //         device->synchronize();
+    //     } else {
     for (auto const buffer : buffers) {
         auto device = buffer->get_device();
         TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(),
@@ -85,7 +85,7 @@ void hardware::lattices::Gaugefield::send_gaugefield_to_buffers(const Matrixsu3*
             device->getGaugefieldCode()->importGaugefield(buffer, gf_host);
         else {
             Matrixsu3* mem_host = new Matrixsu3[buffer->get_elements()];
-            //				//todo: put these calls into own fct.! With smart pointers?
+            //                //todo: put these calls into own fct.! With smart pointers?
             memcpy(&mem_host[tmp2.getMainPartIndex_destination()], &gf_host[tmp2.getMainPartIndex_source()],
                    tmp2.getMainPartSizeInBytes());
             memcpy(&mem_host[tmp2.getFirstHaloIndex_destination()], &gf_host[tmp2.getFirstHaloPartIndex_source()],
@@ -98,7 +98,7 @@ void hardware::lattices::Gaugefield::send_gaugefield_to_buffers(const Matrixsu3*
         }
         device->synchronize();
     }
-    // 	}
+    //     }
     logger.trace() << "import complete";
 }
 

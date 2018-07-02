@@ -67,14 +67,14 @@ int meta::ParametersObs::get_pbp_measurements() const noexcept
 meta::ParametersObs::ParametersObs() : options("Observables options")
 {
     // clang-format off
-	options.add_options()
-	("correlatorDirection", po::value<int>(&corr_dir)->default_value(3), "The direction for the correlator.")
-	("measureCorrelators", po::value<bool>(&measure_correlators)->default_value(true), "Whether to measure fermionic correlators.")
-	("measurePbp", po::value<bool>(&measure_pbp)->default_value(false), "Whether to measure chiral condensate.")
-	("pbpVersion",  po::value<std::string>(&pbp_version_)->default_value("std"), "Which version of chiral condensate to measure (one among 'std' and 'tm_one_end_trick').")
-	("pbpMeasurements", po::value<int>(&pbp_measurements)->default_value(1), "Number of chiral condensate measurements (for 'rooted_stagg' fermion action only!).")
-	("measureTransportCoefficientKappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false), "Whether to measure the transport coefficient kappa.")
-	("measureRectangles", po::value<bool>(&measure_rectangles)->default_value(false), "Whether to measure rectangles.");
+    options.add_options()
+    ("correlatorDirection", po::value<int>(&corr_dir)->default_value(3), "The direction for the correlator.")
+    ("measureCorrelators", po::value<bool>(&measure_correlators)->default_value(true), "Whether to measure fermionic correlators.")
+    ("measurePbp", po::value<bool>(&measure_pbp)->default_value(false), "Whether to measure chiral condensate.")
+    ("pbpVersion",  po::value<std::string>(&pbp_version_)->default_value("std"), "Which version of chiral condensate to measure (one among 'std' and 'tm_one_end_trick').")
+    ("pbpMeasurements", po::value<int>(&pbp_measurements)->default_value(1), "Number of chiral condensate measurements (for 'rooted_stagg' fermion action only!).")
+    ("measureTransportCoefficientKappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false), "Whether to measure the transport coefficient kappa.")
+    ("measureRectangles", po::value<bool>(&measure_rectangles)->default_value(false), "Whether to measure rectangles.");
     // clang-format on
 }
 

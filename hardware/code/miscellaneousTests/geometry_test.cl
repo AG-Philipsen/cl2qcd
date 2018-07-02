@@ -20,16 +20,16 @@
  */
 
 // The geometry-functions assume the ordering
-//	x,y,z,t
+//    x,y,z,t
 // of coordinates
 // and the assignment
-//	mu = 0 -> time
-//	mu = 1 -> x
-//	mu = 2 -> y
-//	mu = 3 -> z
+//    mu = 0 -> time
+//    mu = 1 -> x
+//    mu = 2 -> y
+//    mu = 3 -> z
 // One can test the self-consistendy here
 // However, some tests dont make sense since one would do exactly the same operations twice,
-//	hence, getting possibly the same error twice wihtout realizing it.
+//    hence, getting possibly the same error twice wihtout realizing it.
 
 __kernel void geometry_test()
 {

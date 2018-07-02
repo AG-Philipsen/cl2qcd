@@ -399,7 +399,7 @@ inline Matrixsu3 local_plaquette(__global const Matrixsu3StorageType* const rest
 }
 
 // calculate rectangle-matrix at site i = (n,t) in direction mu and nu
-//	The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger *
+//    The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger *
 // U_nu(i)dagger
 inline Matrixsu3 local_rectangles(__global const Matrixsu3StorageType* const restrict field, const int n, const int t,
                                   const int mu, const int nu)

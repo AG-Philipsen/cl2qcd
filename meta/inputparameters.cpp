@@ -46,9 +46,9 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
      */
     meta::InputparametersOptions cmd_opts("Generic options");
     // clang-format off
-	cmd_opts.add_options()
-		("help,h", "Produce helper for the specific executable.")
-		("inputFile", po::value<std::string>(), "The path of the file containing the input parameters.");
+    cmd_opts.add_options()
+        ("help,h", "Produce helper for the specific executable.")
+        ("inputFile", po::value<std::string>(), "The path of the file containing the input parameters.");
     // clang-format on
     // TODO add log-level etc
     po::positional_options_description pos_opts;
