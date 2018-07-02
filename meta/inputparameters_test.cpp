@@ -206,10 +206,9 @@ BOOST_AUTO_TEST_CASE(input_file2)
     BOOST_REQUIRE_EQUAL(params.get_beta(), 4.1);
     BOOST_REQUIRE_EQUAL(params.get_rho(), 0.1);
     BOOST_REQUIRE_EQUAL(params.get_rho_iter(), 4);
-    BOOST_REQUIRE_EQUAL(params.get_gaugeact(), common::action::twistedmass);
+    BOOST_REQUIRE_EQUAL(params.get_gaugeact(), common::action::iwasaki);
 
     // heatbath parameters
-    BOOST_REQUIRE_EQUAL(params.get_gaugeact(), common::action::iwasaki);
     BOOST_REQUIRE_EQUAL(params.get_thermalizationsteps(), 10);
     BOOST_REQUIRE_EQUAL(params.get_heatbathsteps(), 100);
     BOOST_REQUIRE_EQUAL(params.get_overrelaxsteps(), 10);
