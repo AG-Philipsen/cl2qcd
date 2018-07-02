@@ -47,8 +47,8 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     meta::InputparametersOptions cmd_opts("Generic options");
     // clang-format off
     cmd_opts.add_options()
-        ("help,h", "Produce helper for the specific executable.")
-        ("inputFile", po::value<std::string>(), "The path of the file containing the input parameters.");
+    ("help,h", "Produce helper for the specific executable.")
+    ("inputFile", po::value<std::string>(), "The path of the file containing the input parameters.");
     // clang-format on
     // TODO add log-level etc
     po::positional_options_description pos_opts;
@@ -109,10 +109,8 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
-    if (vm.count(
-            "help")) {  // see
-                        // http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options
-                        // as to why this is done before po::notifiy(vm)
+
+    if (vm.count("help")) {  // See https://stackoverflow.com/a/5517755 as to why this is done before po::notifiy(vm)
         desc.printOptionsInCustomizedWay(std::cout);
         throw Inputparameters::help_required();
     }
