@@ -33,14 +33,13 @@
 
 #include <array>
 
-namespace {
-    /**
-     * Benchmark the given Transfer link for a buffer of 4 MiB.
-     *
-     * @return Performance in GB/s
-     */
-    float benchmark(hardware::Transfer*);
-}  // namespace
+#ifdef CL_MEM_BUS_ADDRESSABLE_AMD
+/**
+ * Benchmark the given Transfer link for a buffer of 4 MiB.
+ * @return Performance in GB/s
+ */
+static float benchmark(hardware::Transfer*);
+#endif
 
 std::unique_ptr<hardware::Transfer>
 hardware::create_transfer(hardware::Device* const src, hardware::Device* const dest, hardware::System const& system)
@@ -82,39 +81,37 @@ hardware::create_transfer(hardware::Device* const src, hardware::Device* const d
 #endif
 }
 
-namespace {
+#ifdef CL_MEM_BUS_ADDRESSABLE_AMD
+float benchmark(hardware::Transfer* const transfer)
+{
+    using hardware::SynchronizationEvent;
+    using hardware::buffers::Buffer;
 
-    float benchmark(hardware::Transfer* const transfer)
-    {
-        using hardware::SynchronizationEvent;
-        using hardware::buffers::Buffer;
+    auto const size       = 4u * 1024u * 1024u;
+    auto const iterations = 25;
 
-        auto const size       = 4u * 1024u * 1024u;
-        auto const iterations = 25;
+    Buffer src(size, transfer->get_src_device());
+    Buffer dest(size, transfer->get_dest_device());
 
-        Buffer src(size, transfer->get_src_device());
-        Buffer dest(size, transfer->get_dest_device());
+    // warmup
+    size_t const offset[3] = {0, 0, 0};
+    size_t const layout[3] = {size, 1, 1};
+    transfer->load(&src, offset, layout, 0, 0, SynchronizationEvent());
+    transfer->transfer();
+    auto event = transfer->dump(&dest, offset, layout, 0, 0, SynchronizationEvent());
 
-        // warmup
-        size_t const offset[3] = {0, 0, 0};
-        size_t const layout[3] = {size, 1, 1};
-        transfer->load(&src, offset, layout, 0, 0, SynchronizationEvent());
+    event.wait();
+    klepsydra::Monotonic timer;
+
+    for (auto i = 0; i < iterations - 1; ++i) {
+        transfer->load(&src, offset, layout, 0, 0, event);
         transfer->transfer();
-        auto event = transfer->dump(&dest, offset, layout, 0, 0, SynchronizationEvent());
-
-        event.wait();
-        klepsydra::Monotonic timer;
-
-        for (auto i = 0; i < iterations - 1; ++i) {
-            transfer->load(&src, offset, layout, 0, 0, event);
-            transfer->transfer();
-            event = transfer->dump(&dest, offset, layout, 0, 0, SynchronizationEvent());
-        }
-
-        event.wait();
-        auto const elapsed_mus = timer.getTime();
-
-        return (size * iterations / elapsed_mus / 1e3f);
+        event = transfer->dump(&dest, offset, layout, 0, 0, SynchronizationEvent());
     }
 
-}  // namespace
+    event.wait();
+    auto const elapsed_mus = timer.getTime();
+
+    return (size * iterations / elapsed_mus / 1e3f);
+}
+#endif
