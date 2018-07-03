@@ -164,7 +164,7 @@ bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_floa
  */
 void variance_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sigma, hmc_float sigma = 1)
 {
-    hmc_float success_exp;
+    hmc_float success_exp = 0.0;
     hmc_float success_teo = erf(num_sigma / sqrt(2)) * 100;
     for (uint i = 0, k = 0; i < samples.size(); i++) {
         if (variance_test_single_set(samples[i], num_sigma, sigma))
