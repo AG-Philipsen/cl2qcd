@@ -140,7 +140,7 @@ bool meta::ParametersConfig::get_split_cpu() const noexcept
 
 meta::ParametersConfig::ParametersConfig()
     : precision(sizeof(double) * 8)
-    , selected_devices()
+    , selected_devices(0)
     , device_count(0)
     , use_gpu(true)
     , use_cpu(true)
