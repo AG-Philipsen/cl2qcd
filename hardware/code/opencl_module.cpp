@@ -43,8 +43,7 @@ static void print_profiling(const std::string& filename, const std::string& kern
                             const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size,
                             uint64_t sites);
 
-static std::string collect_fundamental_options(const hardware::Device* device,
-                                               const hardware::code::OpenClKernelParametersInterface& kernelParameters)
+static std::string collect_fundamental_options(const hardware::code::OpenClKernelParametersInterface& kernelParameters)
 {
     std::ostringstream options;
     options.precision(16);
@@ -236,7 +235,7 @@ hardware::code::Opencl_Module::Opencl_Module(const hardware::code::OpenClKernelP
                                              const hardware::Device* deviceIn)
     : kernelParameters(&kernelParameters)
     , device(deviceIn)
-    , fundamental_sources(ClSourcePackage(collect_build_files(), collect_fundamental_options(device, kernelParameters)))
+    , fundamental_sources(ClSourcePackage(collect_build_files(), collect_fundamental_options(kernelParameters)))
     , basic_sources(ClSourcePackage(collect_build_files(), collect_basic_options(device, kernelParameters)))
 {
 }
