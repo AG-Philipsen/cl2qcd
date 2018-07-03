@@ -67,7 +67,7 @@ physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::Solver
     , hasSystemBeSolved(false)
     , numberOfEquations(sigmaIn.size())
     , iterationNumber(0)
-    , residuumValue(NAN)
+    , residuumValue(std::numeric_limits<hmc_float>::quiet_NaN())
     , r(system, interfacesHandlerIn.getInterface<FERMIONFIELD>())
     , p(system, interfacesHandlerIn.getInterface<FERMIONFIELD>())
     , ps(numberOfEquations)

@@ -430,7 +430,7 @@ namespace {
         hmc_complex beta;
         hmc_complex omega;
         hmc_complex rho;
-        hmc_complex rho_next{std::nan(""), std::nan("")};
+        hmc_complex rho_next{std::numeric_limits<hmc_float>::quiet_NaN(), std::numeric_limits<hmc_float>::quiet_NaN()};
         hmc_complex tmp1;
         hmc_complex tmp2;
 
