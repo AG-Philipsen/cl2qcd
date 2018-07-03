@@ -76,26 +76,42 @@ int meta::ParametersSolver::get_cg_minimum_iteration_count() const noexcept
     return cg_minimum_iteration_count;
 }
 
-meta::ParametersSolver::ParametersSolver() : options("Solver options")
+meta::ParametersSolver::ParametersSolver()
+    :
+#ifdef _USEDOUBLEPREC_
+    solver_prec(1e-23)
+    , force_prec(1e-12)
+
+#else
+    solver_prec(1e-16)
+    , force_prec(1e-8)
+#endif
+    , iter_refresh(100)
+    , iter_refresh_mp(100)
+    , cgmax(1000)
+    , cgmax_mp(1000)
+    , cg_iteration_block_size(10)
+    , cg_use_async_copy(false)
+    , cg_minimum_iteration_count(0)
+    , options("Solver options")
+    , _solverString("bicgstab")
+    , _solverMPString("bicgstab")
+    , _solver(common::solver::bicgstab)
+    , _solverMP(common::solver::bicgstab)
 {
     // clang-format off
     options.add_options()
-    ("solver", po::value<std::string>(&_solverString)->default_value("bicgstab"),"Which type of (restarted) solver to use (one among 'cg', 'bicgstab' and 'bicgstab_save').")
-    ("solverMP", po::value<std::string>(&_solverMPString)->default_value("bicgstab"),"Which type of solver to use with Mass Preconditioning (one among 'cg', 'bicgstab' and 'bicgstab_save').")
-    ("cgMaxIterations", po::value<int>(&cgmax)->default_value(1000),"The maximum number of iterations in the solver.")
-    ("cgMaxIterationsMP", po::value<int>(&cgmax_mp)->default_value(1000),"The maximum number of iterations in the solver with Mass Preconditioning.")
-#ifdef _USEDOUBLEPREC_
-    ("solverPrecision", po::value<double>(&solver_prec)->default_value(1e-23),"The precision used in Metropolis inversions.")
-    ("forcePrecision", po::value<double>(&force_prec)->default_value(1e-12),"The precision used in  Molecular Dynamics inversions.")
-#else
-    ("solverPrecision", po::value<double>(&solver_prec)->default_value(1e-16),"The precision used in Metropolis inversions.")
-    ("forcePrecision", po::value<double>(&force_prec)->default_value(1e-8),"The precision used in  Molecular Dynamics inversions.")
-#endif
-    ("restartEvery", po::value<int>(&iter_refresh)->default_value(100),"The frequency at which the current approximate solution becomes the new initial guess for the next 'restartEvery' iterations of the solver.")
-    ("restartEveryMP", po::value<int>(&iter_refresh_mp)->default_value(100),"The frequency at which the current approximate solution becomes the new initial guess for the next 'restartEvery' iterations of the solver, with Mass Preconditioning.")
-    ("solverResiduumCheckEvery", po::value<int>(&cg_iteration_block_size)->default_value(10), "The frequency at which the solver will check the residuum.")
-    ("cgUseAsyncCopy", po::value<bool>(&cg_use_async_copy)->default_value(false), "Whether the solver uses residuum of iteration N - 'checkResidualEvery' for termination condition on iteration N.")
-    ("cgMinIterations", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "The minimum number of iterations to be performed by the cg solver. To be used for benchmark purposes only!");
+    ("solver", po::value<std::string>(&_solverString)->default_value(_solverString),"Which type of (restarted) solver to use (one among 'cg', 'bicgstab' and 'bicgstab_save').")
+    ("solverMP", po::value<std::string>(&_solverMPString)->default_value(_solverMPString),"Which type of solver to use with Mass Preconditioning (one among 'cg', 'bicgstab' and 'bicgstab_save').")
+    ("cgMaxIterations", po::value<int>(&cgmax)->default_value(cgmax),"The maximum number of iterations in the solver.")
+    ("cgMaxIterationsMP", po::value<int>(&cgmax_mp)->default_value(cgmax_mp),"The maximum number of iterations in the solver with Mass Preconditioning.")
+    ("solverPrecision", po::value<double>(&solver_prec)->default_value(solver_prec),"The precision used in Metropolis inversions.")
+    ("forcePrecision", po::value<double>(&force_prec)->default_value(force_prec),"The precision used in  Molecular Dynamics inversions.")
+    ("restartEvery", po::value<int>(&iter_refresh)->default_value(iter_refresh),"The frequency at which the current approximate solution becomes the new initial guess for the next 'restartEvery' iterations of the solver.")
+    ("restartEveryMP", po::value<int>(&iter_refresh_mp)->default_value(iter_refresh_mp),"The frequency at which the current approximate solution becomes the new initial guess for the next 'restartEvery' iterations of the solver, with Mass Preconditioning.")
+    ("solverResiduumCheckEvery", po::value<int>(&cg_iteration_block_size)->default_value(cg_iteration_block_size), "The frequency at which the solver will check the residuum.")
+    ("cgUseAsyncCopy", po::value<bool>(&cg_use_async_copy)->default_value(cg_use_async_copy), "Whether the solver uses residuum of iteration N - 'checkResidualEvery' for termination condition on iteration N.")
+    ("cgMinIterations", po::value<int>(&cg_minimum_iteration_count)->default_value(cg_minimum_iteration_count), "The minimum number of iterations to be performed by the cg solver. To be used for benchmark purposes only!");
     // clang-format on
 }
 

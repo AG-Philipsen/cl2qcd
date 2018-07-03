@@ -46,13 +46,13 @@ bool ParametersHmc::get_use_mp() const noexcept
     return use_mp;
 }
 
-ParametersHmc::ParametersHmc() : options("HMC options")
+ParametersHmc::ParametersHmc() : hmcsteps(10), use_gauge_only(false), use_mp(false), options("HMC options")
 {
     // clang-format off
     options.add_options()
-    ("nHmcSteps", po::value<int>(&hmcsteps)->default_value(10),"The number of HMC steps (i.e. the number of configuration updates in the Markov chain).")
+    ("nHmcSteps", po::value<int>(&hmcsteps)->default_value(hmcsteps),"The number of HMC steps (i.e. the number of configuration updates in the Markov chain).")
     // this is the optimal value...
-    ("useGaugeOnly", po::value<bool>(&use_gauge_only)->default_value(false),"Whether to simulate pure gauge theory with HMC. In this case 'nTimeScales' has to be set to 1.")
-    ("useMP", po::value<bool>(&use_mp)->default_value(false),"Whether to use the Mass Preconditioning trick.");
+    ("useGaugeOnly", po::value<bool>(&use_gauge_only)->default_value(use_gauge_only),"Whether to simulate pure gauge theory with HMC. In this case 'nTimeScales' has to be set to 1.")
+    ("useMP", po::value<bool>(&use_mp)->default_value(use_mp),"Whether to use the Mass Preconditioning trick.");
     // clang-format on
 }

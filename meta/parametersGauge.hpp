@@ -49,8 +49,8 @@ namespace meta {
         void makeNeededTranslations();
 
         InputparametersOptions options;
-        common::action gaugeact;
         std::string gaugeactString;
+        common::action gaugeact;
     };
 
 }  // namespace meta

@@ -83,23 +83,39 @@ double ParametersIntegrator::get_lambda(size_t timescale) const noexcept
     }
 }
 
-ParametersIntegrator::ParametersIntegrator() : options("Integrator options")
+ParametersIntegrator::ParametersIntegrator()
+    : tau(0.5)
+    , reversibility_check(false)
+    , integrationsteps0(10)
+    , integrationsteps1(10)
+    , integrationsteps2(10)
+    , num_timescales(1)
+    , lambda0(0.1931833275037836)
+    , lambda1(0.1931833275037836)
+    , lambda2(0.1931833275037836)
+    , options("Integrator options")
+    , integrator0String("leapfrog")
+    , integrator1String("leapfrog")
+    , integrator2String("leapfrog")
+    , integrator0(common::integrator::leapfrog)
+    , integrator1(common::integrator::leapfrog)
+    , integrator2(common::integrator::leapfrog)
 {
     // clang-format off
     options.add_options()
-    ("tau", po::value<double>(&tau)->default_value(0.5),"The total time of integration.")
-    ("reversibilityCheck", po::value<bool>(&reversibility_check)->default_value(false),"Whether to check reversibility violation in the integrator by integrating back in time.")
-    ("nTimeScales", po::value<int>(&num_timescales)->default_value(1),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different timescales must use the same integrator.")
-    ("integrator0", po::value<std::string>(&integrator0String)->default_value("leapfrog"),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
-    ("integrator1", po::value<std::string>(&integrator1String)->default_value("leapfrog"),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
-    ("integrator2", po::value<std::string>(&integrator2String)->default_value("leapfrog"),"The integration scheme for timescale 2 (one among leapfrog and twomn).")
-    ("integrationSteps0", po::value<int>(&integrationsteps0)->default_value(10),"The number of integration steps for timescale 0.")
-    ("integrationSteps1", po::value<int>(&integrationsteps1)->default_value(10),"The number of integration steps for timescale 1.")
-    ("integrationSteps2", po::value<int>(&integrationsteps2)->default_value(10),"The number of integration steps for timescale 2.")
+    ("tau", po::value<double>(&tau)->default_value(tau),"The total time of integration.")
+    ("reversibilityCheck", po::value<bool>(&reversibility_check)->default_value(reversibility_check),"Whether to check reversibility violation in the integrator by integrating back in time.")
+    ("nTimeScales", po::value<int>(&num_timescales)->default_value(num_timescales),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different timescales must use the same integrator.")
+    ("integrator0", po::value<std::string>(&integrator0String)->default_value(integrator0String),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
+    ("integrator1", po::value<std::string>(&integrator1String)->default_value(integrator1String),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
+    ("integrator2", po::value<std::string>(&integrator2String)->default_value(integrator2String),"The integration scheme for timescale 2 (one among leapfrog and twomn).")
+    ("integrationSteps0", po::value<int>(&integrationsteps0)->default_value(integrationsteps0),"The number of integration steps for timescale 0.")
+    ("integrationSteps1", po::value<int>(&integrationsteps1)->default_value(integrationsteps1),"The number of integration steps for timescale 1.")
+    ("integrationSteps2", po::value<int>(&integrationsteps2)->default_value(integrationsteps2),"The number of integration steps for timescale 2.")
     // this is the optimal value...
-    ("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836),"The lambda parameter for timescale 0 (for the twomn integrator).")
-    ("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836),"The lambda parameter for timescale 1 (for the twomn integrator).")
-    ("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836),"The lambda parameter for timescale 2 (for the twomn integrator).");
+    ("lambda0", po::value<double>(&lambda0)->default_value(lambda0),"The lambda parameter for timescale 0 (for the twomn integrator).")
+    ("lambda1", po::value<double>(&lambda1)->default_value(lambda1),"The lambda parameter for timescale 1 (for the twomn integrator).")
+    ("lambda2", po::value<double>(&lambda2)->default_value(lambda2),"The lambda parameter for timescale 2 (for the twomn integrator).");
     // clang-format on
 }
 
