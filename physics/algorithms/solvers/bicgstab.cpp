@@ -88,7 +88,9 @@ static int bicgstab_save(const physics::lattices::Spinorfield* x, const physics:
     klepsydra::Monotonic timer;
 
     hmc_float resid;
-    hmc_complex alpha, omega, rho{std::nan(""), std::nan("")};
+    hmc_complex alpha = {1., 0.};
+    hmc_complex omega = {1., 0.};
+    hmc_complex rho   = {1., 0.};
 
     const Spinorfield v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
     const Spinorfield p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -246,8 +248,8 @@ static int bicgstab_fast(const physics::lattices::Spinorfield* x, const physics:
     /// @todo start timer synchronized with device(s)
     klepsydra::Monotonic timer;
 
-    hmc_float resid;
-    hmc_complex rho;
+    hmc_float resid = std::numeric_limits<hmc_float>::quiet_NaN();
+    hmc_complex rho{std::numeric_limits<hmc_float>::quiet_NaN(), std::numeric_limits<hmc_float>::quiet_NaN()};
 
     const Spinorfield p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
     const Spinorfield rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -595,7 +597,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo* x, const physi
     const Scalar<hmc_complex> minus_one(system);
     minus_one.store(hmc_complex_minusone);
 
-    hmc_float resid;
+    hmc_float resid   = std::numeric_limits<hmc_float>::quiet_NaN();
     unsigned int iter = 0;
 
     // report source and initial solution

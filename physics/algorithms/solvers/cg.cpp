@@ -60,8 +60,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield* x,
     const Spinorfield p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
     const Spinorfield v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
-    hmc_complex rho_next;
-    hmc_float resid;
+    hmc_complex rho_next{std::numeric_limits<hmc_float>::quiet_NaN(), std::numeric_limits<hmc_float>::quiet_NaN()};
+    hmc_float resid   = std::numeric_limits<double>::quiet_NaN();
     unsigned int iter = 0;
 
     log_squarenorm(create_log_prefix_cg(iter) + "b: ", b);
