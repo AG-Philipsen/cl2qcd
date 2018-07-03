@@ -132,12 +132,6 @@ static void test_volume_source_stagg(std::string content)
         BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8);  // Analytic result
 }
 
-static void test_point_source_stagg(std::string content)
-{
-    using namespace physics::lattices;
-    throw Print_Error_Message("method implementation is in process but not yet finished!");
-}
-
 BOOST_AUTO_TEST_CASE(sources)
 {
     test_sources("point", 15);
@@ -152,7 +146,7 @@ BOOST_AUTO_TEST_CASE(sources_staggered)
     test_staggered_sources("volume", 2);
 }
 
-BOOST_AUTO_TEST_CASE(pointsource_stagg)
+BOOST_AUTO_TEST_CASE(volume_source_stagg)
 {
     test_volume_source_stagg("one");
     test_volume_source_stagg("z4");
