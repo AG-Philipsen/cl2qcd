@@ -57,7 +57,10 @@ hardware::System::System(const hardware::HardwareParametersInterface& systemPara
     , transfer_links()
     , hardwareParameters(&systemParameters)
     , kernelParameters(&kernelParameters)
-    , inputparameters(meta::Inputparameters{0, nullptr})  // remove the last init. as soon as the member is removed
+    , inputparameters(meta::Inputparameters{0, nullptr})  // <- warning at compilation, fine!
+// NOTE: On purpose, we initialize inputparameters with a ref to a temporary object, since it is not used
+//       at all in the System class. This reference is here only for the tests in the physics package and
+//       it will disappear (together with the ctor here below) as soon those tests are refactored!
 {
     kernelBuilder = new hardware::OpenClCode(kernelParameters);
     setDebugEnvironmentVariables();
