@@ -64,12 +64,15 @@ void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3
     IldgIoParameters_gaugefield ildgIoParameters(&parameters2);
 
     // TODO: calculate here the plaquette on the host, and then give its value to the writer to put it as
-    // metainformation in the lime file hmc_float plaquetteValue = calculatePlaquette(gf_host); <--- this function does
-    // not exist yet! For the moment we write a fake number like 0, it is only temporary!
+    // metainformation in the lime file
+    //    hmc_float plaquetteValue = calculatePlaquette(gf_host); <--- this function does not exist yet!
+    // For the moment we write a fake number like 0, it is only temporary!
     hmc_float plaquetteValue = 0.0;
 
     IldgIoWriter_gaugefield writer(host_buf, &ildgIoParameters, outputfile, trajectoryNumber, plaquetteValue);
 }
+
+/* To be uncommented when the functionality calculatePlaquette will be implemented on the host
 
 static void check_plaq(const hmc_float plaquette, double plaqSourcefile)
 {
@@ -87,3 +90,5 @@ static void check_plaq(const hmc_float plaquette, double plaqSourcefile)
     logger.info() << "...done";
     return;
 }
+
+*/
