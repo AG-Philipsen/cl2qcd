@@ -23,12 +23,12 @@
 cmake_minimum_required( VERSION 2.8.3 )
 project( OpTiMaL )
 
-# we have some custom CMake stuff
+# We have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include(Macros)
 
-# if a user doesn't specify anything he probably isn't interested in debug information
+# If a user doesn't specify anything he probably isn't interested in debug information
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
@@ -38,7 +38,7 @@ enable_testing()
 # And enable Dashboard
 include(CTest)
 
-# make the compiler bitchy
+# Make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
 	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++11")
 	set(CMAKE_CXX_FLAGS_RELEASE   "-O4") # LTO on clang, gcc will fall back to O3
@@ -52,7 +52,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 	set(CMAKE_C_FLAGS_DEBUGFULL   "-g3 -fno-linline")
 endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 
-# add endianess information
+# Add endianess information
 include(TestBigEndian)
 TEST_BIG_ENDIAN(BIG_ENDIAN)
 message("Big Endian: ${BIG_ENDIAN}")
@@ -63,10 +63,10 @@ else()
 	message("Little endian arch..")
 endif()
 
-# make sure we can compile agains opencl
+# Make sure we can compile agains opencl
 find_package( OpenCL REQUIRED )
 include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
-# work around OpenCL implementations not shipping c++ bindings
+# Work around OpenCL implementations not shipping c++ bindings
 if( NOT OPENCL_HAS_CPP_BINDINGS )
 	message(STATUS "No OpenCL CPP bindings found, using hack" )
 	include_directories( SYSTEM hacks/cl_hpp )
@@ -91,7 +91,7 @@ if( LIBXML2_DEFINITIONS )
 	add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-# require 1.48 as boost-regex of 1.46 can't be compiled with c++11-enabled g++-4.7
+# Require 1.48 as boost-regex of 1.46 can't be compiled with c++11-enabled g++-4.7
 find_package(Boost 1.48.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
@@ -100,9 +100,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # maybe even patch this during install step
 add_definitions( -DSOURCEDIR="${CMAKE_SOURCE_DIR}" )
 
-# Add code version to the code
-# we need to include the binary dir as the custom target will create a header
-# there
+# Add code version to the code (we need to include the binary dir as the custom target will create a header there)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_custom_target(git_commit_id_header ALL DEPENDS git_commit_id )
 add_custom_command(OUTPUT git_commit_id
@@ -123,13 +121,13 @@ if( CMAKE_BUILD_TYPE STREQUAL "Release" )
 	add_definitions( -DNDEBUG )
 endif( CMAKE_BUILD_TYPE STREQUAL "Release" )
 
-# some options for various variants
+# Some options for various variants
 option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
 if( USE_DOUBLE_PRECISION )
 	add_definitions( -D_USEDOUBLEPREC_ )
 endif( USE_DOUBLE_PRECISION )
 
-# allow to choose a PRNG
+# Allow to choose a PRNG
 set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default)")
 if(PRNG STREQUAL "Ranlux")
 	add_definitions(-DUSE_PRNG_RANLUX)
@@ -138,23 +136,23 @@ else()
 	message(SEND_ERROR "PRNG must be Ranlux (default). \"${PRNG}\" is not a valid value.")
 endif()
 
-# whether to use lazy halo update
+# Whether to use lazy halo update
 option(LAZY_HALO_UPDATES "Delay halo updates until the halo is required." ON)
 if(LAZY_HALO_UPDATES)
 	add_definitions(-DLAZY_HALO_UPDATES)
 endif()
 
-# whether to enable asynchroneous halo updates
+# Whether to enable asynchroneous halo updates
 option(ASYNC_HALO_UPDATES "Perform device-to-device transfers asynchroneous to kernel execution." ON)
 if(ASYNC_HALO_UPDATES)
 	add_definitions(-DASYNC_HALO_UPDATES)
 endif()
 
-# default random number seed
+# Default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
-# which directories contain documentation relevant stuff
-# modules will add their files to this list
+# Which directories contain documentation relevant stuff
+# (modules will add their files to this list)
 set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 	${CMAKE_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/klepsydra
@@ -179,7 +177,7 @@ set(OPTIMAL_USED_LIBS
 )
 
 add_library(optimal ${OPTIMAL_FILES})
-# add all modules
+# Add all modules
 add_modules(optimal
 	meta
 	hardware
