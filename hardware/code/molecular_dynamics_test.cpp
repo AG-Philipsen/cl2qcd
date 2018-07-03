@@ -194,85 +194,73 @@ calculateReferenceValues_FFermionStaggeredEvenOdd(const int latticeVolume, const
     // in this function the ratios (5/8., 3/8.) are due to the counting of how many +1 (or -1) staggered phases are
     // there and to the will of factorising half the lattice volume (due to EO prec.) and the number of possible
     // directions (4)
-    switch (evenOrOdd) {
-        case EVEN: {
-            switch (gfFillType) {
-                case GaugefieldFillType::cold: {
-                    if (gmFillType == GaugeMomentumFilltype::One || sfFillType == SpinorFillType::ascendingComplex) {
-                        if (sfFillType == SpinorFillType::one)
-                            return ReferenceValues{8. * latticeVolume * 4};
-                    } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
-                        if (sfFillType == SpinorFillType::one || sfFillType == SpinorFillType::ascendingComplex)
-                            return ReferenceValues{204. * latticeVolume * 4};
-                    }
-                } break;
-                case GaugefieldFillType::nonTrivial: {
-                    if (gmFillType == GaugeMomentumFilltype::One) {
-                        if (sfFillType == SpinorFillType::one)
-                            return ReferenceValues{
-                                (8. + (30.81279381225022 * (5 / 8.) + 1.581192662056448 * (3 / 8.))) * latticeVolume /
-                                2 * 4};
-                        else if (sfFillType == SpinorFillType::ascendingComplex)
-                            return ReferenceValues{
-                                (8. + (8621.652426649009 * (5 / 8.) + 7831.388151217087 * (3 / 8.))) * latticeVolume /
-                                2 * 4};
-                    } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
-                        if (sfFillType == SpinorFillType::one)
-                            return ReferenceValues{
-                                (204. + (270.9717798379283 * (5 / 8.) + 153.4222066363782 * (3 / 8.))) * latticeVolume /
-                                2 * 4};
-                        else if (sfFillType == SpinorFillType::ascendingComplex)
-                            return ReferenceValues{
-                                (204. + (9839.968790260735 * (5 / 8.) + 7005.071787605359 * (3 / 8.))) * latticeVolume /
-                                2 * 4};
-                    }
-                } break;
-                default:
-                    return defaultReferenceValues();
-            }
-        } break;
-        case ODD: {
-            switch (gfFillType) {
-                case GaugefieldFillType::cold: {
-                    if (gmFillType == GaugeMomentumFilltype::One) {
-                        if (sfFillType == SpinorFillType::one)
-                            return ReferenceValues{8. * latticeVolume * 4};
-                        else if (sfFillType == SpinorFillType::ascendingComplex)
-                            return ReferenceValues{8. * latticeVolume * 4};
-                    } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
-                        if (sfFillType == SpinorFillType::one)
-                            return ReferenceValues{204. * latticeVolume * 4};
-                        else if (sfFillType == SpinorFillType::ascendingComplex)
-                            return ReferenceValues{204. * latticeVolume * 4};
-                    }
-                } break;
-                case GaugefieldFillType::nonTrivial: {
-                    if (gmFillType == GaugeMomentumFilltype::One) {
-                        if (sfFillType == SpinorFillType::one)
-                            return ReferenceValues{
-                                (8. + (30.81279381225022 * (3 / 8.) + 1.581192662056448 * (5 / 8.))) * latticeVolume /
-                                2 * 4};
-                        else if (sfFillType == SpinorFillType::ascendingComplex)
-                            return ReferenceValues{
-                                (8. + (8621.652426649009 * (3 / 8.) + 7831.388151217087 * (5 / 8.))) * latticeVolume /
-                                2 * 4};
-                    } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
-                        if (sfFillType == SpinorFillType::one)
-                            return ReferenceValues{
-                                (204. + (270.9717798379283 * (3 / 8.) + 153.4222066363782 * (5 / 8.))) * latticeVolume /
-                                2 * 4};
-                        else if (sfFillType == SpinorFillType::ascendingComplex)
-                            return ReferenceValues{
-                                (204. + (9839.968790260735 * (3 / 8.) + 7005.071787605359 * (5 / 8.))) * latticeVolume /
-                                2 * 4};
-                    }
-                } break;
-                default:
-                    return defaultReferenceValues();
-            }
-        } break;
-        default:
-            return defaultReferenceValues();
+    if (evenOrOdd == EVEN) {
+        switch (gfFillType) {
+            case GaugefieldFillType::cold: {
+                if (gmFillType == GaugeMomentumFilltype::One || sfFillType == SpinorFillType::ascendingComplex) {
+                    if (sfFillType == SpinorFillType::one)
+                        return ReferenceValues{8. * latticeVolume * 4};
+                } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
+                    if (sfFillType == SpinorFillType::one || sfFillType == SpinorFillType::ascendingComplex)
+                        return ReferenceValues{204. * latticeVolume * 4};
+                }
+            } break;
+            case GaugefieldFillType::nonTrivial: {
+                if (gmFillType == GaugeMomentumFilltype::One) {
+                    if (sfFillType == SpinorFillType::one)
+                        return ReferenceValues{(8. + (30.81279381225022 * (5 / 8.) + 1.581192662056448 * (3 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                    else if (sfFillType == SpinorFillType::ascendingComplex)
+                        return ReferenceValues{(8. + (8621.652426649009 * (5 / 8.) + 7831.388151217087 * (3 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
+                    if (sfFillType == SpinorFillType::one)
+                        return ReferenceValues{(204. + (270.9717798379283 * (5 / 8.) + 153.4222066363782 * (3 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                    else if (sfFillType == SpinorFillType::ascendingComplex)
+                        return ReferenceValues{(204. + (9839.968790260735 * (5 / 8.) + 7005.071787605359 * (3 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                }
+            } break;
+            default:
+                return defaultReferenceValues();
+        }
+    }
+    if (evenOrOdd == ODD) {
+        switch (gfFillType) {
+            case GaugefieldFillType::cold: {
+                if (gmFillType == GaugeMomentumFilltype::One) {
+                    if (sfFillType == SpinorFillType::one)
+                        return ReferenceValues{8. * latticeVolume * 4};
+                    else if (sfFillType == SpinorFillType::ascendingComplex)
+                        return ReferenceValues{8. * latticeVolume * 4};
+                } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
+                    if (sfFillType == SpinorFillType::one)
+                        return ReferenceValues{204. * latticeVolume * 4};
+                    else if (sfFillType == SpinorFillType::ascendingComplex)
+                        return ReferenceValues{204. * latticeVolume * 4};
+                }
+            } break;
+            case GaugefieldFillType::nonTrivial: {
+                if (gmFillType == GaugeMomentumFilltype::One) {
+                    if (sfFillType == SpinorFillType::one)
+                        return ReferenceValues{(8. + (30.81279381225022 * (3 / 8.) + 1.581192662056448 * (5 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                    else if (sfFillType == SpinorFillType::ascendingComplex)
+                        return ReferenceValues{(8. + (8621.652426649009 * (3 / 8.) + 7831.388151217087 * (5 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                } else if (gmFillType == GaugeMomentumFilltype::Ascending) {
+                    if (sfFillType == SpinorFillType::one)
+                        return ReferenceValues{(204. + (270.9717798379283 * (3 / 8.) + 153.4222066363782 * (5 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                    else if (sfFillType == SpinorFillType::ascendingComplex)
+                        return ReferenceValues{(204. + (9839.968790260735 * (3 / 8.) + 7005.071787605359 * (5 / 8.))) *
+                                               latticeVolume / 2 * 4};
+                }
+            } break;
+            default:
+                return defaultReferenceValues();
+        }
     }
     return defaultReferenceValues();
 }
