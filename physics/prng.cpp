@@ -222,7 +222,7 @@ bool physics::PRNG::operator==(const physics::PRNG& prng) const
 {
     for (size_t i = 0; i < hPrng.get_buffers().size(); ++i) {
         auto buf1 = hPrng.get_buffers().at(i);
-        auto buf2 = hPrng.get_buffers().at(i);
+        auto buf2 = prng.get_buffers().at(i);
 
         char* prng1_state = new char[buf1->get_bytes()];
         buf1->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t*>(prng1_state));

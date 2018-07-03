@@ -101,12 +101,15 @@ BOOST_AUTO_TEST_CASE(initialization)
 
     BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
 
-    logger.info() << "Now checking buffers...";
+    logger.info() << "Now checking buffers manually...";
     for (size_t i = 0; i < prng.get_buffers().size(); ++i) {
         verifyBothBuffersAreEquallyLarge(prng.get_buffers().at(i), prng2.get_buffers().at(i));
         verifyBuffersAreDifferent(prng.get_buffers().at(i), prng2.get_buffers().at(i));
         logger.info() << "Checked buffer " << i;
     }
+    logger.info() << "...done";
+    logger.info() << "Now checking buffers automatically...";
+    BOOST_REQUIRE_EQUAL(prng != prng2, true);
     logger.info() << "...done";
 }
 
