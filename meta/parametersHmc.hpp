@@ -29,27 +29,12 @@
 namespace meta {
     class ParametersHmc {
       public:
-        double get_tau() const noexcept;
-        bool get_reversibility_check() const noexcept;
-        int get_integrationsteps(size_t timescale) const noexcept;
         int get_hmcsteps() const noexcept;
-        int get_num_timescales() const noexcept;
-        common::integrator get_integrator(size_t timescale) const noexcept;
-        double get_lambda(size_t timescale) const noexcept;
         bool get_use_gauge_only() const noexcept;
         bool get_use_mp() const noexcept;
 
       private:
-        double tau;
-        bool reversibility_check;
-        int integrationsteps0;
-        int integrationsteps1;
-        int integrationsteps2;
         int hmcsteps;
-        int num_timescales;
-        double lambda0;
-        double lambda1;
-        double lambda2;
         bool use_gauge_only;
         bool use_mp;
 
@@ -58,15 +43,8 @@ namespace meta {
         virtual ~ParametersHmc()            = default;
         ParametersHmc(ParametersHmc const&) = delete;
         ParametersHmc& operator=(ParametersHmc const&) = delete;
-        void makeNeededTranslations();
 
         InputparametersOptions options;
-        std::string integrator0String;
-        std::string integrator1String;
-        std::string integrator2String;
-        common::integrator integrator0;
-        common::integrator integrator1;
-        common::integrator integrator2;
     };
 
 }  // namespace meta

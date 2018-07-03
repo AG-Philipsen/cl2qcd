@@ -32,6 +32,7 @@
 #include "parametersGauge.hpp"
 #include "parametersHeatbath.hpp"
 #include "parametersHmc.hpp"
+#include "parametersIntegrator.hpp"
 #include "parametersIo.hpp"
 #include "parametersObs.hpp"
 #include "parametersRhmc.hpp"
@@ -61,6 +62,7 @@ namespace meta {
                             public ParametersSolver,
                             public ParametersHmc,
                             public ParametersHeatbath,
+                            public ParametersIntegrator,
                             public ParametersRhmc,
                             public ParametersTest {
       public:

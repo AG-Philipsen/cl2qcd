@@ -42,7 +42,7 @@ void meta::Inputparameters::ChecksStringOptionsAndMapToEnum()
     ParametersGauge::makeNeededTranslations();
     ParametersConfig::makeNeededTranslations();
     ParametersFermion::makeNeededTranslations();
-    ParametersHmc::makeNeededTranslations();
+    ParametersIntegrator::makeNeededTranslations();
     ParametersObs::makeNeededTranslations();
     ParametersSolver::makeNeededTranslations();
     ParametersSources::makeNeededTranslations();
@@ -92,6 +92,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersObs::options)
             .add(ParametersHeatbath::options)  // This is for the thermalizationsteps, not elegant... TODO: think
                                                // another way!
+            .add(ParametersIntegrator::options)
             .add(ParametersHmc::options);
     } else if (parameterSet == "rhmc") {
         desc.add(ParametersIo::options)
@@ -101,6 +102,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersSources::options)
             .add(ParametersObs::options)
             .add(ParametersHmc::options)  // This is for several parameters, not elegant... TODO: think another way!
+            .add(ParametersIntegrator::options)
             .add(ParametersHeatbath::options)  // This is for the thermalizationsteps, not elegant... TODO: think
                                                // another way!
             .add(ParametersRhmc::options);
@@ -114,6 +116,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersSources::options)
             .add(ParametersObs::options)
             .add(ParametersHmc::options)
+            .add(ParametersIntegrator::options)
             .add(ParametersRhmc::options)
             .add(ParametersTest::options);
     }

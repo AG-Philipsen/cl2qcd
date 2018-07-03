@@ -35,6 +35,7 @@ add_library(meta
 	parametersObs.cpp
 	parametersHmc.cpp
 	parametersHeatbath.cpp
+	parametersIntegrator.cpp
 	parametersRhmc.cpp
 	parametersTest.cpp
 	inputparameters.cpp
