@@ -67,7 +67,7 @@ perform_hmc_step(const physics::lattices::Gaugefield* const gf, const int iter, 
     p.gaussian(prng);
 
     const SPINORFIELD phi(system, interfacesHandler.getInterface<SPINORFIELD>());
-    const std::auto_ptr<const SPINORFIELD> phi_mp(
+    const std::unique_ptr<const SPINORFIELD> phi_mp(
         parametersInterface.getUseMp() ? new SPINORFIELD(system, interfacesHandler.getInterface<SPINORFIELD>())
                                        : nullptr);
     hmc_float spinor_energy_init    = 0.f;
