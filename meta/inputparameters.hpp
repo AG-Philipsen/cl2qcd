@@ -83,7 +83,7 @@ namespace meta {
         Inputparameters(int argc, const char** argv, std::string parameterSet = "allParameters");
 
       private:
-        void ChecksOnInputParameters() const;
+        void ChecksStringOptionsAndMapToEnum();
     };
 }  // namespace meta
 

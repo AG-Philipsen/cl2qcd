@@ -96,10 +96,11 @@ namespace meta {
         virtual ~ParametersConfig()               = default;
         ParametersConfig(ParametersConfig const&) = delete;
         ParametersConfig& operator=(ParametersConfig const&) = delete;
-        common::startcondition translateStartConditionToEnum() const;
+        void makeNeededTranslations();
 
         InputparametersOptions options;
-        std::string _startcondition;
+        std::string _startconditionString;
+        common::startcondition _startcondition;
     };
 
 }  // namespace meta

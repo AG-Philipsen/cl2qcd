@@ -71,11 +71,13 @@ namespace meta {
         virtual ~ParametersFermion()                = default;
         ParametersFermion(ParametersFermion const&) = delete;
         ParametersFermion& operator=(ParametersFermion const&) = delete;
-        common::action translateFermionActionsToEnum() const;
+        void makeNeededTranslations();
 
         InputparametersOptions options;
-        std::string fermact;
-        std::string fermact_mp;
+        std::string fermactString;
+        std::string fermactMPString;
+        common::action fermact;
+        common::action fermactMP;
     };
 
 }  // namespace meta

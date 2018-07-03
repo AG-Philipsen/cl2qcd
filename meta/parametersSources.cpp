@@ -27,6 +27,9 @@
 
 #include <boost/algorithm/string.hpp>
 
+static common::sourcetypes translateSourceTypeToEnum(std::string);
+static common::sourcecontents translateSourceContentToEnum(std::string);
+
 int meta::ParametersSources::get_num_sources() const noexcept
 {
     return num_sources;
@@ -54,19 +57,19 @@ bool meta::ParametersSources::get_place_sources_on_host() const noexcept
 
 common::sourcetypes meta::ParametersSources::get_sourcetype() const noexcept
 {
-    return translateSourceTypeToEnum();
+    return sourcetype;
 }
 common::sourcecontents meta::ParametersSources::get_sourcecontent() const noexcept
 {
-    return translateSourceContentToEnum();
+    return sourcecontent;
 }
 
 meta::ParametersSources::ParametersSources() : options("Source options")
 {
     // clang-format off
     options.add_options()
-    ("sourceType",  po::value<std::string>(&sourcetype)->default_value("point"), "Which type of source to be used in the inverter (one among 'point', 'volume', 'timeslice', 'zslice').")
-    ("sourceContent",  po::value<std::string>(&sourcecontent)->default_value("one"), "Which ype of content to be used with sources in the inverter (one among 'one', 'z4', 'gaussian' and 'z2').")
+    ("sourceType",  po::value<std::string>(&sourcetypeString)->default_value("point"), "Which type of source to be used in the inverter (one among 'point', 'volume', 'timeslice', 'zslice').")
+    ("sourceContent",  po::value<std::string>(&sourcecontentString)->default_value("one"), "Which ype of content to be used with sources in the inverter (one among 'one', 'z4', 'gaussian' and 'z2').")
     ("nSources", po::value<int>(&num_sources)->default_value(12), "The number of sources to be used in the inverter.")
     ("sourceX", po::value<int>(&source_x)->default_value(0), "The x coordinate for the position of a point source.")
     ("sourceY", po::value<int>(&source_y)->default_value(0), "The y coordinate for the position of a point source.")
@@ -76,9 +79,8 @@ meta::ParametersSources::ParametersSources() : options("Source options")
     // clang-format on
 }
 
-common::sourcetypes meta::ParametersSources::translateSourceTypeToEnum() const
+static common::sourcetypes translateSourceTypeToEnum(std::string s)
 {
-    std::string s = sourcetype;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::sourcetypes> m;
     m["point"]     = common::point;
@@ -94,9 +96,8 @@ common::sourcetypes meta::ParametersSources::translateSourceTypeToEnum() const
     }
 }
 
-common::sourcecontents meta::ParametersSources::translateSourceContentToEnum() const
+static common::sourcecontents translateSourceContentToEnum(std::string s)
 {
-    std::string s = sourcecontent;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::sourcecontents> m;
     m["one"]      = common::one;
@@ -110,4 +111,10 @@ common::sourcecontents meta::ParametersSources::translateSourceContentToEnum() c
     } else {
         throw Invalid_Parameters("Invalid source content!", "one, z4, gaussian, z2", s);
     }
+}
+
+void meta::ParametersSources::makeNeededTranslations()
+{
+    sourcecontent = translateSourceContentToEnum(sourcecontentString);
+    sourcetype    = translateSourceTypeToEnum(sourcetypeString);
 }

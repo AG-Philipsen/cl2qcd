@@ -52,12 +52,13 @@ namespace meta {
         ParametersSources(ParametersSources const&) = delete;
         ParametersSources& operator=(ParametersSources const&) = delete;
         InputparametersOptions getAllOptions();
-        common::sourcetypes translateSourceTypeToEnum() const;
-        common::sourcecontents translateSourceContentToEnum() const;
+        void makeNeededTranslations();
 
         InputparametersOptions options;
-        std::string sourcetype;
-        std::string sourcecontent;
+        std::string sourcetypeString;
+        std::string sourcecontentString;
+        common::sourcetypes sourcetype;
+        common::sourcecontents sourcecontent;
     };
 
 }  // namespace meta

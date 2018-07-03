@@ -37,16 +37,15 @@ using namespace meta;
  */
 static void add_option_aliases(meta::ConfigFileNormalizer* const);
 
-void meta::Inputparameters::ChecksOnInputParameters() const
+void meta::Inputparameters::ChecksStringOptionsAndMapToEnum()
 {
-    (void)ParametersGauge::translateGaugeActionToEnum();
-    (void)ParametersConfig::translateStartConditionToEnum();
-    (void)ParametersFermion::translateFermionActionsToEnum();
-    (void)ParametersHmc::translateIntegratorsToEnum();
-    (void)ParametersObs::translatePbpVersionToEnum();
-    (void)ParametersSolver::translateSolversToEnum();
-    (void)ParametersSources::translateSourceContentToEnum();
-    (void)ParametersSources::translateSourceTypeToEnum();
+    ParametersGauge::makeNeededTranslations();
+    ParametersConfig::makeNeededTranslations();
+    ParametersFermion::makeNeededTranslations();
+    ParametersHmc::makeNeededTranslations();
+    ParametersObs::makeNeededTranslations();
+    ParametersSolver::makeNeededTranslations();
+    ParametersSources::makeNeededTranslations();
 }
 
 Inputparameters::Inputparameters(int argc, const char** argv, std::string parameterSet)
@@ -145,7 +144,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     }
 
     po::notify(vm);  // checks whether all required arguments are set
-    ChecksOnInputParameters();
+    ChecksStringOptionsAndMapToEnum();
 }
 
 static void add_option_aliases(meta::ConfigFileNormalizer* const normalizer)

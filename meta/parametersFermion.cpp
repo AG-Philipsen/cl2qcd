@@ -40,11 +40,11 @@ bool meta::ParametersFermion::get_use_chem_pot_im() const noexcept
 
 common::action meta::ParametersFermion::get_fermact() const noexcept
 {
-    return translateFermionActionToEnum(fermact);
+    return fermact;
 }
 common::action meta::ParametersFermion::get_fermact_mp() const noexcept
 {
-    return translateFermionActionToEnum(fermact_mp);
+    return fermactMP;
 }
 double meta::ParametersFermion::get_kappa() const noexcept
 {
@@ -109,8 +109,8 @@ meta::ParametersFermion::ParametersFermion() : options("Fermion options")
 {
     // clang-format off
     options.add_options()
-    ("fermionAction", po::value<std::string>(&fermact)->default_value("wilson"),"Which type of fermion action to use (e.g. wilson, twistedmass, rooted_stagg).")
-    ("fermionActionMP", po::value<std::string>(&fermact_mp)->default_value("wilson"),"Which type of fermion action to use in the Mass Preconditioning trick when it is switched on (e.g. wilson).")
+    ("fermionAction", po::value<std::string>(&fermactString)->default_value("wilson"),"Which type of fermion action to use (e.g. wilson, twistedmass, rooted_stagg).")
+    ("fermionActionMP", po::value<std::string>(&fermactMPString)->default_value("wilson"),"Which type of fermion action to use in the Mass Preconditioning trick when it is switched on (e.g. wilson).")
     //todo: change this default value!
     ("kappa", po::value<double>(&kappa)->default_value(0.125),"The hopping parameter in in the 'wilson' action.")
     ("mass", po::value<double>(&mass)->default_value(0.1),"The bare quark mass in the 'rooted_stagg' action.")
@@ -148,8 +148,8 @@ static common::action translateFermionActionToEnum(std::string s)
     }
 }
 
-common::action meta::ParametersFermion::translateFermionActionsToEnum() const
+void meta::ParametersFermion::makeNeededTranslations()
 {
-    translateFermionActionToEnum(fermact);
-    translateFermionActionToEnum(fermact_mp);
+    fermact   = translateFermionActionToEnum(fermactString);
+    fermactMP = translateFermionActionToEnum(fermactMPString);
 }

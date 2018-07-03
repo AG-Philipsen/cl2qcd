@@ -50,10 +50,11 @@ namespace meta {
         virtual ~ParametersObs()            = default;
         ParametersObs(ParametersObs const&) = delete;
         ParametersObs& operator=(ParametersObs const&) = delete;
-        common::pbp_version translatePbpVersionToEnum() const;
+        void makeNeededTranslations();
 
         InputparametersOptions options;
-        std::string pbp_version_;
+        std::string pbp_version_String;
+        common::pbp_version pbp_version_;
     };
 
 }  // namespace meta

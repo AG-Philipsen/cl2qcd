@@ -66,11 +66,11 @@ common::integrator ParametersHmc::get_integrator(size_t timescale) const noexcep
 {
     switch (timescale) {
         case 0:
-            return translateIntegratorToEnum(integrator0);
+            return integrator0;
         case 1:
-            return translateIntegratorToEnum(integrator1);
+            return integrator1;
         case 2:
-            return translateIntegratorToEnum(integrator2);
+            return integrator2;
         default:
             throw std::out_of_range("No such timescale");
     }
@@ -107,9 +107,9 @@ ParametersHmc::ParametersHmc() : options("HMC options")
     ("reversibilityCheck", po::value<bool>(&reversibility_check)->default_value(false),"Whether to check reversibility violation in the integrator by integrating back in time.")
     ("nHmcSteps", po::value<int>(&hmcsteps)->default_value(10),"The number of HMC steps (i.e. the number of configuration updates in the Markov chain).")
     ("nTimeScales", po::value<int>(&num_timescales)->default_value(1),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different timescales must use the same integrator.")
-    ("integrator0", po::value<std::string>(&integrator0)->default_value("leapfrog"),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
-    ("integrator1", po::value<std::string>(&integrator1)->default_value("leapfrog"),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
-    ("integrator2", po::value<std::string>(&integrator2)->default_value("leapfrog"),"The integration scheme for timescale 2 (one among leapfrog and twomn).")
+    ("integrator0", po::value<std::string>(&integrator0String)->default_value("leapfrog"),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
+    ("integrator1", po::value<std::string>(&integrator1String)->default_value("leapfrog"),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
+    ("integrator2", po::value<std::string>(&integrator2String)->default_value("leapfrog"),"The integration scheme for timescale 2 (one among leapfrog and twomn).")
     ("integrationSteps0", po::value<int>(&integrationsteps0)->default_value(10),"The number of integration steps for timescale 0.")
     ("integrationSteps1", po::value<int>(&integrationsteps1)->default_value(10),"The number of integration steps for timescale 1.")
     ("integrationSteps2", po::value<int>(&integrationsteps2)->default_value(10),"The number of integration steps for timescale 2.")
@@ -138,9 +138,9 @@ static common::integrator translateIntegratorToEnum(std::string s)
     }
 }
 
-common::integrator meta::ParametersHmc::translateIntegratorsToEnum() const
+void meta::ParametersHmc::makeNeededTranslations()
 {
-    translateIntegratorToEnum(integrator0);
-    translateIntegratorToEnum(integrator1);
-    translateIntegratorToEnum(integrator2);
+    integrator0 = translateIntegratorToEnum(integrator0String);
+    integrator1 = translateIntegratorToEnum(integrator1String);
+    integrator2 = translateIntegratorToEnum(integrator2String);
 }

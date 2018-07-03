@@ -46,10 +46,11 @@ namespace meta {
         virtual ~ParametersGauge()              = default;
         ParametersGauge(ParametersGauge const&) = delete;
         ParametersGauge& operator=(ParametersGauge const&) = delete;
-        common::action translateGaugeActionToEnum() const;
+        void makeNeededTranslations();
 
         InputparametersOptions options;
-        std::string gaugeact;
+        common::action gaugeact;
+        std::string gaugeactString;
     };
 
 }  // namespace meta

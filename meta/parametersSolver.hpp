@@ -58,12 +58,14 @@ namespace meta {
         ParametersSolver(ParametersSolver const&) = delete;
         ParametersSolver& operator=(ParametersSolver const&) = delete;
         InputparametersOptions getAllOptions();
-        common::solver translateSolversToEnum() const;
+        void makeNeededTranslations();
 
         InputparametersOptions options;
         // at the moment, only 2 solvers are implemented..
-        std::string _solver;
-        std::string _solver_mp;
+        std::string _solverString;
+        std::string _solverMPString;
+        common::solver _solver;
+        common::solver _solverMP;
     };
 
 }  // namespace meta

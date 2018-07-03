@@ -27,6 +27,8 @@
 
 #include <boost/algorithm/string.hpp>
 
+static common::startcondition translateStartConditionToEnum(std::string);
+
 size_t meta::ParametersConfig::get_precision() const noexcept
 {
     return precision;
@@ -64,7 +66,7 @@ int meta::ParametersConfig::get_ntime() const noexcept
 
 common::startcondition meta::ParametersConfig::get_startcondition() const noexcept
 {
-    return translateStartConditionToEnum();
+    return _startcondition;
 }
 
 std::string meta::ParametersConfig::get_sourcefile() const noexcept
@@ -148,7 +150,7 @@ meta::ParametersConfig::ParametersConfig() : options("Configuration options")
     ("enableProfiling", po::value<bool>(&enable_profiling)->default_value(false), "Whether to profile kernel execution. This option implies slower performance due to synchronization after each kernel call.")
     ("nSpace", po::value<int>(&nspace)->default_value(4), "The spatial extent of the lattice.")
     ("nTime", po::value<int>(&ntime)->default_value(8), "The temporal extent of the lattice.")
-    ("startCondition", po::value<std::string>(&_startcondition)->default_value("cold"), "The gaugefield starting condition (e.g. cold, hot, continue).")
+    ("startCondition", po::value<std::string>(&_startconditionString)->default_value("cold"), "The gaugefield starting condition (e.g. cold, hot, continue).")
     ("initialConf", po::value<std::string>(&sourcefile)->default_value("conf.00000"), "The path of the file containing the gauge configuration to start from.")
     ("printToScreen", po::value<bool>(&print_to_screen)->default_value(false), "Whether to print the onfly measurements to the standard output.")
     ("hostSeed", po::value<uint32_t>(&host_seed)->default_value(4815),"The random seed to initialize the pseudo random number generator.")
@@ -167,9 +169,8 @@ meta::ParametersConfig::ParametersConfig() : options("Configuration options")
     // clang-format on
 }
 
-common::startcondition meta::ParametersConfig::translateStartConditionToEnum() const
+static common::startcondition translateStartConditionToEnum(std::string s)
 {
-    std::string s = _startcondition;
     boost::algorithm::to_lower(s);
     std::map<std::string, common::startcondition> m;
     m["cold_start"]        = common::cold_start;
@@ -187,4 +188,9 @@ common::startcondition meta::ParametersConfig::translateStartConditionToEnum() c
         throw Invalid_Parameters("Unkown start condition!",
                                  "cold_start, cold, hot_start, hot, start_from_source, source, continue", s);
     }
+}
+
+void meta::ParametersConfig::makeNeededTranslations()
+{
+    _startcondition = translateStartConditionToEnum(_startconditionString);
 }

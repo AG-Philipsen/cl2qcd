@@ -56,11 +56,11 @@ int meta::ParametersSolver::get_iter_refresh_mp() const noexcept
 }
 common::solver meta::ParametersSolver::get_solver() const noexcept
 {
-    return translateSolverToEnum(_solver);
+    return _solver;
 }
 common::solver meta::ParametersSolver::get_solver_mp() const noexcept
 {
-    return translateSolverToEnum(_solver_mp);
+    return _solverMP;
 }
 
 int meta::ParametersSolver::get_cg_iteration_block_size() const noexcept
@@ -80,8 +80,8 @@ meta::ParametersSolver::ParametersSolver() : options("Solver options")
 {
     // clang-format off
     options.add_options()
-    ("solver", po::value<std::string>(&_solver)->default_value("bicgstab"),"Which type of (restarted) solver to use (one among 'cg', 'bicgstab' and 'bicgstab_save').")
-    ("solverMP", po::value<std::string>(&_solver_mp)->default_value("bicgstab"),"Which type of solver to use with Mass Preconditioning (one among 'cg', 'bicgstab' and 'bicgstab_save').")
+    ("solver", po::value<std::string>(&_solverString)->default_value("bicgstab"),"Which type of (restarted) solver to use (one among 'cg', 'bicgstab' and 'bicgstab_save').")
+    ("solverMP", po::value<std::string>(&_solverMPString)->default_value("bicgstab"),"Which type of solver to use with Mass Preconditioning (one among 'cg', 'bicgstab' and 'bicgstab_save').")
     ("cgMaxIterations", po::value<int>(&cgmax)->default_value(1000),"The maximum number of iterations in the solver.")
     ("cgMaxIterationsMP", po::value<int>(&cgmax_mp)->default_value(1000),"The maximum number of iterations in the solver with Mass Preconditioning.")
 #ifdef _USEDOUBLEPREC_
@@ -114,8 +114,8 @@ static common::solver translateSolverToEnum(std::string s)
     }
 }
 
-common::solver meta::ParametersSolver::translateSolversToEnum() const
+void meta::ParametersSolver::makeNeededTranslations()
 {
-    translateSolverToEnum(_solver);
-    translateSolverToEnum(_solver_mp);
+    _solver   = translateSolverToEnum(_solverString);
+    _solverMP = translateSolverToEnum(_solverMPString);
 }
