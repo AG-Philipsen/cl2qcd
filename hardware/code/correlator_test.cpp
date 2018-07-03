@@ -55,7 +55,7 @@ struct CorrelatorTestParameters : public SpinorTestParameters {
     CorrelatorDirection direction;
 };
 
-bool compareToZero_su3vec(const su3vec in)
+bool compareToZero_su3vec(const su3vec& in)
 {
     if (in.e0.re == 0. && in.e0.im == 0.)
         if (in.e1.re == 0. && in.e1.im == 0.)
@@ -64,7 +64,7 @@ bool compareToZero_su3vec(const su3vec in)
     return false;
 }
 
-bool compareToZero(const spinor in)
+bool compareToZero(const spinor& in)
 {
     if (compareToZero_su3vec(in.e0))
         if (compareToZero_su3vec(in.e1))
