@@ -58,7 +58,7 @@ void meta::InputparametersOptions::printOptionsInCustomizedWay(std::ostream& str
 }
 
 meta::InputparametersOptions&
-meta::InputparametersOptions::keepOnlySomeOptions(std::initializer_list<std::string> whichOptions)
+meta::InputparametersOptions::keepOnlySome(std::initializer_list<std::string> whichOptions)
 {
     if (whichOptions.size() == 0)
         throw Print_Error_Message("No options to be kept passed!", __FILE__, __LINE__);

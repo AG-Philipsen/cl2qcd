@@ -64,7 +64,7 @@ namespace meta {
          *             groups! In meta::Inputparameters, for instance, this method is used on the parent's member of
          *             type InputparametersOptions, only.
          */
-        InputparametersOptions& keepOnlySomeOptions(std::initializer_list<std::string> whichOptions);
+        InputparametersOptions& keepOnlySome(std::initializer_list<std::string> whichOptions);
 
       private:
         InputparametersOptions(std::string optionsDescriptionIn, unsigned int lineLengthIn,
