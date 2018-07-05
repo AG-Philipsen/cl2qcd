@@ -36,6 +36,7 @@ add_library(meta
 	parametersHmc.cpp
 	parametersHeatbath.cpp
 	parametersIntegrator.cpp
+	parametersRationalApproximation.cpp
 	parametersRhmc.cpp
 	parametersTest.cpp
 	inputparameters.cpp

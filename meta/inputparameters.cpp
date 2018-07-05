@@ -105,6 +105,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersIntegrator::options)
             .add(ParametersHeatbath::options)  // This is for the thermalizationsteps, not elegant... TODO: think
                                                // another way!
+            .add(ParametersRationalApproximation::options)
             .add(ParametersRhmc::options);
     } else  // default: add all options
     {
@@ -117,6 +118,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersObs::options)
             .add(ParametersHmc::options)
             .add(ParametersIntegrator::options)
+            .add(ParametersRationalApproximation::options)
             .add(ParametersRhmc::options)
             .add(ParametersTest::options);
     }

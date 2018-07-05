@@ -25,30 +25,6 @@
 
 using namespace meta;
 
-unsigned int ParametersRhmc::get_md_approx_ord() const noexcept
-{
-    return molecularDynamicsRationalApproximationOrder;
-}
-unsigned int ParametersRhmc::get_metro_approx_ord() const noexcept
-{
-    return metropolisTestRationalApproximationOrder;
-}
-unsigned int ParametersRhmc::get_findminmax_iteration_block_size() const noexcept
-{
-    return findMinMaxEigenvalueIterationBlockSize;
-}
-unsigned int ParametersRhmc::get_findminmax_max() const noexcept
-{
-    return findMinMaxEigenvalueMaxNumberOfIterations;
-}
-double ParametersRhmc::get_findminmax_prec() const noexcept
-{
-    return findMinMaxEigenvaluePrecision;
-}
-bool ParametersRhmc::get_conservative() const noexcept
-{
-    return beConservativeInFindMinMaxEigenvalue;
-}
 double ParametersRhmc::get_num_tastes() const noexcept
 {
     return numberOfTastes;
@@ -61,71 +37,23 @@ unsigned int ParametersRhmc::get_num_pseudofermions() const noexcept
 {
     return numberOfPseudofermions;
 }
-double ParametersRhmc::get_approx_lower() const noexcept
-{
-    return lowerBoundForRationalApproximationRange;
-}
-double ParametersRhmc::get_approx_upper() const noexcept
-{
-    return upperBoundForRationalApproximationRange;
-}
 unsigned int ParametersRhmc::get_rhmcsteps() const noexcept
 {
     return numberOfRhmcSteps;
 }
-std::string ParametersRhmc::get_approx_heatbath_file() const noexcept
-{
-    return heatbathRationalApproximationFilename;
-}
-std::string ParametersRhmc::get_approx_md_file() const noexcept
-{
-    return molecularDynamicsRationalApproximationFilename;
-}
-std::string ParametersRhmc::get_approx_metropolis_file() const noexcept
-{
-    return metropolisTestRationalApproximationFilename;
-}
-bool ParametersRhmc::get_read_rational_approximations_from_file() const noexcept
-{
-    return readRationalApproximationsFromFile;
-}
 
 meta::ParametersRhmc::ParametersRhmc()
-    : molecularDynamicsRationalApproximationOrder(8)
-    , metropolisTestRationalApproximationOrder(15)
-    , findMinMaxEigenvalueIterationBlockSize(25)
-    , findMinMaxEigenvalueMaxNumberOfIterations(5000)
-    , findMinMaxEigenvaluePrecision(1.e-3)
-    , beConservativeInFindMinMaxEigenvalue(false)
-    , numberOfTastes(2)
+    : numberOfTastes(2)
     , numberOfDecimalDigitsInNumberOfTastes(0)
     , numberOfPseudofermions(1)
-    , lowerBoundForRationalApproximationRange(1.e-5)
-    , upperBoundForRationalApproximationRange(1.)
     , numberOfRhmcSteps(10)
-    , readRationalApproximationsFromFile(true)
-    , heatbathRationalApproximationFilename("Approx_Heatbath")
-    , molecularDynamicsRationalApproximationFilename("Approx_MD")
-    , metropolisTestRationalApproximationFilename("Approx_Metropolis")
     , options("RHMC options")
 {
     // clang-format off
     options.add_options()
-    ("rationalApproxOrderHBAndMD", po::value<unsigned int>(&molecularDynamicsRationalApproximationOrder)->default_value(molecularDynamicsRationalApproximationOrder), "The order of the rational approximation for the Heat Bath and Molecular Dynamics parts.")
-    ("rationalApproxOrderMetropolis", po::value<unsigned int>(&metropolisTestRationalApproximationOrder)->default_value(metropolisTestRationalApproximationOrder), "The  order of the rational approximation for the Metropolis part.")
-    ("findminmaxMaxIteration", po::value<unsigned int>(&findMinMaxEigenvalueMaxNumberOfIterations)->default_value(findMinMaxEigenvalueMaxNumberOfIterations), "The maximum number of iterations in the 'findMinMax' algorithm to find the minimum and the maximum eigenvalues of the fermion matrix operator.")
-    ("findminmaxResiduumCheckEvery", po::value<unsigned int>(&findMinMaxEigenvalueIterationBlockSize)->default_value(findMinMaxEigenvalueIterationBlockSize), "Every how many iteration 'findMinMax' will check the residuum.")
-    ("findminmaxPrecision", po::value<double>(&findMinMaxEigenvaluePrecision)->default_value(findMinMaxEigenvaluePrecision), "The precision used in 'findMinMax'.")
-    ("conservative", po::value<bool>(&beConservativeInFindMinMaxEigenvalue)->default_value(beConservativeInFindMinMaxEigenvalue), "Whether to be conservative in 'findMinMax' (check validity of rational approximation in a wider-than-needed interval). It may affect the correctness of the RHMC, hence use with care.")
     ("nTastes", po::value<double>(&numberOfTastes)->default_value(numberOfTastes), "The number of tastes of staggered fermions.")
     ("nTastesDecimalDigits", po::value<unsigned int>(&numberOfDecimalDigitsInNumberOfTastes)->default_value(numberOfDecimalDigitsInNumberOfTastes), "The number of decimal digits in the number of staggered tastes.")
     ("nPseudoFermions", po::value<unsigned int>(&numberOfPseudofermions)->default_value(numberOfPseudofermions), "The number of pseudo-fermion species in the multiple pseudofermion technique for staggered fermions only.")
-    ("rationalApproxLowerBound", po::value<double>(&lowerBoundForRationalApproximationRange)->default_value(lowerBoundForRationalApproximationRange), "The lower bound in the validity interval of the rational approximation.")
-    ("rationalApproxUpperBound", po::value<double>(&upperBoundForRationalApproximationRange)->default_value(upperBoundForRationalApproximationRange), "The upper bound in the validity interval of the rational approximation.")
-    ("nRhmcSteps", po::value<unsigned int>(&numberOfRhmcSteps)->default_value(numberOfRhmcSteps), "The number of RHMC steps (i.e. the number of configuration updates in the Markov chain).")
-    ("rationalApproxFileHB", po::value<std::string>(&heatbathRationalApproximationFilename)->default_value(heatbathRationalApproximationFilename), "The path of the file containing the rational approximation for the Heat Bath part.")
-    ("rationalApproxFileMD", po::value<std::string>(&molecularDynamicsRationalApproximationFilename)->default_value(molecularDynamicsRationalApproximationFilename), "The path of the file containing the rational approximation for the Molecular Dynamics part.")
-    ("rationalApproxFileMetropolis", po::value<std::string>(&metropolisTestRationalApproximationFilename)->default_value(metropolisTestRationalApproximationFilename), "The path of the file containing the rational approximation for the Metropolis part.")
-    ("readRationalApproxFromFile", po::value<bool>(&readRationalApproximationsFromFile)->default_value(readRationalApproximationsFromFile), "Whether to read rational approximations from file.");
+    ("nRhmcSteps", po::value<unsigned int>(&numberOfRhmcSteps)->default_value(numberOfRhmcSteps), "The number of RHMC steps (i.e. the number of configuration updates in the Markov chain).");
     // clang-format on
 }
