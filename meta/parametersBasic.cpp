@@ -72,10 +72,30 @@ meta::InputparametersOptions::keepOnlySome(std::initializer_list<std::string> wh
                                    return ptr->canonical_display_name() == requiredOption;
                                });
         if (it == listOfOptions.end())
-            throw Print_Error_Message("Required option \"" + requiredOption + "\" not found!", __FILE__, __LINE__);
+            throw Print_Error_Message("Option \"" + requiredOption + "\" to be kept not found!", __FILE__, __LINE__);
         else
             newList.push_back(*it);
     }
     listOfOptions = std::move(newList);
+    return *this;
+}
+
+meta::InputparametersOptions& meta::InputparametersOptions::deleteSome(std::initializer_list<std::string> whichOptions)
+{
+    if (whichOptions.size() == 0)
+        throw Print_Error_Message("No options to be deleted passed!", __FILE__, __LINE__);
+
+    std::vector<boost::shared_ptr<po::option_description>>&
+        listOfOptions = const_cast<std::vector<boost::shared_ptr<po::option_description>>&>(options());
+    for (auto requiredOption : whichOptions) {
+        auto it = std::find_if(listOfOptions.begin(), listOfOptions.end(),
+                               [&requiredOption](boost::shared_ptr<po::option_description> ptr) {
+                                   return ptr->canonical_display_name() == requiredOption;
+                               });
+        if (it == listOfOptions.end())
+            throw Print_Error_Message("Option \"" + requiredOption + "\" to be deleted not found!", __FILE__, __LINE__);
+        else
+            listOfOptions.erase(it);
+    }
     return *this;
 }

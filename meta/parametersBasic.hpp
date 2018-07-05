@@ -38,9 +38,9 @@ namespace meta {
         InputparametersOptions(std::string optionsDescription);
         void printOptionsInCustomizedWay(std::ostream& stream) const;
         /**
-         * This method is meant to be used in meta::Inputparameters in order to possibly extract only some options from
-         * the parent ones, because in some executables not all the options of a parent are meaningful.
-         * To implement this method, one has to deal with the boost implementation of po::options_description which
+         * These methods are meant to be used in meta::Inputparameters in order to possibly extract only some options
+         * from the parent ones, because in some executables not all the options of a parent are meaningful. To
+         * implement these methods, one has to deal with the boost implementation of po::options_description which
          * cannot be changed. In particular, such a class contain some constant members and this automatically forbids
          * any copy/assignment of the class. We therefore use the po::options_description::options method to get a
          * reference to the options and we delete there those we do not want to keep. Unfortunately, this is not
@@ -65,6 +65,7 @@ namespace meta {
          *             type InputparametersOptions, only.
          */
         InputparametersOptions& keepOnlySome(std::initializer_list<std::string> whichOptions);
+        InputparametersOptions& deleteSome(std::initializer_list<std::string> whichOptions);
 
       private:
         InputparametersOptions(std::string optionsDescriptionIn, unsigned int lineLengthIn,
