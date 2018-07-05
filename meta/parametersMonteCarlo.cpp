@@ -2,8 +2,8 @@
  *
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2015,2017,2018 Alessandro Sciarra
- * Copyright (c) 2018 Francesca Cuteri
+ * Copyright (c) 2015,2018 Francesca Cuteri
+ * Copyright (c) 2017,2017,2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,9 +21,37 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "parametersRhmc.hpp"
+#include "parametersMonteCarlo.hpp"
 
 using namespace meta;
+
+int ParametersHmc::get_hmcsteps() const noexcept
+{
+    return hmcsteps;
+}
+
+bool ParametersHmc::get_use_gauge_only() const noexcept
+{
+    return use_gauge_only;
+}
+
+bool ParametersHmc::get_use_mp() const noexcept
+{
+    return use_mp;
+}
+
+ParametersHmc::ParametersHmc() : hmcsteps(10), use_gauge_only(false), use_mp(false), options("HMC options")
+{
+    // clang-format off
+    options.add_options()
+    ("nHmcSteps", po::value<int>(&hmcsteps)->default_value(hmcsteps),"The number of HMC steps (i.e. the number of configuration updates in the Markov chain).")
+    // this is the optimal value...
+    ("useGaugeOnly", po::value<bool>(&use_gauge_only)->default_value(use_gauge_only),"Whether to simulate pure gauge theory with HMC. In this case 'nTimeScales' has to be set to 1.")
+    ("useMP", po::value<bool>(&use_mp)->default_value(use_mp),"Whether to use the Mass Preconditioning trick.");
+    // clang-format on
+}
+
+//===========================================================================================================
 
 double ParametersRhmc::get_num_tastes() const noexcept
 {

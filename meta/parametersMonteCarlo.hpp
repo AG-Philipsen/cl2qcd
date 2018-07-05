@@ -2,8 +2,8 @@
  *
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
+ * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2015,2017,2018 Alessandro Sciarra
- * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -21,12 +21,36 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _META_PARAMETERS_RHMC_HPP_
-#define _META_PARAMETERS_RHMC_HPP_
+#ifndef _META_PARAMETERS_MONTE_CARLO_HPP_
+#define _META_PARAMETERS_MONTE_CARLO_HPP_
 
 #include "parametersBasic.hpp"
 
 namespace meta {
+
+    /*
+     * TODO: Think whether the following two classes can be unified
+     */
+
+    class ParametersHmc {
+      public:
+        int get_hmcsteps() const noexcept;
+        bool get_use_gauge_only() const noexcept;
+        bool get_use_mp() const noexcept;
+
+      private:
+        int hmcsteps;
+        bool use_gauge_only;
+        bool use_mp;
+
+      protected:
+        ParametersHmc();
+        virtual ~ParametersHmc()            = default;
+        ParametersHmc(ParametersHmc const&) = delete;
+        ParametersHmc& operator=(ParametersHmc const&) = delete;
+
+        InputparametersOptions options;
+    };
 
     class ParametersRhmc {
       public:
