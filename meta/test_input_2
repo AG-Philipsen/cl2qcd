@@ -86,4 +86,3 @@ testRefVal2 = 2.448
 
 useKernelMergingSpinor = true
 useKernelMergingFermionMatrix = true
-useReconstruct12 = true
