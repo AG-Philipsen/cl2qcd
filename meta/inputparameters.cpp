@@ -88,8 +88,10 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
     } else if (parameterSet == "inverter") {
         desc.add(ParametersConfig::options.deleteSome({"useReconstruct12"}))
-            .add(ParametersIo::options.deleteSome(
-                {"onlineMeasureEvery", "createCheckpointEvery", "overwriteTemporaryCheckpointEvery"}))
+            .add(ParametersIo::options.deleteSome({"onlineMeasureEvery", "createCheckpointEvery",
+                                                   "overwriteTemporaryCheckpointEvery", "hmcObsToSingleFile",
+                                                   "hmcObsPrefix", "hmcObsPostfix", "rhmcObsToSingleFile",
+                                                   "rhmcObsPrefix", "rhmcObsPostfix"}))
             .add(ParametersGauge::options.deleteSome({"gaugeAction"}))
             .add(ParametersFermion::options.deleteSome({"csw", "kappaMP", "muMP", "cswMP", "fermionActionMP"}))
             .add(ParametersSolver::options.deleteSome({"solverMP", "cgMaxIterationsMP", "restartEveryMP"}))
@@ -112,8 +114,10 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                                                        "readUntilConfNumber", "readConfsEvery"}))
             .add(ParametersIo::options.deleteSome({"hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix"}))
             .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
-            .add(ParametersFermion::options.deleteSome({"kappa", "mu", "csw", "kappaMP", "muMP", "cswMP"}))
-            .add(ParametersSolver::options.deleteSome({"solverMP", "cgMaxIterationsMP", "restartEveryMP"}))
+            .add(ParametersFermion::options.deleteSome(
+                {"fermionActionMP", "kappa", "mu", "csw", "kappaMP", "muMP", "cswMP"}))
+            .add(ParametersSolver::options.deleteSome(
+                {"solverMP", "cgMaxIterationsMP", "restartEvery", "restartEveryMP"}))
             .add(ParametersSources::options.deleteSome({"placeSourcesOnHost"}))
             .add(ParametersObs::options)
             .add(ParametersIntegrator::options)

@@ -1,4 +1,4 @@
-confPrecision = 32
+precision = 32
 nDevices = 1
 useGPU = false
 useCPU = false
