@@ -27,7 +27,6 @@ namespace meta {
     class ParametersIntegrator {
       public:
         double get_tau() const noexcept;
-        bool get_reversibility_check() const noexcept;
         int get_integrationsteps(size_t timescale) const noexcept;
         int get_num_timescales() const noexcept;
         common::integrator get_integrator(size_t timescale) const noexcept;
@@ -35,7 +34,6 @@ namespace meta {
 
       private:
         double tau;
-        bool reversibility_check;
         int integrationsteps0;
         int integrationsteps1;
         int integrationsteps2;

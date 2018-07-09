@@ -112,7 +112,6 @@ void checkDefaults(const Inputparameters& params)
 
     // HMC specific parameters
     BOOST_REQUIRE_EQUAL(params.get_tau(), 0.5);
-    BOOST_REQUIRE_EQUAL(params.get_reversibility_check(), false);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(0), 10);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(1), 10);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
@@ -249,7 +248,6 @@ BOOST_AUTO_TEST_CASE(input_file2)
 
     // HMC specific parameters
     BOOST_REQUIRE_EQUAL(params.get_tau(), 0.51234);
-    BOOST_REQUIRE_EQUAL(params.get_reversibility_check(), true);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(0), 103);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(1), 5);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);

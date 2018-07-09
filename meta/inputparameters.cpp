@@ -66,50 +66,64 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     pos_opts.add("inputFile", 1);
 
     meta::InputparametersOptions desc("");
-    desc.add(cmd_opts).add(ParametersConfig::options);
+    desc.add(cmd_opts);
 
     if (parameterSet == "su3heatbath") {
-        desc.add(ParametersIo::options)
-            .add(ParametersGauge::options)
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
+                                                       "readUntilConfNumber", "readConfsEvery"}))
+            .add(ParametersIo::options.deleteSome({"fermObsInSingleFile", "fermObsCorrelatorsPrefix",
+                                                   "fermObsCorrelatorsPostfix", "fermObsPbpPrefix", "fermObsPbpPostfix",
+                                                   "hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix",
+                                                   "rhmcObsToSingleFile", "rhmcObsPrefix", "rhmcObsPostfix"}))
+            .add(ParametersGauge::options.keepOnlySome({"beta"}))
             .add(ParametersHeatbath::options)
-            .add(ParametersObs::options);
+            .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
     } else if (parameterSet == "gaugeobservables") {
-        desc.add(ParametersIo::options).add(ParametersGauge::options).add(ParametersObs::options);
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12"}))
+            .add(ParametersIo::options.keepOnlySome(
+                {"nDigitsInConfCheckpoint", "confPrefix", "confPostfix", "prngPrefix", "prngPostfix",
+                 "rectanglesFilename", "transportCoefficientKappaFilename", "profilingDataPrefix",
+                 "profilingDataPostfix", "gaugeObsInSingleFile", "gaugeObsPrefix", "gaugeObsPostfix"}))
+            .add(ParametersGauge::options.keepOnlySome({"beta"}))
+            .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
     } else if (parameterSet == "inverter") {
-        desc.add(ParametersIo::options)
-            .add(ParametersGauge::options)
-            .add(ParametersFermion::options)
-            .add(ParametersSolver::options)
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12"}))
+            .add(ParametersIo::options.deleteSome(
+                {"onlineMeasureEvery", "createCheckpointEvery", "overwriteTemporaryCheckpointEvery"}))
+            .add(ParametersGauge::options.deleteSome({"gaugeAction"}))
+            .add(ParametersFermion::options.deleteSome({"csw", "kappaMP", "muMP", "cswMP", "fermionActionMP"}))
+            .add(ParametersSolver::options.deleteSome({"solverMP", "cgMaxIterationsMP", "restartEveryMP"}))
             .add(ParametersSources::options)
-            .add(ParametersRhmc::options)  // This is for the num_tastes, not elegant... TODO: think another way!
             .add(ParametersObs::options);
     } else if (parameterSet == "hmc") {
-        desc.add(ParametersIo::options)
-            .add(ParametersGauge::options)
-            .add(ParametersFermion::options)
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
+                                                       "readUntilConfNumber", "readConfsEvery"}))
+            .add(ParametersIo::options.deleteSome({"rhmcObsToSingleFile", "rhmcObsPrefix", "rhmcObsPostfix"}))
+            .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
+            .add(ParametersFermion::options.deleteSome({"mass", "csw", "cswMP"}))
             .add(ParametersSolver::options)
             .add(ParametersSources::options)
             .add(ParametersObs::options)
-            .add(ParametersHeatbath::options)  // This is for the thermalizationsteps, not elegant... TODO: think
-                                               // another way!
+            .add(ParametersHeatbath::options.keepOnlySome({"nThermalizationSteps"}))
             .add(ParametersIntegrator::options)
             .add(ParametersHmc::options);
     } else if (parameterSet == "rhmc") {
-        desc.add(ParametersIo::options)
-            .add(ParametersGauge::options)
-            .add(ParametersFermion::options)
-            .add(ParametersSolver::options)
-            .add(ParametersSources::options)
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
+                                                       "readUntilConfNumber", "readConfsEvery"}))
+            .add(ParametersIo::options.deleteSome({"hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix"}))
+            .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
+            .add(ParametersFermion::options.deleteSome({"kappa", "mu", "csw", "kappaMP", "muMP", "cswMP"}))
+            .add(ParametersSolver::options.deleteSome({"solverMP", "cgMaxIterationsMP", "restartEveryMP"}))
+            .add(ParametersSources::options.deleteSome({"placeSourcesOnHost"}))
             .add(ParametersObs::options)
-            .add(ParametersHmc::options)  // This is for several parameters, not elegant... TODO: think another way!
             .add(ParametersIntegrator::options)
-            .add(ParametersHeatbath::options)  // This is for the thermalizationsteps, not elegant... TODO: think
-                                               // another way!
+            .add(ParametersHeatbath::options.keepOnlySome({"nThermalizationSteps"}))
             .add(ParametersRationalApproximation::options)
             .add(ParametersRhmc::options);
     } else  // default: add all options
     {
-        desc.add(ParametersIo::options)
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12"}))
+            .add(ParametersIo::options)
             .add(ParametersGauge::options)
             .add(ParametersHeatbath::options)
             .add(ParametersFermion::options)

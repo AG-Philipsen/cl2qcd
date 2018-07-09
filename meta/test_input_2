@@ -64,7 +64,6 @@ restartEveryMP = 107
 
 # HMC specific parameters
 tau = 0.51234
-reversibilityCheck = true
 integrationSteps0 = 103
 integrationSteps1 = 5
 nHmcSteps = 98
