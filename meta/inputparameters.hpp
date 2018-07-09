@@ -52,6 +52,18 @@ namespace meta {
      *
      * This class is copyable and assignable, but should
      * be used as a const value after initialization.
+     *
+     * ATTENTION: This class exposes ONLY part of all existing command line options to the user, in the sense
+     *            that not all parameters are considered, depending on the label parameterSet. More in detail,
+     *            this class shows different options to the user depending on the executable which creates it
+     *            (and which, hence, passes the "correct" label as parameterSet).
+     *            Note that at the level of C++ code, this class inherits from all the parameters parents and,
+     *            then, it always has all the public getters of the parents. This has the kind of drawback
+     *            that the interfaces between meta and the rest of the code base may (and they do indeed) use
+     *            a getter of a parameter that has not been exposed to/given by the user. In such a case the
+     *            default is retrieved by the interface and is used around. Despite it might not be ideal,
+     *            it is simply important to be aware of this feature. We decided it is better than giving to
+     *            the user options which are not relevant to that executable and which may also be misused.
      */
     class Inputparameters : public ParametersConfig,
                             public ParametersIo,
