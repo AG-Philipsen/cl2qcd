@@ -108,7 +108,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
                                                                 .getInterface<physics::lattices::Staggeredfield_eo>()));
         }
         const MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-        cg_m(X, fm, gf, phi.get_b(), *phi_j, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        cg_m(X, fm, gf, phi.get_b(), *phi_j, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
              additionalParameters);
         logger.debug() << "\t\t\t  end solver";
 

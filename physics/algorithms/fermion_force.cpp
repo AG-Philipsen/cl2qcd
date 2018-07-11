@@ -70,7 +70,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
         solution.cold();
 
         const QplusQminus_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
-        cg(&solution, fm, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        cg(&solution, fm, gf, phi, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
            additionalParameters);
 
         /**
@@ -102,7 +102,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
         solution.gamma5();
 
         const Qplus_eo qplus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
-        bicgstab(&solution, qplus, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        bicgstab(&solution, qplus, gf, phi, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
                  additionalParameters);
 
         copyData(&phi_inv, solution);
@@ -126,7 +126,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
         const Qminus_eo qminus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
         bicgstab(&solution, qminus, gf, source_even, system, interfacesHandler,
-                 parametersInterface.getForcePreconditioning(), additionalParameters);
+                 parametersInterface.getSolverForcePrecision(), additionalParameters);
     }
     /**
      * At this point, one has calculated X_odd and Y_odd.
@@ -213,7 +213,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
         // here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
         const QplusQminus fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
-        cg(&solution, fm, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        cg(&solution, fm, gf, phi, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
            additionalParameters);
 
         /**
@@ -246,7 +246,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
         // here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
         const Qplus q_plus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
-        bicgstab(&solution, q_plus, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        bicgstab(&solution, q_plus, gf, phi, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
                  additionalParameters);
 
         // store this result in clmem_phi_inv
@@ -270,7 +270,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
         solution.cold();
         const Qminus q_minus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
         bicgstab(&solution, q_minus, gf, source, system, interfacesHandler,
-                 parametersInterface.getForcePreconditioning(), additionalParameters);
+                 parametersInterface.getSolverForcePrecision(), additionalParameters);
     }
     log_squarenorm("\tY ", phi_inv);
     log_squarenorm("\tX ", solution);
@@ -340,7 +340,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
         // here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
         const QplusQminus fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
-        cg(&solution, fm, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        cg(&solution, fm, gf, tmp, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
            additionalParameters);
 
         /**
@@ -373,7 +373,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
         // here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
         Qplus q_plus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
-        bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
                  additionalParameters);
 
         copyData(&phi_inv, solution);
@@ -397,7 +397,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
         Qminus q_minus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
         bicgstab(&solution, q_minus, gf, source, system, interfacesHandler,
-                 parametersInterface.getForcePreconditioning(), additionalParameters);
+                 parametersInterface.getSolverForcePrecision(), additionalParameters);
     }
 
     log_squarenorm("\tY ", phi_inv);
@@ -477,7 +477,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
         solution.cold();
 
         const QplusQminus_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
-        cg(&solution, fm, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        cg(&solution, fm, gf, tmp, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
            additionalParameters);
 
         /**
@@ -509,7 +509,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
         solution.gamma5();
 
         const Qplus_eo q_plus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
-        bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(),
+        bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, parametersInterface.getSolverForcePrecision(),
                  additionalParameters);
 
         // store this result in clmem_phi_inv
@@ -531,7 +531,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
         Qminus_eo q_minus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
         bicgstab(&solution, q_minus, gf, source_even, system, interfacesHandler,
-                 parametersInterface.getForcePreconditioning(), additionalParameters);
+                 parametersInterface.getSolverForcePrecision(), additionalParameters);
     }
     /**
      * At this point, one has to calculate X_odd and Y_odd.

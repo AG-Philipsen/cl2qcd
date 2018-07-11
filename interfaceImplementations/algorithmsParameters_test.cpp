@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(testForcesParameters)
     physics::algorithms::ForcesParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getFermact(), params->get_fermact());
-    BOOST_CHECK_EQUAL(test.getForcePreconditioning(), params->get_force_prec());
+    BOOST_CHECK_EQUAL(test.getSolverForcePrecision(), params->get_force_prec());
     BOOST_CHECK_EQUAL(test.getRhoIterations(), params->get_rho_iter());
     BOOST_CHECK_EQUAL(test.getSolver(), params->get_solver());
     BOOST_CHECK_EQUAL(test.getUseGaugeOnly(), params->get_use_gauge_only());

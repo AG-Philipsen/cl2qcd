@@ -43,7 +43,7 @@ namespace physics {
           public:
             virtual ~ForcesParametersInterface() {}
             virtual common::action getFermact() const      = 0;
-            virtual double getForcePreconditioning() const = 0;
+            virtual double getSolverForcePrecision() const = 0;
             virtual unsigned getRhoIterations() const      = 0;
             virtual common::solver getSolver() const       = 0;
             virtual bool getUseSmearing() const            = 0;

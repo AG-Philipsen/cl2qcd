@@ -72,7 +72,7 @@ namespace physics {
             ForcesParametersImplementation(const meta::Inputparameters& paramsIn) : parameters(paramsIn) {}
             virtual ~ForcesParametersImplementation() {}
             virtual common::action getFermact() const override { return parameters.get_fermact(); }
-            virtual double getForcePreconditioning() const override { return parameters.get_force_prec(); }
+            virtual double getSolverForcePrecision() const override { return parameters.get_force_prec(); }
             virtual unsigned getRhoIterations() const override { return parameters.get_rho_iter(); }
             virtual common::solver getSolver() const override { return parameters.get_solver(); }
             virtual bool getUseSmearing() const override { return parameters.get_use_smearing(); }
