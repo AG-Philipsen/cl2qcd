@@ -25,31 +25,31 @@
 #
 
 add_library(algorithms
-	su3heatbath.cpp
-	inversion.cpp
-	molecular_dynamics.cpp
-	metropolis.cpp
-	fermion_force.cpp
-	fermion_force_staggered.cpp
-	forces.cpp
-	integrator.cpp
-	hmc.cpp
-	alg_remez.cpp
-	find_minmax_eigenvalue.cpp
-	rational_approximation.cpp
-	solver_shifted.cpp
-	rhmc.cpp
+    su3heatbath.cpp
+    inversion.cpp
+    molecular_dynamics.cpp
+    metropolis.cpp
+    fermion_force.cpp
+    fermion_force_staggered.cpp
+    forces.cpp
+    integrator.cpp
+    hmc.cpp
+    alg_remez.cpp
+    find_minmax_eigenvalue.cpp
+    rational_approximation.cpp
+    solver_shifted.cpp
+    rhmc.cpp
 )
 add_modules(algorithms
-	solvers
+    solvers
 )
 
 target_link_libraries(algorithms
-	lattices
-	fermionmatrix
-	physics
-	observables
-	optimal
+    lattices
+    fermionmatrix
+    physics
+    observables
+    optimal
 )
 
 #

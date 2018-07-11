@@ -23,15 +23,15 @@
 #
 
 add_library(fermionmatrix
-	fermionmatrix.cpp
-	explicit.cpp
-	fermionmatrix_stagg.cpp
-	explicit_stagg.cpp
+    fermionmatrix.cpp
+    explicit.cpp
+    fermionmatrix_stagg.cpp
+    explicit_stagg.cpp
 )
 target_link_libraries(fermionmatrix
-	meta
-	hardware
-	lattices
+    meta
+    hardware
+    lattices
 )
 
 add_unit_test(physics::fermionmatrix::<explicit> explicit_test)

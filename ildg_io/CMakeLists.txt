@@ -24,24 +24,24 @@
 #
 
 add_library(ildg_io
-	ildgIo_gaugefield.cpp
-	ildgIo.cpp
-	ildgIoParameters.cpp
-	matrixSu3_utilities.cpp
+    ildgIo_gaugefield.cpp
+    ildgIo.cpp
+    ildgIoParameters.cpp
+    matrixSu3_utilities.cpp
 )
 
 target_link_libraries(ildg_io
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	# this needs to be a stand-alone library...
-	einhard
-	logger
-	exceptions
-	meta
-	host_functionality
-	lime
-	sourcefileParameters
-	geometry
+    ${LIME_LIBRARIES}
+    ${LIBXML2_LIBRARIES}
+    # this needs to be a stand-alone library...
+    einhard
+    logger
+    exceptions
+    meta
+    host_functionality
+    lime
+    sourcefileParameters
+    geometry
 )
 
 add_subdirectory(lime)

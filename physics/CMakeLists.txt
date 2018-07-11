@@ -25,29 +25,29 @@
 #
 
 add_library(prng
-	prng.cpp
-	utilities.cpp
+    prng.cpp
+    utilities.cpp
 )
 target_link_libraries(prng
-	ranlux
-	hardware
-	host_functionality
+    ranlux
+    hardware
+    host_functionality
 )
 
 add_library(physics
-	sources.cpp
+    sources.cpp
 )
 add_modules(physics
-	lattices
-	fermionmatrix
-	algorithms
-	observables
+    lattices
+    fermionmatrix
+    algorithms
+    observables
 )
 target_link_libraries(physics
-	hardware
-	prng
-	host_functionality
-	ildg_io
+    hardware
+    prng
+    host_functionality
+    ildg_io
 )
 
 #

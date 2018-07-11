@@ -22,10 +22,10 @@ include_directories(SYSTEM ${Nettle_INCLUDE_DIR})
 
 # Build one crypto lib
 add_library(crypto
-	md5.cpp
+    md5.cpp
 )
 target_link_libraries(crypto
-	${Nettle_LIBRARIES}
+    ${Nettle_LIBRARIES}
 )
 
 add_executable(cryptoTest test.cpp)

@@ -31,7 +31,7 @@ add_test(Gaugefield_Conversion_GPU gaugefield_convert -- --useGPU=true )
 
 #@todo: these tests contain only dummy test and need to be worked on
 add_executable(hardware_code_geometry geometry.cpp)
-target_link_libraries(hardware_code_geometry 	kernelTestUtilities )
+target_link_libraries(hardware_code_geometry     kernelTestUtilities )
 add_test(geometry hardware_code_geometry)
 
 add_executable(calc_staple Calc_staple_test.cpp)

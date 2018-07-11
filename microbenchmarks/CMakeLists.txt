@@ -20,5 +20,5 @@
 
 add_executable(bandwidth bandwidth.cpp)
 target_link_libraries( bandwidth
-	optimal
+    optimal
 )

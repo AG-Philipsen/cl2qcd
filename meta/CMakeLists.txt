@@ -25,32 +25,32 @@
 #
 
 add_library(meta
-	parametersBasic.cpp
-	parametersConfig.cpp
-	parametersIo.cpp
-	parametersGauge.cpp
-	parametersFermion.cpp
-	parametersSources.cpp
-	parametersSolver.cpp
-	parametersObs.cpp
-	parametersHeatbath.cpp
-	parametersIntegrator.cpp
-	parametersRationalApproximation.cpp
-	parametersMonteCarlo.cpp
-	parametersTest.cpp
-	inputparameters.cpp
-	util.cpp
-	util_io.cpp
-	counter.cpp
-	config_file_normalizer.cpp
-	type_ops.cpp
-	../host_functionality/logger.cpp
+    parametersBasic.cpp
+    parametersConfig.cpp
+    parametersIo.cpp
+    parametersGauge.cpp
+    parametersFermion.cpp
+    parametersSources.cpp
+    parametersSolver.cpp
+    parametersObs.cpp
+    parametersHeatbath.cpp
+    parametersIntegrator.cpp
+    parametersRationalApproximation.cpp
+    parametersMonteCarlo.cpp
+    parametersTest.cpp
+    inputparameters.cpp
+    util.cpp
+    util_io.cpp
+    counter.cpp
+    config_file_normalizer.cpp
+    type_ops.cpp
+    ../host_functionality/logger.cpp
 )
 add_dependencies(meta git_commit_id_header)
 target_link_libraries(meta
     exceptions
-	einhard
-	${Boost_LIBRARIES}
+    einhard
+    ${Boost_LIBRARIES}
 )
 
 #

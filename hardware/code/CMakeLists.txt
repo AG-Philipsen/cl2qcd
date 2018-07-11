@@ -25,29 +25,29 @@
 #
 
 add_library(code
-		opencl_module.cpp
-		gaugefield.cpp
-		prng.cpp
-		heatbath.cpp
-		kappa.cpp
-		correlator.cpp
-		correlator_staggered.cpp
-		real.cpp
-		complex.cpp
-		spinors.cpp
-		spinors_staggered.cpp
-		fermions.cpp
-		fermions_staggered.cpp
-		gaugemomentum.cpp
-		molecular_dynamics.cpp
-		buffer.cpp
+        opencl_module.cpp
+        gaugefield.cpp
+        prng.cpp
+        heatbath.cpp
+        kappa.cpp
+        correlator.cpp
+        correlator_staggered.cpp
+        real.cpp
+        complex.cpp
+        spinors.cpp
+        spinors_staggered.cpp
+        fermions.cpp
+        fermions_staggered.cpp
+        gaugemomentum.cpp
+        molecular_dynamics.cpp
+        buffer.cpp
 )
 
 target_link_libraries(code
-		buffers
-		klepsydra
-		einhard
-		hardwareTestUtilities
+        buffers
+        klepsydra
+        einhard
+        hardwareTestUtilities
 )
 
 #
@@ -60,19 +60,19 @@ add_subdirectory(miscellaneousTests)
 configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
 add_library(kernelTestUtilities
-	testUtilities.cpp
-	kernelTester.cpp
-	GaugefieldTester.cpp
-	SpinorTester.cpp
-	GaugemomentumTester.cpp
-	SpinorStaggeredTester.cpp
+    testUtilities.cpp
+    kernelTester.cpp
+    GaugefieldTester.cpp
+    SpinorTester.cpp
+    GaugemomentumTester.cpp
+    SpinorStaggeredTester.cpp
 )
 
 target_link_libraries(kernelTestUtilities
-	${Boost_LIBRARIES}
-	host_functionality
-	hardware
-	geometry
+    ${Boost_LIBRARIES}
+    host_functionality
+    hardware
+    geometry
 )
 
 add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities)

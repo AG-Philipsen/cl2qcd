@@ -23,18 +23,18 @@
 #
 
 add_library(lime
-	limeUtilities.cpp
-	limeFileReader.cpp
-	limeFileWriter.cpp
+    limeUtilities.cpp
+    limeFileReader.cpp
+    limeFileWriter.cpp
 )
 
 target_link_libraries(lime
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	einhard
-	logger
-	exceptions
-	sourcefileParameters
+    ${LIME_LIBRARIES}
+    ${LIBXML2_LIBRARIES}
+    einhard
+    logger
+    exceptions
+    sourcefileParameters
 )
 
 add_unit_test_withLibraries(limeFileReader limeFileReader_test lime)

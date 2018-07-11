@@ -30,7 +30,7 @@ include(Macros)
 
 # If a user doesn't specify anything he probably isn't interested in debug information
 if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # Have the user asked for tests
@@ -40,16 +40,16 @@ include(CTest)
 
 # Make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
-	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++11")
-	set(CMAKE_CXX_FLAGS_RELEASE   "-O4") # LTO on clang, gcc will fall back to O3
-	set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
-	set(CMAKE_CXX_FLAGS_DEBUGFULL "-g3 -fno-linline")
+    set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++11")
+    set(CMAKE_CXX_FLAGS_RELEASE   "-O4") # LTO on clang, gcc will fall back to O3
+    set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
+    set(CMAKE_CXX_FLAGS_DEBUGFULL "-g3 -fno-linline")
 endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
-	set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wc++-compat -Wdisabled-optimization -std=c99")
-	set(CMAKE_C_FLAGS_RELEASE     "-O4") # LTO on clang, gcc will fall back to O3
-	set(CMAKE_C_FLAGS_DEBUG       "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
-	set(CMAKE_C_FLAGS_DEBUGFULL   "-g3 -fno-linline")
+    set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wc++-compat -Wdisabled-optimization -std=c99")
+    set(CMAKE_C_FLAGS_RELEASE     "-O4") # LTO on clang, gcc will fall back to O3
+    set(CMAKE_C_FLAGS_DEBUG       "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
+    set(CMAKE_C_FLAGS_DEBUGFULL   "-g3 -fno-linline")
 endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 
 # Add endianess information
@@ -57,10 +57,10 @@ include(TestBigEndian)
 TEST_BIG_ENDIAN(BIG_ENDIAN)
 message("Big Endian: ${BIG_ENDIAN}")
 if(BIG_ENDIAN)
-	message("Big endian arch..")
-	add_definitions( "BIG_ENDIAN_ARCH=1" )
+    message("Big endian arch..")
+    add_definitions( "BIG_ENDIAN_ARCH=1" )
 else()
-	message("Little endian arch..")
+    message("Little endian arch..")
 endif()
 
 # Make sure we can compile agains opencl
@@ -68,10 +68,10 @@ find_package( OpenCL REQUIRED )
 include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
 # Work around OpenCL implementations not shipping c++ bindings
 if( NOT OPENCL_HAS_CPP_BINDINGS )
-	message(STATUS "No OpenCL CPP bindings found, using hack" )
-	include_directories( SYSTEM hacks/cl_hpp )
+    message(STATUS "No OpenCL CPP bindings found, using hack" )
+    include_directories( SYSTEM hacks/cl_hpp )
 elseif( OPENCL_HAS_CPP_BINDINGS )
-	message (STATUS "OpenCL CPP bindings found" )
+    message (STATUS "OpenCL CPP bindings found" )
 endif( NOT OPENCL_HAS_CPP_BINDINGS )
 # Make sure we can uses OpenCL 1.1 features on AMD APP 2.7
 # (multiple macro needed, see #if in https://stackoverflow.com/a/33018003)
@@ -90,7 +90,7 @@ include_directories( SYSTEM ${MPFR_INCLUDE_DIR} )
 find_package( LibXml2 REQUIRED )
 include_directories( SYSTEM ${LIBXML2_INCLUDE_DIR} )
 if( LIBXML2_DEFINITIONS )
-	add_definitions( ${LIBXML2_DEFINITIONS} )
+    add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
 # Require 1.48 as boost-regex of 1.46 can't be compiled with c++11-enabled g++-4.7
@@ -115,18 +115,18 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/gitcommitid.h
 set(LOG_LEVEL "ALL" CACHE STRING "The minimum log level for output to be written. Options are: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF. Note that some tests will break if INFO messages are not logged.")
 string(REGEX MATCH "^(ALL)|(TRACE)|(DEBUG)|(INFO)|(WARN)|(ERROR)|(FATAL)|(OFF)$" TMP "${LOG_LEVEL}")
 if(TMP STREQUAL "")
-	message(SEND_ERROR "LOG_LEVEL must be one of ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL or OFF. \"${LOG_LEVEL}\" is not a valid value.")
+    message(SEND_ERROR "LOG_LEVEL must be one of ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL or OFF. \"${LOG_LEVEL}\" is not a valid value.")
 endif(TMP STREQUAL "")
 add_definitions(-DLOG_LEVEL=${LOG_LEVEL})
 # Don't compile in debug output if compiling for release
 if( CMAKE_BUILD_TYPE STREQUAL "Release" )
-	add_definitions( -DNDEBUG )
+    add_definitions( -DNDEBUG )
 endif( CMAKE_BUILD_TYPE STREQUAL "Release" )
 
 # Some options for various variants
 option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
 if( USE_DOUBLE_PRECISION )
-	add_definitions( -D_USEDOUBLEPREC_ )
+    add_definitions( -D_USEDOUBLEPREC_ )
 else()
     message(SEND_ERROR "Application not ready in SINGLE precision! Please, set USEDOUBLEPREC=ON.")
 endif( USE_DOUBLE_PRECISION )
@@ -134,22 +134,22 @@ endif( USE_DOUBLE_PRECISION )
 # Allow to choose a PRNG
 set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default)")
 if(PRNG STREQUAL "Ranlux")
-	add_definitions(-DUSE_PRNG_RANLUX)
-	set(PRNG_LIBRARIES ranlux)
+    add_definitions(-DUSE_PRNG_RANLUX)
+    set(PRNG_LIBRARIES ranlux)
 else()
-	message(SEND_ERROR "PRNG must be Ranlux (default). \"${PRNG}\" is not a valid value.")
+    message(SEND_ERROR "PRNG must be Ranlux (default). \"${PRNG}\" is not a valid value.")
 endif()
 
 # Whether to use lazy halo update
 option(LAZY_HALO_UPDATES "Delay halo updates until the halo is required." ON)
 if(LAZY_HALO_UPDATES)
-	add_definitions(-DLAZY_HALO_UPDATES)
+    add_definitions(-DLAZY_HALO_UPDATES)
 endif()
 
 # Whether to enable asynchroneous halo updates
 option(ASYNC_HALO_UPDATES "Perform device-to-device transfers asynchroneous to kernel execution." ON)
 if(ASYNC_HALO_UPDATES)
-	add_definitions(-DASYNC_HALO_UPDATES)
+    add_definitions(-DASYNC_HALO_UPDATES)
 endif()
 
 # Default random number seed
@@ -158,39 +158,39 @@ configure_file( rand_seeds rand_seeds COPYONLY )
 # Which directories contain documentation relevant stuff
 # (modules will add their files to this list)
 set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
-	${CMAKE_SOURCE_DIR}
-	${CMAKE_SOURCE_DIR}/klepsydra
-	${CMAKE_SOURCE_DIR}/einhard
-	${CMAKE_SOURCE_DIR}/crypto
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/klepsydra
+    ${CMAKE_SOURCE_DIR}/einhard
+    ${CMAKE_SOURCE_DIR}/crypto
 )
 
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
 )
 set(OPTIMAL_USED_LIBS
-	${OPENCL_LIBRARIES}
+    ${OPENCL_LIBRARIES}
 #${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
-	${MPFR_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	${PRNG_LIBRARIES}
-	crypto
-	executables
+    ${MPFR_LIBRARIES}
+    ${LIME_LIBRARIES}
+    ${LIBXML2_LIBRARIES}
+    ${Boost_LIBRARIES}
+    klepsydra
+    ${PRNG_LIBRARIES}
+    crypto
+    executables
 )
 
 add_library(optimal ${OPTIMAL_FILES})
 # Add all modules
 add_modules(optimal
-	meta
-	hardware
-	geometry
-	host_functionality
-	ildg_io
-	physics
-	einhard
-	executables
+    meta
+    hardware
+    geometry
+    host_functionality
+    ildg_io
+    physics
+    einhard
+    executables
 )
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
 set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
@@ -213,10 +213,10 @@ target_link_libraries(rhmc optimal)
 
 # Utilities
 add_library(klepsydra
-	klepsydra/timer.cpp
-	klepsydra/monotonic.cpp)
+    klepsydra/timer.cpp
+    klepsydra/monotonic.cpp)
 if(NOT CMAKE_HOST_APPLE)
-	target_link_libraries(klepsydra rt)
+    target_link_libraries(klepsydra rt)
 endif(NOT CMAKE_HOST_APPLE)
 
 # Boost test
@@ -233,13 +233,13 @@ add_subdirectory(interfaceImplementations)
 
 option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
 if(BUILD_MICROBENCHMARKS)
-	add_subdirectory(microbenchmarks)
+    add_subdirectory(microbenchmarks)
 endif(BUILD_MICROBENCHMARKS)
 
 # Benchmarking
 option(BUILD_BENCHMARKS "Build benchmarks" OFF)
 if(BUILD_BENCHMARKS)
-	add_subdirectory(benchmarks)
+    add_subdirectory(benchmarks)
 endif(BUILD_BENCHMARKS)
 
 # Documentation

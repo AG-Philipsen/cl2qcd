@@ -24,19 +24,19 @@
 #
 
 add_library(buffers
-	buffer.cpp
-	prng_buffer.cpp
-	su3.cpp
-	spinor.cpp
-	gaugemomentum.cpp
-	3x3.cpp
-	halo_update.cpp
-	su3vec.cpp
+    buffer.cpp
+    prng_buffer.cpp
+    su3.cpp
+    spinor.cpp
+    gaugemomentum.cpp
+    3x3.cpp
+    halo_update.cpp
+    su3vec.cpp
 )
 
 target_link_libraries(buffers
-	hardware
-	code
+    hardware
+    code
 )
 
 #

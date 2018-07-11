@@ -20,7 +20,7 @@
 
 add_executable(boost_test boost_test.cpp)
 target_link_libraries(boost_test
-	${Boost_LIBRARIES}
+    ${Boost_LIBRARIES}
 )
 add_test(boost_ARGC_1 boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_1)
 add_test(boost_ARGC_2 boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2 -- ${CMAKE_CURRENT_SOURCE_DIR})

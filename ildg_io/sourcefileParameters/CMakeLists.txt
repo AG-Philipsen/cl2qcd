@@ -23,15 +23,15 @@
 #
 
 add_library(sourcefileParameters
-	SourcefileParameters.cpp
-	SourcefileParameters_utilities.cpp
+    SourcefileParameters.cpp
+    SourcefileParameters_utilities.cpp
 )
 
 target_link_libraries(sourcefileParameters
-	logger
-	exceptions
-	meta
-	${LIBXML2_LIBRARIES}
+    logger
+    exceptions
+    meta
+    ${LIBXML2_LIBRARIES}
 )
 
 add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test sourcefileParameters)

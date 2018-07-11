@@ -23,27 +23,27 @@
 #
 
 add_library(exceptions
-	exceptions.cpp
+    exceptions.cpp
 )
 
 add_library(executables
-	generalExecutable.cpp
-	generationExecutable.cpp
-	measurementExecutable.cpp
-	benchmarkExecutable.cpp
-	su3heatbathExecutable.cpp
-	gaugeobservablesExecutable.cpp
-	inverterExecutable.cpp
-	hmcExecutable.cpp
-	rhmcExecutable.cpp
-	dslashBenchmark.cpp
-	dksBenchmark.cpp
-	su3heatbathBenchmark.cpp
+    generalExecutable.cpp
+    generationExecutable.cpp
+    measurementExecutable.cpp
+    benchmarkExecutable.cpp
+    su3heatbathExecutable.cpp
+    gaugeobservablesExecutable.cpp
+    inverterExecutable.cpp
+    hmcExecutable.cpp
+    rhmcExecutable.cpp
+    dslashBenchmark.cpp
+    dksBenchmark.cpp
+    su3heatbathBenchmark.cpp
 )
 
 target_link_libraries(executables
-	exceptions
-	physics
+    exceptions
+    physics
 )
 
 add_subdirectory(tests)

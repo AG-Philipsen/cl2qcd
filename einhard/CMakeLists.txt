@@ -19,5 +19,5 @@
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 add_library(einhard
-	einhard.cpp
+    einhard.cpp
 )

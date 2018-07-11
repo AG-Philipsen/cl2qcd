@@ -23,26 +23,26 @@
 #
 
 add_library(hardware_lattices
-	prng.cpp
-	gaugefield.cpp
-	gaugemomenta.cpp
-	spinorfield.cpp
-	spinorfield_eo.cpp
-	staggeredfield_eo.cpp
+    prng.cpp
+    gaugefield.cpp
+    gaugemomenta.cpp
+    spinorfield.cpp
+    spinorfield_eo.cpp
+    staggeredfield_eo.cpp
 )
 
 target_link_libraries(hardware_lattices
-	hardware
-	code
-	buffers
-	host_functionality
+    hardware
+    code
+    buffers
+    host_functionality
 )
 
 #
 # Definition of tests
 #
 # add_executable(Gaugefield gaugefield_test.cpp)
-# target_link_libraries(Gaugefield 	${Boost_LIBRARIES} geometry crypto)
+# target_link_libraries(Gaugefield     ${Boost_LIBRARIES} geometry crypto)
 # add_test(gaugefield Gaugefield )
 
 # add_unit_test_withLibraries(hardware::lattices::Gaugefield hardware_lattices_gaugefield_test lattices crypto)

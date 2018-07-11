@@ -24,26 +24,26 @@
 #
 
 add_library(gaugeObservables
-	gaugeObservables.cpp
+    gaugeObservables.cpp
 )
 
 add_library(observables
-	wilsonTwoFlavourChiralCondensate.cpp
-	wilsonTwoFlavourCorrelators.cpp
-	staggeredChiralCondensate.cpp
-	staggeredTwoFlavourCorrelators.cpp
+    wilsonTwoFlavourChiralCondensate.cpp
+    wilsonTwoFlavourCorrelators.cpp
+    staggeredChiralCondensate.cpp
+    staggeredTwoFlavourCorrelators.cpp
 )
 
 target_link_libraries(observables
-	lattices
-	gaugeObservables
-	algorithms
-	fermionmatrix
-	prng
-	meta
-	hardware
-	host_functionality
-	ildg_io
+    lattices
+    gaugeObservables
+    algorithms
+    fermionmatrix
+    prng
+    meta
+    hardware
+    host_functionality
+    ildg_io
 )
 
 #

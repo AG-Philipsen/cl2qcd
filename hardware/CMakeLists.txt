@@ -25,29 +25,29 @@
 #
 
 add_library(hardware
-	system.cpp
-	device.cpp
-	device_info.cpp
-	profiling_data.cpp
-	synchronization_event.cpp
-	opencl_compiler.cpp
+    system.cpp
+    device.cpp
+    device_info.cpp
+    profiling_data.cpp
+    synchronization_event.cpp
+    opencl_compiler.cpp
 )
 
 add_library(hardwareTestUtilities
-	hardwareTestUtilities.cpp
+    hardwareTestUtilities.cpp
 )
 
 
 add_modules(hardware
-	buffers
-	code
-	transfer
+    buffers
+    code
+    transfer
 )
 
 #TODO: the following two lines are a workaround for the linking against the hardware_lattices library whose name cannot coincide with the name of the corresponding directory because of homonymy with (physics/)lattices
 add_subdirectory(lattices)
 set_property(GLOBAL APPEND PROPERTY DOC_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/lattices")
-target_link_libraries(hardware 	${OPENCL_LIBRARIES} exceptions crypto meta geometry hardware_lattices)
+target_link_libraries(hardware     ${OPENCL_LIBRARIES} exceptions crypto meta geometry hardware_lattices)
 
 #
 # Definition of tests
