@@ -127,6 +127,8 @@ endif( CMAKE_BUILD_TYPE STREQUAL "Release" )
 option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
 if( USE_DOUBLE_PRECISION )
 	add_definitions( -D_USEDOUBLEPREC_ )
+else()
+    message(SEND_ERROR "Application not ready in SINGLE precision! Please, set USEDOUBLEPREC=ON.")
 endif( USE_DOUBLE_PRECISION )
 
 # Allow to choose a PRNG
