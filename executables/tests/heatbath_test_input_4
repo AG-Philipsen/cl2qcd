@@ -12,10 +12,9 @@
 ##################################################################
 nSpace=16
 nTime=16
-useReconstruct12=1
 useGPU=1
 beta=6
-confPrecision=64
+precision=64
 startCondition=cold
 initialConf=conf.save
 nThermalizationSteps=0

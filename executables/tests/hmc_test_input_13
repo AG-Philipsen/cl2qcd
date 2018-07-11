@@ -1,7 +1,7 @@
 #global settings
 nSpace=4
 nTime=4
-confPrecision=64
+precision=64
 useGPU=0
 
 #fermion-parameters

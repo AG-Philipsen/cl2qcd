@@ -67,7 +67,7 @@ int meta::ParametersObs::get_pbp_measurements() const noexcept
 meta::ParametersObs::ParametersObs()
     : measure_transportcoefficient_kappa(false)
     , measure_rectangles(false)
-    , measure_correlators(true)
+    , measure_correlators(false)
     , measure_pbp(false)
     , corr_dir(3)
     , pbp_measurements(1)

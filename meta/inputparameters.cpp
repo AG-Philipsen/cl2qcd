@@ -94,7 +94,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                                                    "rhmcObsPrefix", "rhmcObsPostfix"}))
             .add(ParametersGauge::options.deleteSome({"gaugeAction"}))
             .add(ParametersFermion::options.deleteSome({"csw", "kappaMP", "muMP", "cswMP", "fermionActionMP"}))
-            .add(ParametersSolver::options.deleteSome({"solverMP", "cgMaxIterationsMP", "restartEveryMP"}))
+            .add(ParametersSolver::options.deleteSome({"solverMP", "solverMaxIterationsMP", "solverUseAsyncCopy"}))
             .add(ParametersSources::options)
             .add(ParametersObs::options);
     } else if (parameterSet == "hmc") {
@@ -103,7 +103,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersIo::options.deleteSome({"rhmcObsToSingleFile", "rhmcObsPrefix", "rhmcObsPostfix"}))
             .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
             .add(ParametersFermion::options.deleteSome({"mass", "csw", "cswMP"}))
-            .add(ParametersSolver::options)
+            .add(ParametersSolver::options.deleteSome({"solverUseAsyncCopy"}))
             .add(ParametersSources::options)
             .add(ParametersObs::options)
             .add(ParametersHeatbath::options.keepOnlySome({"nThermalizationSteps"}))
@@ -117,7 +117,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersFermion::options.deleteSome(
                 {"fermionActionMP", "kappa", "mu", "csw", "kappaMP", "muMP", "cswMP"}))
             .add(ParametersSolver::options.deleteSome(
-                {"solverMP", "cgMaxIterationsMP", "restartEvery", "restartEveryMP"}))
+                {"solver", "solverMP", "solverMaxIterationsMP", "solverRestartEvery", "solverUseAsyncCopy"}))
             .add(ParametersSources::options.deleteSome({"placeSourcesOnHost"}))
             .add(ParametersObs::options)
             .add(ParametersIntegrator::options)
@@ -126,11 +126,11 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersRhmc::options);
     } else  // default: add all options
     {
-        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12"}))
+        desc.add(ParametersConfig::options)  // useReconstruct12 not working if activated!
             .add(ParametersIo::options)
             .add(ParametersGauge::options)
             .add(ParametersHeatbath::options)
-            .add(ParametersFermion::options)
+            .add(ParametersFermion::options)  // solverUseAsyncCopy not implemented yet!
             .add(ParametersSolver::options)
             .add(ParametersSources::options)
             .add(ParametersObs::options)

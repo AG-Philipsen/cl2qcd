@@ -1,6 +1,7 @@
 /** @file
  *
  * Copyright (c) 2018 Francesca Cuteri
+ * Copyright (c) 2018 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -80,7 +81,7 @@ double ParametersIntegrator::get_lambda(size_t timescale) const noexcept
 }
 
 ParametersIntegrator::ParametersIntegrator()
-    : tau(0.5)
+    : tau(1.0)
     , integrationsteps0(10)
     , integrationsteps1(10)
     , integrationsteps2(10)
@@ -99,7 +100,7 @@ ParametersIntegrator::ParametersIntegrator()
     // clang-format off
     options.add_options()
     ("tau", po::value<double>(&tau)->default_value(tau),"The total time of integration.")
-    ("nTimeScales", po::value<int>(&num_timescales)->default_value(num_timescales),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different timescales must use the same integrator.")
+    ("nTimeScales", po::value<int>(&num_timescales)->default_value(num_timescales),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different time scales must use the same integrator.")
     ("integrator0", po::value<std::string>(&integrator0String)->default_value(integrator0String),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
     ("integrator1", po::value<std::string>(&integrator1String)->default_value(integrator1String),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
     ("integrator2", po::value<std::string>(&integrator2String)->default_value(integrator2String),"The integration scheme for timescale 2 (one among leapfrog and twomn).")

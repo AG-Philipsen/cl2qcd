@@ -34,7 +34,6 @@ namespace meta {
         double get_solver_prec() const noexcept;
         double get_force_prec() const noexcept;
         int get_iter_refresh() const noexcept;
-        int get_iter_refresh_mp() const noexcept;
         int get_cg_iteration_block_size() const noexcept;
         bool get_cg_use_async_copy() const noexcept;
         int get_cg_minimum_iteration_count() const noexcept;
@@ -45,7 +44,6 @@ namespace meta {
         double solver_prec;
         double force_prec;
         int iter_refresh;
-        int iter_refresh_mp;
         int cgmax;
         int cgmax_mp;
         int cg_iteration_block_size;

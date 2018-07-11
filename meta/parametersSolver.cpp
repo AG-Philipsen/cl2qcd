@@ -37,7 +37,6 @@ int meta::ParametersSolver::get_cgmax_mp() const noexcept
 {
     return cgmax_mp;
 }
-
 double meta::ParametersSolver::get_solver_prec() const noexcept
 {
     return solver_prec;
@@ -49,10 +48,6 @@ double meta::ParametersSolver::get_force_prec() const noexcept
 int meta::ParametersSolver::get_iter_refresh() const noexcept
 {
     return iter_refresh;
-}
-int meta::ParametersSolver::get_iter_refresh_mp() const noexcept
-{
-    return iter_refresh_mp;
 }
 common::solver meta::ParametersSolver::get_solver() const noexcept
 {
@@ -87,7 +82,6 @@ meta::ParametersSolver::ParametersSolver()
     , force_prec(1e-8)
 #endif
     , iter_refresh(100)
-    , iter_refresh_mp(100)
     , cgmax(1000)
     , cgmax_mp(1000)
     , cg_iteration_block_size(10)
@@ -103,15 +97,14 @@ meta::ParametersSolver::ParametersSolver()
     options.add_options()
     ("solver", po::value<std::string>(&_solverString)->default_value(_solverString),"Which type of (restarted) solver to use (one among 'cg', 'bicgstab' and 'bicgstab_save').")
     ("solverMP", po::value<std::string>(&_solverMPString)->default_value(_solverMPString),"Which type of solver to use with Mass Preconditioning (one among 'cg', 'bicgstab' and 'bicgstab_save').")
-    ("cgMaxIterations", po::value<int>(&cgmax)->default_value(cgmax),"The maximum number of iterations in the solver.")
-    ("cgMaxIterationsMP", po::value<int>(&cgmax_mp)->default_value(cgmax_mp),"The maximum number of iterations in the solver with Mass Preconditioning.")
-    ("solverPrecision", po::value<double>(&solver_prec)->default_value(solver_prec),"The precision used in Metropolis inversions.")
-    ("forcePrecision", po::value<double>(&force_prec)->default_value(force_prec),"The precision used in  Molecular Dynamics inversions.")
-    ("restartEvery", po::value<int>(&iter_refresh)->default_value(iter_refresh),"The frequency at which the current approximate solution becomes the new initial guess for the next 'restartEvery' iterations of the solver.")
-    ("restartEveryMP", po::value<int>(&iter_refresh_mp)->default_value(iter_refresh_mp),"The frequency at which the current approximate solution becomes the new initial guess for the next 'restartEvery' iterations of the solver, with Mass Preconditioning.")
+    ("solverMaxIterations", po::value<int>(&cgmax)->default_value(cgmax),"The maximum number of iterations in the solver.")
+    ("solverMinIterations", po::value<int>(&cg_minimum_iteration_count)->default_value(cg_minimum_iteration_count), "The minimum number of iterations to be performed by the cg solver. To be used for benchmark purposes only!")
+    ("solverMaxIterationsMP", po::value<int>(&cgmax_mp)->default_value(cgmax_mp),"The maximum number of iterations in the solver with Mass Preconditioning.")
+    ("solverPrecision", po::value<double>(&solver_prec)->default_value(solver_prec),"The precision used in all inversions, except those in the Molecular Dynamics.")
+    ("solverForcePrecision", po::value<double>(&force_prec)->default_value(force_prec),"The precision used in Molecular Dynamics inversions.")
+    ("solverRestartEvery", po::value<int>(&iter_refresh)->default_value(iter_refresh),"Every how many iterations the residuum is set to \"A*x-b\" using the current approximate solution before being normally updated.")
     ("solverResiduumCheckEvery", po::value<int>(&cg_iteration_block_size)->default_value(cg_iteration_block_size), "The frequency at which the solver will check the residuum.")
-    ("cgUseAsyncCopy", po::value<bool>(&cg_use_async_copy)->default_value(cg_use_async_copy), "Whether the solver uses residuum of iteration N - 'checkResidualEvery' for termination condition on iteration N.")
-    ("cgMinIterations", po::value<int>(&cg_minimum_iteration_count)->default_value(cg_minimum_iteration_count), "The minimum number of iterations to be performed by the cg solver. To be used for benchmark purposes only!");
+    ("solverUseAsyncCopy", po::value<bool>(&cg_use_async_copy)->default_value(cg_use_async_copy), "Whether the solver uses residuum of iteration N - 'checkResidualEvery' for termination condition on iteration N.");
     // clang-format on
 }
 

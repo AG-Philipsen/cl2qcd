@@ -107,7 +107,6 @@ void checkDefaults(const Inputparameters& params)
     BOOST_REQUIRE_EQUAL(params.get_force_prec(), 1e-8);
 #endif
     BOOST_REQUIRE_EQUAL(params.get_iter_refresh(), 100);
-    BOOST_REQUIRE_EQUAL(params.get_iter_refresh_mp(), 100);
     BOOST_REQUIRE_EQUAL(params.get_benchmarksteps(), 500);
 
     // HMC specific parameters
@@ -242,7 +241,6 @@ BOOST_AUTO_TEST_CASE(input_file2)
     BOOST_REQUIRE_EQUAL(params.get_solver_prec(), 1e-21);
     BOOST_REQUIRE_EQUAL(params.get_force_prec(), 1e-16);
     BOOST_REQUIRE_EQUAL(params.get_iter_refresh(), 105);
-    BOOST_REQUIRE_EQUAL(params.get_iter_refresh_mp(), 107);
 
     BOOST_REQUIRE_EQUAL(params.get_benchmarksteps(), 10);
 

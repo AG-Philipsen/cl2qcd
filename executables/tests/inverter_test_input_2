@@ -1,6 +1,6 @@
 nSpace=4
 nTime=4
-confPrecision=64
+precision=64
 
 kappa=.15
 mu=4.

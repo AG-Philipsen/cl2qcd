@@ -7,13 +7,12 @@
 ##################################################################
 nSpace=4
 nTime=4
-useReconstruct12=0
 useGPU=0
-confPrecision=64
+precision=64
 
 kappa=.15
 mu=4.
-cgMaxIterations=1000
+solverMaxIterations=1000
 beta=6
 startCondition=cold
 createCheckpointEvery=10

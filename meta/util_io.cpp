@@ -511,7 +511,6 @@ void meta::print_info_hmc(const Inputparameters& params)
                 break;
         }
         logger.info() << "## cgmax_mp  = " << params.get_cgmax_mp();
-        logger.info() << "## iter_refresh_mp  = " << params.get_iter_refresh_mp();
         logger.info() << "##";
     }
     logger.info() << "## **********************************************************";
@@ -574,7 +573,6 @@ void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
                 break;
         }
         *os << "## cgmax_mp  = " << params.get_cgmax_mp() << '\n';
-        *os << "## iter_refresh_mp  = " << params.get_iter_refresh_mp() << '\n';
         *os << "##" << '\n';
     }
     *os << "## **********************************************************" << '\n';

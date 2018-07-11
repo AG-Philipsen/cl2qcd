@@ -7,20 +7,19 @@
 ##################################################################
 nSpace=4
 nTime=4
-useReconstruct12=0
 useGPU=0
-confPrecision=64
+precision=64
 
 kappa=.1
 mu=0.5
-cgMaxIterations=1000
+solverMaxIterations=1000
 beta=5.69
 startCondition=cold
 fermionAction=TWISTEDMASS
 
 #solver-parameters
 useEO=no
-solver=bicgstab
+solver=cg
 
 #HMC-parameters
 nHmcSteps=1

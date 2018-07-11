@@ -42,8 +42,8 @@ csw = 0.1
 kappaMP = 0.1125
 muMP = 0.016
 cswMP = 0.2
-cgMaxIterations = 100
-cgMaxIterationsMP = 103
+solverMaxIterations = 100
+solverMaxIterationsMP = 103
 thetaFermionSpatial = 0.8
 thetaFermionTemporal = 0.9
 chemicalPotentialRe = 0.11
@@ -58,9 +58,8 @@ sourceY = 2
 sourceZ = 3
 sourceT = 4
 solverPrecision = 1e-21
-forcePrecision = 1e-16
-restartEvery = 105
-restartEveryMP = 107
+solverForcePrecision = 1e-16
+solverRestartEvery = 105
 
 # HMC specific parameters
 tau = 0.51234
