@@ -1,0 +1,10 @@
+# Hardware and lattice parameters
+nSpace=4
+nTime=8
+useGPU=0
+precision=64
+
+# Physics parameters
+startCondition=continue
+initialConf=conf.save
+beta=4.00

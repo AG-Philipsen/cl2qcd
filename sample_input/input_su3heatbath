@@ -1,0 +1,14 @@
+# Hardware and lattice parameters
+nSpace=4
+nTime=4
+useGPU=0
+precision=64
+
+# Physics parameters
+startCondition=cold
+beta=6.00
+nThermalizationSteps=0
+nHeatbathSteps=1000
+onlineMeasureEvery=1
+createCheckpointEvery=500
+overwriteTemporaryCheckpointEvery=200

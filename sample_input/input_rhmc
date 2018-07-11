@@ -5,16 +5,18 @@ useGPU=0
 precision=64
 
 # Physics parameters
-kappa=0.08
-solverMaxIterations=1000
+mass=1.25
 beta=6
+nTastes=3
 startCondition=hot
 createCheckpointEvery=5
 overwriteTemporaryCheckpointEvery=2
 fermionAction=wilson
 useEO=true
-solver=cg
-nHmcSteps=10
+solverMaxIterations=1000
 integrationSteps1=10
 nTimeScales=1
+integrator0=leapfrog
 tau=1
+readRationalApproxFromFile=0
+nRhmcSteps=10
