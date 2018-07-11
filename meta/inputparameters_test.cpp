@@ -110,7 +110,7 @@ void checkDefaults(const Inputparameters& params)
     BOOST_REQUIRE_EQUAL(params.get_benchmarksteps(), 500);
 
     // HMC specific parameters
-    BOOST_REQUIRE_EQUAL(params.get_tau(), 0.5);
+    BOOST_REQUIRE_EQUAL(params.get_tau(), 1.0);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(0), 10);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(1), 10);
     BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
