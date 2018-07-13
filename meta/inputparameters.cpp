@@ -76,9 +76,11 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                                                    "fermObsCorrelatorsPostfix", "fermObsPbpPrefix", "fermObsPbpPostfix",
                                                    "hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix",
                                                    "rhmcObsToSingleFile", "rhmcObsPrefix", "rhmcObsPostfix"}))
+            .add(ParametersMonteCarlo::options.keepOnlySome(
+                {"nThermalizationSteps", "nOverrelaxationSteps", "useAnisotropy", "xi"}))
             .add(ParametersGauge::options.keepOnlySome({"beta"}))
-            .add(ParametersHeatbath::options)
             .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
+
     } else if (parameterSet == "gaugeobservables") {
         desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "nBenchmarkIterations"}))
             .add(ParametersIo::options.keepOnlySome(
@@ -87,6 +89,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                  "profilingDataPostfix", "gaugeObsInSingleFile", "gaugeObsPrefix", "gaugeObsPostfix"}))
             .add(ParametersGauge::options.keepOnlySome({"beta"}))
             .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
+
     } else if (parameterSet == "inverter") {
         desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "nBenchmarkIterations"}))
             .add(ParametersIo::options.deleteSome({"onlineMeasureEvery", "createCheckpointEvery",
@@ -95,52 +98,53 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                                                    "rhmcObsPrefix", "rhmcObsPostfix"}))
             .add(ParametersGauge::options.deleteSome({"gaugeAction"}))
             .add(ParametersFermion::options.deleteSome({"csw", "kappaMP", "muMP", "cswMP", "fermionActionMP"}))
-            .add(ParametersSolver::options.deleteSome({"solverMP", "solverMaxIterationsMP", "solverUseAsyncCopy"}))
+            .add(ParametersObs::options)
             .add(ParametersSources::options)
-            .add(ParametersObs::options);
+            .add(ParametersSolver::options.deleteSome({"solverMP", "solverMaxIterationsMP", "solverUseAsyncCopy"}));
+
     } else if (parameterSet == "hmc") {
         desc.add(
                 ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
                                                       "readUntilConfNumber", "readConfsEvery", "nBenchmarkIterations"}))
             .add(ParametersIo::options.deleteSome({"rhmcObsToSingleFile", "rhmcObsPrefix", "rhmcObsPostfix"}))
+            .add(ParametersMonteCarlo::options.keepOnlySome(
+                {"nThermalizationSteps", "nHmcSteps", "useGaugeOnly", "useMP"}))
             .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
             .add(ParametersFermion::options.deleteSome({"mass", "csw", "cswMP"}))
-            .add(ParametersSolver::options.deleteSome({"solverUseAsyncCopy"}))
-            .add(ParametersSources::options)
-            .add(ParametersObs::options)
-            .add(ParametersHeatbath::options.keepOnlySome({"nThermalizationSteps"}))
             .add(ParametersIntegrator::options)
-            .add(ParametersHmc::options);
+            .add(ParametersSolver::options.deleteSome({"solverUseAsyncCopy"}))
+            .add(ParametersObs::options)
+            .add(ParametersSources::options);
+
     } else if (parameterSet == "rhmc") {
         desc.add(
                 ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
                                                       "readUntilConfNumber", "readConfsEvery", "nBenchmarkIterations"}))
             .add(ParametersIo::options.deleteSome({"hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix"}))
+            .add(ParametersMonteCarlo::options.keepOnlySome(
+                {"nThermalizationSteps", "nRhmcSteps", "nTastes", "nTastesDecimalDigits", "nPseudoFermions"}))
             .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
             .add(ParametersFermion::options.deleteSome(
                 {"fermionActionMP", "kappa", "mu", "csw", "kappaMP", "muMP", "cswMP"}))
+            .add(ParametersRationalApproximation::options)
+            .add(ParametersIntegrator::options)
             .add(ParametersSolver::options.deleteSome(
                 {"solver", "solverMP", "solverMaxIterationsMP", "solverRestartEvery", "solverUseAsyncCopy"}))
-            .add(ParametersSources::options.deleteSome({"placeSourcesOnHost"}))
             .add(ParametersObs::options)
-            .add(ParametersIntegrator::options)
-            .add(ParametersHeatbath::options.keepOnlySome({"nThermalizationSteps"}))
-            .add(ParametersRationalApproximation::options)
-            .add(ParametersRhmc::options);
+            .add(ParametersSources::options.deleteSome({"placeSourcesOnHost"}));
+
     } else  // default: add all options
     {
         desc.add(ParametersConfig::options)  // useReconstruct12 not working if activated!
             .add(ParametersIo::options)
             .add(ParametersGauge::options)
-            .add(ParametersHeatbath::options)
+            .add(ParametersMonteCarlo::options)
             .add(ParametersFermion::options)  // solverUseAsyncCopy not implemented yet!
             .add(ParametersSolver::options)
             .add(ParametersSources::options)
             .add(ParametersObs::options)
-            .add(ParametersHmc::options)
             .add(ParametersIntegrator::options)
             .add(ParametersRationalApproximation::options)
-            .add(ParametersRhmc::options)
             .add(ParametersTest::options);
     }
 

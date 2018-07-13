@@ -28,38 +28,35 @@
 
 namespace meta {
 
-    /*
-     * TODO: Think whether the following two classes can be unified
-     */
-
-    class ParametersHmc {
+    class ParametersMonteCarlo {
       public:
+        // Heat bath
+        int get_thermalizationsteps() const noexcept;
+        int get_heatbathsteps() const noexcept;
+        int get_overrelaxsteps() const noexcept;
+        int get_xi() const noexcept;
+        bool get_use_aniso() const noexcept;
+        // Hmc
         int get_hmcsteps() const noexcept;
         bool get_use_gauge_only() const noexcept;
         bool get_use_mp() const noexcept;
-
-      private:
-        int hmcsteps;
-        bool use_gauge_only;
-        bool use_mp;
-
-      protected:
-        ParametersHmc();
-        virtual ~ParametersHmc()            = default;
-        ParametersHmc(ParametersHmc const&) = delete;
-        ParametersHmc& operator=(ParametersHmc const&) = delete;
-
-        InputparametersOptions options;
-    };
-
-    class ParametersRhmc {
-      public:
+        // Rhmc
         double get_num_tastes() const noexcept;
         unsigned int get_num_tastes_decimal_digits() const noexcept;
         unsigned int get_num_pseudofermions() const noexcept;
         unsigned int get_rhmcsteps() const noexcept;
 
-      protected:
+      private:
+        int thermalizationsteps;
+        // TODO: Unify the following three parameters
+        int heatbathsteps;
+        int hmcsteps;
+        unsigned int numberOfRhmcSteps;
+        int overrelaxsteps;
+        int xi;
+        bool use_aniso;
+        bool use_gauge_only;
+        bool use_mp;
         /**
          * @internal The variable num_tastes should naturally be an integer. But there is no reason that
          *           forbids to run the RHMC with a rational number of tastes. So we decide to declare it
@@ -74,14 +71,12 @@ namespace meta {
         double numberOfTastes;
         unsigned int numberOfDecimalDigitsInNumberOfTastes;
         unsigned int numberOfPseudofermions;
-        unsigned int numberOfRhmcSteps;
 
       protected:
-        ParametersRhmc();
-        virtual ~ParametersRhmc()             = default;
-        ParametersRhmc(ParametersRhmc const&) = delete;
-        ParametersRhmc& operator=(ParametersRhmc const&) = delete;
-
+        ParametersMonteCarlo();
+        virtual ~ParametersMonteCarlo()                   = default;
+        ParametersMonteCarlo(ParametersMonteCarlo const&) = delete;
+        ParametersMonteCarlo& operator=(ParametersMonteCarlo const&) = delete;
         InputparametersOptions options;
     };
 

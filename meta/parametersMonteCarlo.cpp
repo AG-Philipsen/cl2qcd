@@ -23,62 +23,81 @@
 
 #include "parametersMonteCarlo.hpp"
 
-using namespace meta;
-
-int ParametersHmc::get_hmcsteps() const noexcept
+int meta::ParametersMonteCarlo::get_thermalizationsteps() const noexcept
+{
+    return thermalizationsteps;
+}
+int meta::ParametersMonteCarlo::get_heatbathsteps() const noexcept
+{
+    return heatbathsteps;
+}
+int meta::ParametersMonteCarlo::get_overrelaxsteps() const noexcept
+{
+    return overrelaxsteps;
+}
+int meta::ParametersMonteCarlo::get_xi() const noexcept
+{
+    return xi;
+}
+bool meta::ParametersMonteCarlo::get_use_aniso() const noexcept
+{
+    return use_aniso;
+}
+int meta::ParametersMonteCarlo::get_hmcsteps() const noexcept
 {
     return hmcsteps;
 }
-
-bool ParametersHmc::get_use_gauge_only() const noexcept
+bool meta::ParametersMonteCarlo::get_use_gauge_only() const noexcept
 {
     return use_gauge_only;
 }
 
-bool ParametersHmc::get_use_mp() const noexcept
+bool meta::ParametersMonteCarlo::get_use_mp() const noexcept
 {
     return use_mp;
 }
-
-ParametersHmc::ParametersHmc() : hmcsteps(10), use_gauge_only(false), use_mp(false), options("HMC options")
-{
-    // clang-format off
-    options.add_options()
-    ("nHmcSteps", po::value<int>(&hmcsteps)->default_value(hmcsteps),"The number of HMC steps (i.e. the number of configuration updates in the Markov chain).")
-    // this is the optimal value...
-    ("useGaugeOnly", po::value<bool>(&use_gauge_only)->default_value(use_gauge_only),"Whether to simulate pure gauge theory with HMC. In this case 'nTimeScales' has to be set to 1.")
-    ("useMP", po::value<bool>(&use_mp)->default_value(use_mp),"Whether to use the Mass Preconditioning trick.");
-    // clang-format on
-}
-
-//===========================================================================================================
-
-double ParametersRhmc::get_num_tastes() const noexcept
+double meta::ParametersMonteCarlo::get_num_tastes() const noexcept
 {
     return numberOfTastes;
 }
-unsigned int ParametersRhmc::get_num_tastes_decimal_digits() const noexcept
+unsigned int meta::ParametersMonteCarlo::get_num_tastes_decimal_digits() const noexcept
 {
     return numberOfDecimalDigitsInNumberOfTastes;
 }
-unsigned int ParametersRhmc::get_num_pseudofermions() const noexcept
+unsigned int meta::ParametersMonteCarlo::get_num_pseudofermions() const noexcept
 {
     return numberOfPseudofermions;
 }
-unsigned int ParametersRhmc::get_rhmcsteps() const noexcept
+unsigned int meta::ParametersMonteCarlo::get_rhmcsteps() const noexcept
 {
     return numberOfRhmcSteps;
 }
 
-meta::ParametersRhmc::ParametersRhmc()
-    : numberOfTastes(2)
+meta::ParametersMonteCarlo::ParametersMonteCarlo()
+    : thermalizationsteps(0)
+    , heatbathsteps(1000)
+    , hmcsteps(10)
+    , numberOfRhmcSteps(10)
+    , overrelaxsteps(1)
+    , xi(1)
+    , use_aniso(false)
+    , use_gauge_only(false)
+    , use_mp(false)
+    , numberOfTastes(2)
     , numberOfDecimalDigitsInNumberOfTastes(0)
     , numberOfPseudofermions(1)
-    , numberOfRhmcSteps(10)
-    , options("RHMC options")
+    , options("Monte Carlo options")
 {
     // clang-format off
     options.add_options()
+    ("nThermalizationSteps", po::value<int>(&thermalizationsteps)->default_value(thermalizationsteps), "The number of thermalization steps (for the SU(3) Heatbath executable).")
+    ("nHeatbathSteps", po::value<int>(&heatbathsteps)->default_value(heatbathsteps),"The number of heat bath steps (i.e. the number of configuration updates in the Markov chain).")
+    ("nOverrelaxationSteps", po::value<int>(&overrelaxsteps)->default_value(overrelaxsteps),"The number of overrelaxation steps in the update of a gaugefield configuration.")
+    ("useAnisotropy", po::value<bool>(&use_aniso)->default_value(use_aniso), "Whether to use an anisotropic lattice, having a lattice spacing different in time and in space directions.")
+    ("xi", po::value<int>(&xi)->default_value(xi), "The anisotropy coefficient.")
+    ("nHmcSteps", po::value<int>(&hmcsteps)->default_value(hmcsteps),"The number of HMC steps (i.e. the number of configuration updates in the Markov chain).")
+    ("useGaugeOnly", po::value<bool>(&use_gauge_only)->default_value(use_gauge_only),"Whether to simulate pure gauge theory with HMC. In this case 'nTimeScales' has to be set to 1.")
+    ("useMP", po::value<bool>(&use_mp)->default_value(use_mp),"Whether to use the Mass Preconditioning trick.")
     ("nTastes", po::value<double>(&numberOfTastes)->default_value(numberOfTastes), "The number of tastes of staggered fermions.")
     ("nTastesDecimalDigits", po::value<unsigned int>(&numberOfDecimalDigitsInNumberOfTastes)->default_value(numberOfDecimalDigitsInNumberOfTastes), "The number of decimal digits in the number of staggered tastes.")
     ("nPseudoFermions", po::value<unsigned int>(&numberOfPseudofermions)->default_value(numberOfPseudofermions), "The number of pseudo-fermion species in the multiple pseudofermion technique for staggered fermions only.")

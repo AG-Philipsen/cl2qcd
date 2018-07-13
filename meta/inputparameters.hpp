@@ -30,7 +30,6 @@
 #include "parametersConfig.hpp"
 #include "parametersFermion.hpp"
 #include "parametersGauge.hpp"
-#include "parametersHeatbath.hpp"
 #include "parametersIntegrator.hpp"
 #include "parametersIo.hpp"
 #include "parametersMonteCarlo.hpp"
@@ -72,11 +71,9 @@ namespace meta {
                             public ParametersFermion,
                             public ParametersSources,
                             public ParametersSolver,
-                            public ParametersHmc,
-                            public ParametersHeatbath,
+                            public ParametersMonteCarlo,
                             public ParametersIntegrator,
                             public ParametersRationalApproximation,
-                            public ParametersRhmc,
                             public ParametersTest {
       public:
         /**

@@ -33,7 +33,6 @@ add_library(meta
     parametersSources.cpp
     parametersSolver.cpp
     parametersObs.cpp
-    parametersHeatbath.cpp
     parametersIntegrator.cpp
     parametersRationalApproximation.cpp
     parametersMonteCarlo.cpp
