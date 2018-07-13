@@ -69,8 +69,9 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     desc.add(cmd_opts);
 
     if (parameterSet == "su3heatbath") {
-        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
-                                                       "readUntilConfNumber", "readConfsEvery"}))
+        desc.add(
+                ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
+                                                      "readUntilConfNumber", "readConfsEvery", "nBenchmarkIterations"}))
             .add(ParametersIo::options.deleteSome({"fermObsInSingleFile", "fermObsCorrelatorsPrefix",
                                                    "fermObsCorrelatorsPostfix", "fermObsPbpPrefix", "fermObsPbpPostfix",
                                                    "hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix",
@@ -79,15 +80,15 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersHeatbath::options)
             .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
     } else if (parameterSet == "gaugeobservables") {
-        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12"}))
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "nBenchmarkIterations"}))
             .add(ParametersIo::options.keepOnlySome(
-                {"nDigitsInConfCheckpoint", "confPrefix", "confPostfix", "prngPrefix", "prngPostfix",
+                {"nDigitsInConfCheckpoint", "confPrefix", "confPostfix", "PRNGPrefix", "PRNGPostfix",
                  "rectanglesFilename", "transportCoefficientKappaFilename", "profilingDataPrefix",
                  "profilingDataPostfix", "gaugeObsInSingleFile", "gaugeObsPrefix", "gaugeObsPostfix"}))
             .add(ParametersGauge::options.keepOnlySome({"beta"}))
             .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
     } else if (parameterSet == "inverter") {
-        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12"}))
+        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "nBenchmarkIterations"}))
             .add(ParametersIo::options.deleteSome({"onlineMeasureEvery", "createCheckpointEvery",
                                                    "overwriteTemporaryCheckpointEvery", "hmcObsToSingleFile",
                                                    "hmcObsPrefix", "hmcObsPostfix", "rhmcObsToSingleFile",
@@ -98,8 +99,9 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersSources::options)
             .add(ParametersObs::options);
     } else if (parameterSet == "hmc") {
-        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
-                                                       "readUntilConfNumber", "readConfsEvery"}))
+        desc.add(
+                ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
+                                                      "readUntilConfNumber", "readConfsEvery", "nBenchmarkIterations"}))
             .add(ParametersIo::options.deleteSome({"rhmcObsToSingleFile", "rhmcObsPrefix", "rhmcObsPostfix"}))
             .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
             .add(ParametersFermion::options.deleteSome({"mass", "csw", "cswMP"}))
@@ -110,8 +112,9 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
             .add(ParametersIntegrator::options)
             .add(ParametersHmc::options);
     } else if (parameterSet == "rhmc") {
-        desc.add(ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
-                                                       "readUntilConfNumber", "readConfsEvery"}))
+        desc.add(
+                ParametersConfig::options.deleteSome({"useReconstruct12", "readMultipleConfs", "readFromConfNumber",
+                                                      "readUntilConfNumber", "readConfsEvery", "nBenchmarkIterations"}))
             .add(ParametersIo::options.deleteSome({"hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix"}))
             .add(ParametersGauge::options.keepOnlySome({"beta", "gaugeAction"}))
             .add(ParametersFermion::options.deleteSome(

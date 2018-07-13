@@ -190,7 +190,7 @@ meta::ParametersConfig::ParametersConfig()
     ("readUntilConfNumber", po::value<int>(&config_read_end)->default_value(config_read_end), "The number to end at when using more than one gaugefield configuration at once.")
     ("readConfsEvery", po::value<int>(&config_read_incr)->default_value(config_read_incr), "The increment for the gaugefield configuration number when using more than one gaugefield configuration at once.")
     ("splitCPU", po::value<bool>(&split_cpu)->default_value(split_cpu), "Whether to split the CPU into multiple devices to avoid numa issues. This option requires OpenCL 1.2 at least.")
-    ("benchmarkIterations", po::value<int>(&benchmarksteps)->default_value(benchmarksteps), "The number of times a kernel is executed for benchmark purposes.")
+    ("nBenchmarkIterations", po::value<int>(&benchmarksteps)->default_value(benchmarksteps), "The number of times a kernel is executed for benchmark purposes.")
     ("ignoreChecksumErrors", po::value<bool>(&ignore_checksum_errors)->default_value(ignore_checksum_errors), "Whether to ignore checksum errors, e.g. reading conf files.");
     // clang-format on
 }
