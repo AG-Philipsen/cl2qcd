@@ -63,10 +63,10 @@ meta::ParametersGauge::ParametersGauge()
 {
     // clang-format off
     options.add_options()
-    ("beta", po::value<double>(&beta)->default_value(beta),"The beta-coupling in the gauge action.")
+    ("beta", po::value<double>(&beta)->default_value(beta, meta::getDefaultForHelper(beta)),"The beta-coupling in the gauge action.")
     ("useSmearing", po::value<bool>(&use_smearing)->default_value(use_smearing),"Whether to apply stout smearing to the gaugefield.")
     ("smearingFactor", po::value<double>(&rho)->default_value(rho),"The weight factor associated with the staples in stout smearing.")
-    ("nSmearingSteps", po::value<int>(&rho_iter)->default_value(rho_iter),"The number of stout-smearing steps.")
+    ("nSmearingSteps", po::value<int>(&rho_iter)->default_value(rho_iter, meta::getDefaultForHelper(rho_iter)),"The number of stout-smearing steps.")
     ("gaugeAction", po::value<std::string>(&gaugeactString)->default_value(gaugeactString),"Which type of gauge action to use (e.g. wilson, tlsym, iwasaki, dbw2).");
     // clang-format on
 }

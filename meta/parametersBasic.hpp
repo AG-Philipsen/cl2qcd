@@ -26,7 +26,10 @@
 
 #include "../common_header_files/types.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
+#include <cmath>
+#include <iomanip>
 #include <string>
 #include <vector>
 namespace po = boost::program_options;
@@ -72,6 +75,23 @@ namespace meta {
                                unsigned int minimumDescriptionLengthIn);
         unsigned int lineLength;  // Store even if privately present in parent
     };
+
+    template<typename T>
+    std::string getDefaultForHelper(const T& number)
+    {
+        // See https://stackoverflow.com/a/1736040 to understand for what this function is.
+        std::ostringstream stream;
+        if (std::abs(number) <= 1.e-5 || std::abs(number) >= 1.e+5) {
+            stream << number;
+            return stream.str();
+        } else {
+            stream << std::fixed << std::setprecision(16) << number;  // stream has always 16 decimal digits!
+            std::string toBePrinted = stream.str();
+            boost::trim_right_if(toBePrinted, boost::is_any_of("0"));
+            boost::trim_right_if(toBePrinted, boost::is_any_of("."));
+            return toBePrinted;
+        }
+    }
 
 }  // namespace meta
 

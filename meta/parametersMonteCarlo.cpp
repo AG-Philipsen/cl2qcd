@@ -98,7 +98,7 @@ meta::ParametersMonteCarlo::ParametersMonteCarlo()
     ("nHmcSteps", po::value<int>(&hmcsteps)->default_value(hmcsteps),"The number of HMC steps (i.e. the number of configuration updates in the Markov chain).")
     ("useGaugeOnly", po::value<bool>(&use_gauge_only)->default_value(use_gauge_only),"Whether to simulate pure gauge theory with HMC. In this case 'nTimeScales' has to be set to 1.")
     ("useMP", po::value<bool>(&use_mp)->default_value(use_mp),"Whether to use the Mass Preconditioning trick.")
-    ("nTastes", po::value<double>(&numberOfTastes)->default_value(numberOfTastes), "The number of tastes of staggered fermions.")
+    ("nTastes", po::value<double>(&numberOfTastes)->default_value(numberOfTastes, meta::getDefaultForHelper(numberOfTastes)), "The number of tastes of staggered fermions.")
     ("nTastesDecimalDigits", po::value<unsigned int>(&numberOfDecimalDigitsInNumberOfTastes)->default_value(numberOfDecimalDigitsInNumberOfTastes), "The number of decimal digits in the number of staggered tastes.")
     ("nPseudoFermions", po::value<unsigned int>(&numberOfPseudofermions)->default_value(numberOfPseudofermions), "The number of pseudo-fermion species in the multiple pseudofermion technique for staggered fermions only.")
     ("nRhmcSteps", po::value<unsigned int>(&numberOfRhmcSteps)->default_value(numberOfRhmcSteps), "The number of RHMC steps (i.e. the number of configuration updates in the Markov chain).");

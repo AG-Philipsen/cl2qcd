@@ -97,6 +97,7 @@ namespace meta {
       private:
         void ChecksStringOptionsAndMapToEnum();
     };
+
 }  // namespace meta
 
 #endif /* _META_INPUTPARAMETERS_H_ */

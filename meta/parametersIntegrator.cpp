@@ -99,7 +99,7 @@ ParametersIntegrator::ParametersIntegrator()
 {
     // clang-format off
     options.add_options()
-    ("tau", po::value<double>(&tau)->default_value(tau),"The total time of integration.")
+    ("tau", po::value<double>(&tau)->default_value(tau, meta::getDefaultForHelper(tau)),"The total time of integration.")
     ("nTimeScales", po::value<int>(&num_timescales)->default_value(num_timescales),"The number of time scales (timescale0 for the gauge-part, timescale1 for the fermion, timescale2 for mass preconditioning). Consider that different time scales must use the same integrator.")
     ("integrator0", po::value<std::string>(&integrator0String)->default_value(integrator0String),"The integration scheme for timescale 0 (one among leapfrog and twomn).")
     ("integrator1", po::value<std::string>(&integrator1String)->default_value(integrator1String),"The integration scheme for timescale 1 (one among leapfrog and twomn).")
@@ -108,9 +108,9 @@ ParametersIntegrator::ParametersIntegrator()
     ("integrationSteps1", po::value<int>(&integrationsteps1)->default_value(integrationsteps1),"The number of integration steps for timescale 1.")
     ("integrationSteps2", po::value<int>(&integrationsteps2)->default_value(integrationsteps2),"The number of integration steps for timescale 2.")
     // this is the optimal value...
-    ("lambda0", po::value<double>(&lambda0)->default_value(lambda0),"The lambda parameter for timescale 0 (for the twomn integrator).")
-    ("lambda1", po::value<double>(&lambda1)->default_value(lambda1),"The lambda parameter for timescale 1 (for the twomn integrator).")
-    ("lambda2", po::value<double>(&lambda2)->default_value(lambda2),"The lambda parameter for timescale 2 (for the twomn integrator).");
+    ("lambda0", po::value<double>(&lambda0)->default_value(lambda0, meta::getDefaultForHelper(lambda0)),"The lambda parameter for timescale 0 (for the twomn integrator).")
+    ("lambda1", po::value<double>(&lambda1)->default_value(lambda1, meta::getDefaultForHelper(lambda1)),"The lambda parameter for timescale 1 (for the twomn integrator).")
+    ("lambda2", po::value<double>(&lambda2)->default_value(lambda2, meta::getDefaultForHelper(lambda2)),"The lambda parameter for timescale 2 (for the twomn integrator).");
     // clang-format on
 }
 
