@@ -48,15 +48,15 @@ INPUT_TEMPLATE = """
 ##################################################################
 NS={0}
 NT={1}
-use_gpu={2}
+useGPU={2}
 beta=6
-startcondition=cold
-sourcefile=conf.save
-thermalization=0
-heatbathsteps=100
-overrelaxsteps=1
-savefrequency=10
-print_to_screen=1
+startCondition=cold
+initialConf=conf.save
+nThermalizationSteps=0
+nHeatbathSteps=100
+nOverrelaxationSteps=1
+createCheckpointEvery=10
+printToScreen=1
 """
 
 # implementation

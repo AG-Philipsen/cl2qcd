@@ -67,7 +67,7 @@ def main():
 	for iteration1 in range(size1):
 		for iteration2 in range(size2):
 			iteration = iteration1*size2 + iteration2
- 			size = size1*size2
+			size = size1*size2
 			print '\tbenchmark %i of %i'% (iteration+1,  size)
 
 			# select input-file if wished, otherwise create one

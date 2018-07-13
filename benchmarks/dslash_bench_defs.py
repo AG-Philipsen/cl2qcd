@@ -35,28 +35,28 @@ default_space_dims = [16, 24, 32, 48]
 default_time_dims = [4, 8, 12, 16, 20, 24, 28, 32]
 
 input_glob = """#global settings
-prec=64
-use_gpu=true
-num_dev=2
+precision=64
+useGPU=true
+nDevices=2
 
-startcondition=cold
+startCondition=cold
 
 #fermion settings
-fermact=TWISTEDMASS
+fermionAction=TWISTEDMASS
 kappa=0.05
 mu=0.2
-corr_dir=3
-ThetaT=1.
-use_evenodd=yes
+correlatorDirection=3
+thetaFermionTemporal=1.
+useEO=yes
 
 #this controls hows many bencharking steps are performed
 #   NOTE: times 2, for each step EVEN and ODD is performed!!
-hmcsteps=5000
+nHmcSteps=5000
 
 #variable settings depending on test
-NS={0}
+nSpace={0}
 
 #variable settings depending on test
-NT={1}
+nTime={1}
 
 """

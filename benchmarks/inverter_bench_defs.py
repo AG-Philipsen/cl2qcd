@@ -32,27 +32,21 @@ stdout = 1
 backup = 0
 
 input_glob = """#global settings
-prec=64
-use_gpu=true
-num_dev=2
-enable_profiling=true
-
-startcondition=cold
+precision=64
+useGPU=true
+nDevices=2
+enableProfiling=true
 
 #fermion settings
-fermact=TWISTEDMASS
+fermionAction=TWISTEDMASS
 kappa=0.2
 mu=0.02
-corr_dir=3
-ThetaT=1.
+correlatorDirection=3
+thetaFermionTemporal=1.
 
-cgmax=100
-startcondition=cold
-savefrequency=10
-fermact=TWISTEDMASS
-use_evenodd=yes
-
-hmcsteps=1
+solverMaxIterations=100
+startCondition=cold
+useEO=yes
 
 solver=CG
 # solver=BICGSTAB

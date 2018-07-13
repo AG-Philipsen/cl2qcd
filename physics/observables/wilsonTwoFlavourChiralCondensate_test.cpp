@@ -55,15 +55,15 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
     BOOST_AUTO_TEST_CASE(INV_ARGUMENT_1)
     {
-        const char* _params[] = {"foo", "--measure_pbp=false"};
+        const char* _params[] = {"foo", "--measurePbp=false"};
         testLogicError(_params, 2);
     }
 
-    void testInvalidFermionActionAndVersion(std::string actionName, std::string version = "--pbp_version=std")
+    void testInvalidFermionActionAndVersion(std::string actionName, std::string version = "--pbpVersion=std")
     {
         logger.info() << "Testing fermion action \"" + actionName + "\" and chiral condensate version \"" + version +
                              "\" for logic error";
-        const char* standardParameters[]    = {"foo", "--measure_pbp=true"};
+        const char* standardParameters[]    = {"foo", "--measurePbp=true"};
         const char* commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str(),
                                                version.c_str()};
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
     {
         actionNames.push_back("wilson");
         for (int i = 0; i < (int)actionNames.size(); i++) {
-            testInvalidFermionActionAndVersion("--fermionAction=" + actionNames[i], "--pbp_version=tm_one_end_trick");
+            testInvalidFermionActionAndVersion("--fermionAction=" + actionNames[i], "--pbpVersion=tm_one_end_trick");
         }
     }
 
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         std::string fermactOption          = "--fermionAction=" + fermactOptionIn;
         std::string sourceTypeOption       = "--sourceType=" + sourceTypeOptionIn;
         std::string sourceContentOption    = "--sourceContent=one";
-        std::string pbpVersionOption       = "--pbp_version=" + pbpVersionOptionIn;
+        std::string pbpVersionOption       = "--pbpVersion=" + pbpVersionOptionIn;
         std::string startconditionOption   = "--startCondition=" + startconditionOptionIn;
         std::string sourcefileOption       = "--initialConf=" + sourcefileOptionIn;
         std::string eoOption               = "--useEO=" + eoOptionIn;
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
                                  "--nSpace=4",
                                  "--kappa=0.15",
                                  "--mu=4.",
-                                 "--measure_pbp=true",
+                                 "--measurePbp=true",
                                  fermactOption.c_str(),
                                  sourceTypeOption.c_str(),
                                  sourceContentOption.c_str(),
