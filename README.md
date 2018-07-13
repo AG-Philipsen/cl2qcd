@@ -12,7 +12,9 @@ It provides the possibility of producing gauge configurations using different al
 | `inverter`         | Measurements of fermionic observables on given gauge field configurations             |
 | `gaugeobservables` | Measurements of gauge observables on given gauge field configurations                 |
 
-CL2QCD has been heavily optimized for AMD GPUs, providing world-class performance, but can also be used on NVIDIA GPUs and x86 CPUs.
+Examples of possible input files can be found in the folder [**sample_input**](sample_input) for each executable available.
+
+*CL2QCD has been heavily optimized for AMD GPUs, providing world-class performance, but can also be used on NVIDIA GPUs and x86 CPUs.*
 
 
 :warning: Note for users :bangbang:
