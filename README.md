@@ -14,7 +14,7 @@ It provides the possibility of producing gauge configurations using different al
 
 Examples of possible input files can be found in the folder [**sample_input**](sample_input) for each executable available.
 
-*CL2QCD has been heavily optimized for AMD GPUs, providing world-class performance, but can also be used on NVIDIA GPUs and x86 CPUs.*
+*CL2QCD has been heavily optimized for AMD GPUs, providing world-class performance, but can also be used on NVIDIA GPUs and x86 CPUs (and, in principle, also on many other devices).*
 
 
 :warning: Note for users :bangbang:
