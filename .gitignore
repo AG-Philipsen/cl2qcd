@@ -32,6 +32,7 @@ README.html
 *.cproject
 *.project
 *.settings/
+*.pydevproject
 
 /Debug/
 
