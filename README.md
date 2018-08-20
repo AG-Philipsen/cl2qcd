@@ -26,7 +26,7 @@ We apologise for any inconvenience this may cause.
 Installation
 ------------
 
-See [INSTALL](INSTALL) for installation instructions.
+See [INSTALL](INSTALL.md) for installation instructions.
 
 
 Publications
