@@ -23,9 +23,9 @@ cl_kernelsource.cl
 time_measurement_0
 time_measurement_1
 
-build
-debug
-doc/architecture
+/build/
+/debug/
+/doc/
 
 README.html
 

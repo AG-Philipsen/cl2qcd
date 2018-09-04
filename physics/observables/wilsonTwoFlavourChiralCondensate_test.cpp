@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
                             std::logic_error);
     }
 
-    std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};
+    std::vector<std::string> actionNames = {"clover", "rooted_stagg"};
 
     BOOST_AUTO_TEST_CASE(INV_ARGUMENT_FERMION_ACTION)
     {
