@@ -48,7 +48,8 @@ namespace hardware {
         {
             setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
         };
-        ~HardwareParametersMockup(){};
+        virtual ~HardwareParametersMockup(){};
+
         virtual int getNs() const override { return ns; }
         virtual int getNt() const override { return nt; }
         virtual bool disableOpenCLCompilerOptimizations() const override { return false; }
@@ -74,7 +75,7 @@ namespace hardware {
         }
     };
 
-    struct HardwareParametersMockupForDeviceSelection : public HardwareParametersMockup {
+    struct HardwareParametersMockupForDeviceSelection final : public HardwareParametersMockup {
         HardwareParametersMockupForDeviceSelection(const int ns, const int nt, const int maximalNumberOfDevices,
                                                    const std::vector<int> selectedDevices)
             : HardwareParametersMockup(ns, nt)
@@ -90,21 +91,21 @@ namespace hardware {
         const std::vector<int> selectedDevices;
     };
 
-    struct HardwareParametersMockupWithoutGpus : public HardwareParametersMockup {
+    struct HardwareParametersMockupWithoutGpus final : public HardwareParametersMockup {
         HardwareParametersMockupWithoutGpus(const int ns, const int nt) : HardwareParametersMockup(ns, nt) {}
 
         virtual bool useGpu() const override { return false; }
         virtual bool useCpu() const override { return true; }
     };
 
-    struct HardwareParametersMockupWithoutCpus : public HardwareParametersMockup {
+    struct HardwareParametersMockupWithoutCpus final : public HardwareParametersMockup {
         HardwareParametersMockupWithoutCpus(const int ns, const int nt) : HardwareParametersMockup(ns, nt) {}
 
         virtual bool useGpu() const override { return true; }
         virtual bool useCpu() const override { return false; }
     };
 
-    struct HardwareParametersMockupWithProfiling : public HardwareParametersMockup {
+    struct HardwareParametersMockupWithProfiling final : public HardwareParametersMockup {
         HardwareParametersMockupWithProfiling(const int ns, const int nt) : HardwareParametersMockup(ns, nt) {}
 
         virtual bool enableProfiling() const override { return true; }
@@ -112,6 +113,15 @@ namespace hardware {
 
 }  // namespace hardware
 
+/*
+ * TODO: Here, we create a big mockup as parent from which small extension (childern) are created. Each extension
+ * overrides getter(s) to change returned parameter(s) and/or has few more private parameters with getters passed
+ * through the constructor. In principle, in each child one should override all getters that should not be called
+ * (either returning a meaningless value or throwing), but this is not done here. Probably, a radically different
+ * approach should be used, e.g. constructing each mockup using a builder (namely, using a syntax to specify what should
+ * be available to be returned and with which value, possibly saying "default" in case some standard value stored in an
+ * external object used by the builder should be used).
+ */
 namespace hardware {
     namespace code {
         class OpenClKernelParametersMockup : public OpenClKernelParametersInterface {
@@ -156,7 +166,8 @@ namespace hardware {
                 , useRectangles(useRectanglesIn)
                 , useSmearing(false)
                 , useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()){};
-            ~OpenClKernelParametersMockup(){};
+            virtual ~OpenClKernelParametersMockup(){};
+
             virtual int getNs() const override { return ns; }
             virtual int getNt() const override { return nt; }
             virtual size_t getPrecision() const override { return 64; }
@@ -216,57 +227,38 @@ namespace hardware {
         class OpenClKernelParametersMockupForSpinorTests : public OpenClKernelParametersMockup {
           public:
             OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn)
-                : OpenClKernelParametersMockup(nsIn, ntIn, false)
-                , prec(64)
-                , useEvenOdd(false)
-                , useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()){};
+                : OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(false){};
             OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn, const bool useEvenOddIn)
-                : OpenClKernelParametersMockup(nsIn, ntIn, false)
-                , prec(64)
-                , useEvenOdd(useEvenOddIn)
-                , useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()){};
+                : OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(useEvenOddIn){};
             OpenClKernelParametersMockupForSpinorTests(const LatticeExtents lE)
-                : OpenClKernelParametersMockup(lE, false)
-                , prec(64)
-                , useEvenOdd(false)
-                , useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()){};
+                : OpenClKernelParametersMockup(lE, false), prec(64), useEvenOdd(false){};
             OpenClKernelParametersMockupForSpinorTests(const LatticeExtents lE, const bool useEvenOddIn)
-                : OpenClKernelParametersMockup(lE, false)
-                , prec(64)
-                , useEvenOdd(useEvenOddIn)
-                , useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()){};
-            ~OpenClKernelParametersMockupForSpinorTests(){};
+                : OpenClKernelParametersMockup(lE, false), prec(64), useEvenOdd(useEvenOddIn){};
+            virtual ~OpenClKernelParametersMockupForSpinorTests(){};
 
             virtual size_t getPrecision() const override { return prec; }
             virtual bool getUseSmearing() const override { return false; }
             virtual double getRho() const override { return 0.; }
             virtual int getRhoIter() const override { return 0; }
-            virtual bool getUseRec12() const override { return false; }
             virtual bool getUseEo() const override { return useEvenOdd; }
 
           protected:
             const size_t prec;
             const bool useEvenOdd;
-            bool useRec12Value;
         };
 
         class OpenClKernelParametersMockupForSpinorStaggered : public OpenClKernelParametersMockupForSpinorTests {
           public:
             OpenClKernelParametersMockupForSpinorStaggered(const LatticeExtents lE)
-                : OpenClKernelParametersMockupForSpinorTests(lE), fermact(common::action::rooted_stagg)
-            {
-                fermact = common::action::rooted_stagg;
-            };
+                : OpenClKernelParametersMockupForSpinorTests(lE){};
             OpenClKernelParametersMockupForSpinorStaggered(const LatticeExtents lE, const bool useEvenOddIn)
-                : OpenClKernelParametersMockupForSpinorTests(lE, useEvenOddIn), fermact(common::action::rooted_stagg)
-            {
-                fermact = common::action::rooted_stagg;
-            };
-            virtual common::action getFermact() const override { return fermact; }
-            common::action fermact;
+                : OpenClKernelParametersMockupForSpinorTests(lE, useEvenOddIn){};
+            virtual ~OpenClKernelParametersMockupForSpinorStaggered(){};
+
+            virtual common::action getFermact() const override { return common::action::rooted_stagg; }
         };
 
-        class OpenClKernelParametersMockupForCorrelators : public OpenClKernelParametersMockupForSpinorTests {
+        class OpenClKernelParametersMockupForCorrelators final : public OpenClKernelParametersMockupForSpinorTests {
           public:
             OpenClKernelParametersMockupForCorrelators(const int nsIn, const int ntIn, const double kappaIn,
                                                        const double directionIn)
@@ -277,11 +269,13 @@ namespace hardware {
             virtual int getCorrDir() const override { return correlatorDirection; }
             virtual double getKappa() const override { return kappa; }
             virtual bool getMeasureCorrelators() const override { return true; }
+
+          private:
             const int correlatorDirection;
             const double kappa;
         };
 
-        class OpenClKernelParametersMockupForStaggeredCorrelators
+        class OpenClKernelParametersMockupForStaggeredCorrelators final
             : public OpenClKernelParametersMockupForSpinorStaggered {
           public:
             OpenClKernelParametersMockupForStaggeredCorrelators(const LatticeExtents lE, const double kappaIn,
@@ -293,11 +287,14 @@ namespace hardware {
             virtual int getCorrDir() const override { return correlatorDirection; }
             virtual double getKappa() const override { return kappa; }
             virtual bool getMeasureCorrelators() const override { return true; }
+
+          private:
             const int correlatorDirection;
             const double kappa;
         };
 
-        struct OpenClKernelParametersMockupForSourceTests : public OpenClKernelParametersMockupForSpinorTests {
+        class OpenClKernelParametersMockupForSourceTests final : public OpenClKernelParametersMockupForSpinorTests {
+          public:
             OpenClKernelParametersMockupForSourceTests(const int nsIn, const int ntIn, const common::sourcecontents sC,
                                                        const common::sourcetypes sT)
                 : OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn), sC(sC), sT(sT){};
@@ -305,12 +302,15 @@ namespace hardware {
             virtual common::sourcecontents getSourceContent() const override { return sC; }
             virtual common::sourcetypes getSourceType() const override { return sT; }
             virtual bool getMeasureCorrelators() const override { return false; }
+
+          private:
             const common::sourcecontents sC;
             const common::sourcetypes sT;
         };
 
-        struct OpenClKernelParametersMockupForStaggeredSourceTests
+        class OpenClKernelParametersMockupForStaggeredSourceTests final
             : public OpenClKernelParametersMockupForSpinorStaggered {
+          public:
             OpenClKernelParametersMockupForStaggeredSourceTests(const LatticeExtents lE,
                                                                 const common::sourcecontents sC,
                                                                 const common::sourcetypes sT)
@@ -319,29 +319,29 @@ namespace hardware {
             virtual common::sourcecontents getSourceContent() const override { return sC; }
             virtual common::sourcetypes getSourceType() const override { return sT; }
             virtual bool getMeasureCorrelators() const override { return false; }
+
+          private:
             const common::sourcecontents sC;
             const common::sourcetypes sT;
         };
 
-        class OpenClKernelParametersMockupForTwistedMass : public OpenClKernelParametersMockupForSpinorTests {
+        class OpenClKernelParametersMockupForTwistedMass final : public OpenClKernelParametersMockupForSpinorTests {
           public:
             OpenClKernelParametersMockupForTwistedMass(int nsIn, int ntIn, const bool needEvenOddIn,
                                                        const bool useMergedKernels = false)
                 : OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn)
-                , fermact(common::action::wilson)
                 , useMergedKernels(useMergedKernels)
             {
-                // NOTE: for the moment, these member are set here in order to overwrite the settings from the parent
-                // class, but this should be done nicer!
-                fermact = common::action::twistedmass;
                 // todo: kappa and mu should be set to 0 or so as they should not be used in the test
             }
-            virtual common::action getFermact() const override { return fermact; }
+            virtual common::action getFermact() const override { return common::action::twistedmass; }
             virtual bool getUseMergeKernelsFermion() const override { return useMergedKernels; }
-            common::action fermact;
+
+          private:
             const bool useMergedKernels;
         };
-        class OpenClKernelParametersMockupForDslashEvenOdd : public OpenClKernelParametersMockupForSpinorTests {
+
+        class OpenClKernelParametersMockupForDslashEvenOdd final : public OpenClKernelParametersMockupForSpinorTests {
           public:
             OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn,
                                                          const double kappaIn)
@@ -375,6 +375,7 @@ namespace hardware {
             virtual bool getUseChemPotRe() const override { return useChemPotRe; }
             virtual double getChemPotRe() const override { return chemPot.re; }
 
+          private:
             double kappa;
             double thetaFermionTemporal;
             double thetaFermionSpatial;
@@ -382,7 +383,7 @@ namespace hardware {
             hmc_complex chemPot;
         };
 
-        class OpenClKernelParametersMockupForFermionsStaggeredTests
+        class OpenClKernelParametersMockupForFermionsStaggeredTests final
             : public OpenClKernelParametersMockupForSpinorStaggered {
           public:
             OpenClKernelParametersMockupForFermionsStaggeredTests(LatticeExtents lE, const double massIn,
@@ -427,7 +428,7 @@ namespace hardware {
             virtual double getChemPotIm() const override { return imaginaryChemicalPotential; }
             virtual bool getUseChemPotIm() const override { return useChemPotIm; }
 
-          protected:
+          private:
             const double mass;
             const bool useEvenOdd;
             const double thetaFermionTemporal;
@@ -436,7 +437,8 @@ namespace hardware {
             const double imaginaryChemicalPotential;
         };
 
-        class OpenClKernelParametersMockupForMergedFermionKernels : public OpenClKernelParametersMockupForSpinorTests {
+        class OpenClKernelParametersMockupForMergedFermionKernels final
+            : public OpenClKernelParametersMockupForSpinorTests {
           public:
             OpenClKernelParametersMockupForMergedFermionKernels(int nsIn, int ntIn)
                 : OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, true)
@@ -444,7 +446,9 @@ namespace hardware {
             }
             virtual bool getUseMergeKernelsFermion() const override { return true; }
         };
-        class OpenClKernelParametersMockupForMergedSpinorKernels : public OpenClKernelParametersMockupForSpinorTests {
+
+        class OpenClKernelParametersMockupForMergedSpinorKernels final
+            : public OpenClKernelParametersMockupForSpinorTests {
           public:
             OpenClKernelParametersMockupForMergedSpinorKernels(int nsIn, int ntIn)
                 : OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, true)
@@ -452,6 +456,7 @@ namespace hardware {
             }
             virtual bool getUseMergeKernelsSpinor() const override { return true; }
         };
+
         class OpenClKernelParametersMockupForMolecularDynamics : public OpenClKernelParametersMockup {
           public:
             OpenClKernelParametersMockupForMolecularDynamics(LatticeExtents lE)
@@ -466,28 +471,27 @@ namespace hardware {
                 : OpenClKernelParametersMockup(lE), gaugeact(actionIn), useEvenOdd(false)
             {
             }
+            virtual ~OpenClKernelParametersMockupForMolecularDynamics() {}
+
             virtual common::action getGaugeact() const override { return gaugeact; }
             virtual double getC1() const override { return -0.083333333; }
             virtual bool getUseEo() const override { return useEvenOdd; }
 
-          protected:
+          private:
             common::action gaugeact;
             const bool useEvenOdd;
         };
 
-        class OpenClKernelParametersMockupForMolecularDynamicsStaggered
+        class OpenClKernelParametersMockupForMolecularDynamicsStaggered final
             : public OpenClKernelParametersMockupForMolecularDynamics {
           public:
             OpenClKernelParametersMockupForMolecularDynamicsStaggered(LatticeExtents lE)
-                : OpenClKernelParametersMockupForMolecularDynamics(lE), fermact(common::action::rooted_stagg)
+                : OpenClKernelParametersMockupForMolecularDynamics(lE)
             {
-                fermact = common::action::rooted_stagg;
-            };
-            virtual common::action getFermact() const override { return fermact; }
-            virtual bool getUseEo() const override { return true; }
+            }
 
-          protected:
-            common::action fermact;
+            virtual common::action getFermact() const override { return common::action::rooted_stagg; }
+            virtual bool getUseEo() const override { return true; }
         };
     }  // namespace code
 }  // namespace hardware
