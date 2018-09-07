@@ -25,6 +25,7 @@
 #include "system.hpp"
 
 void broadcastMessage_warn(const std::string message);
+void broadcastMessage_error(const std::string message);
 void broadcastMessage_fatal(const std::string message);
 void failTest();
 void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System* system);

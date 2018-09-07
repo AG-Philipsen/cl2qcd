@@ -66,6 +66,12 @@ void broadcastMessage_warn(const std::string message)
     BOOST_TEST_MESSAGE(message);
 }
 
+void broadcastMessage_error(const std::string message)
+{
+    logger.error() << message;
+    BOOST_TEST_MESSAGE(message);
+}
+
 void broadcastMessage_fatal(const std::string message)
 {
     logger.fatal() << message;
@@ -74,7 +80,7 @@ void broadcastMessage_fatal(const std::string message)
 
 void failTest()
 {
-    BOOST_CHECK_EQUAL(true, false);
+    BOOST_ERROR("Test failure!");
 }
 
 void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System* system)
