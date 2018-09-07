@@ -91,15 +91,15 @@ namespace hardware {
         const std::vector<int> selectedDevices;
     };
 
-    struct HardwareParametersMockupWithoutGpus final : public HardwareParametersMockup {
-        HardwareParametersMockupWithoutGpus(const int ns, const int nt) : HardwareParametersMockup(ns, nt) {}
+    struct HardwareParametersMockupWithCpusOnly final : public HardwareParametersMockup {
+        HardwareParametersMockupWithCpusOnly(const int ns, const int nt) : HardwareParametersMockup(ns, nt) {}
 
         virtual bool useGpu() const override { return false; }
         virtual bool useCpu() const override { return true; }
     };
 
-    struct HardwareParametersMockupWithoutCpus final : public HardwareParametersMockup {
-        HardwareParametersMockupWithoutCpus(const int ns, const int nt) : HardwareParametersMockup(ns, nt) {}
+    struct HardwareParametersMockupWithGpusOnly final : public HardwareParametersMockup {
+        HardwareParametersMockupWithGpusOnly(const int ns, const int nt) : HardwareParametersMockup(ns, nt) {}
 
         virtual bool useGpu() const override { return true; }
         virtual bool useCpu() const override { return false; }

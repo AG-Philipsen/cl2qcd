@@ -78,6 +78,51 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+std::string getDeviceTypeAsName(const cl_device_type device_type)
+{
+    // https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/enums.html
+    switch (device_type) {
+        case CL_DEVICE_TYPE_CPU:
+            return "CPU";
+            break;
+        case CL_DEVICE_TYPE_GPU:
+            return "GPU";
+            break;
+        case CL_DEVICE_TYPE_ACCELERATOR:
+            return "ACCELERATOR";
+            break;
+        case CL_DEVICE_TYPE_DEFAULT:
+        case CL_DEVICE_TYPE_ALL:
+            throw Print_Error_Message("Unexpected cl_device_type to be translated!");
+            break;
+        default:
+            throw Print_Error_Message("Suspicious cl_device_type to be translated, please investigate!");
+            break;
+    }
+}
+
+void enableSpecificDeviceTypeOnly(const cl_device_type device_type, const hardware::HardwareParametersInterface& hI,
+                                  const bool failTestIfMissingDeviceType = false)
+{
+    const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
+    try {
+        hardware::System system(hI, kernelParameters);
+        for (hardware::Device* device : system.get_devices()) {
+            BOOST_REQUIRE_EQUAL(device->get_device_type(), device_type);
+        }
+    } catch (hardware::OpenclException& exception) {
+        if (checkIfNoOpenCLDevicesWereFound(exception)) {
+            broadcastMessage_error("System does not seem to contain \"" + getDeviceTypeAsName(device_type) +
+                                   "\" devices!");
+            if (failTestIfMissingDeviceType)
+                failTest();
+        } else {
+            broadcastMessage_fatal("Got unknown error code. Aborting...");
+            failTest();
+        }
+    }
+}
+
 BOOST_AUTO_TEST_SUITE(devices)
 
     void checkThatOnlySpecifiedNumberOfDevicesIsInitialized(const int totalNumberOfDevicesInSystem)
@@ -125,36 +170,36 @@ BOOST_AUTO_TEST_SUITE(devices)
         checkThatOnlySpecifiedDeviceIsInitialized(system.get_devices().size());
     }
 
-    void disableSpecificDeviceTypeByCommandLine(const cl_device_type device_type,
-                                                const hardware::HardwareParametersInterface& hI)
+    BOOST_AUTO_TEST_CASE(enableCpusOnly)
     {
-        const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-        try {
-            hardware::System system(hI, kernelParameters);
-            for (hardware::Device* device : system.get_devices()) {
-                BOOST_REQUIRE_NE(device->get_device_type(), device_type);
-            }
-        } catch (hardware::OpenclException exception) {
-            if (checkIfNoOpenCLDevicesWereFound(exception)) {
-                broadcastMessage_warn("System does not seem to contain devices other than device type \"" +
-                                      std::to_string(device_type) + "\"!");
-            } else {
-                broadcastMessage_fatal("Got unknown error code. Aborting...");
-                failTest();
-            }
-        }
+        const hardware::HardwareParametersMockupWithCpusOnly hardwareParameters(4, 4);
+        enableSpecificDeviceTypeOnly(CL_DEVICE_TYPE_CPU, hardwareParameters);
     }
 
-    BOOST_AUTO_TEST_CASE(disableCpusByCommandLine)
+    BOOST_AUTO_TEST_CASE(enableGpusOnly)
     {
-        const hardware::HardwareParametersMockupWithoutCpus hardwareParameters(4, 4);
-        disableSpecificDeviceTypeByCommandLine(CL_DEVICE_TYPE_CPU, hardwareParameters);
+        const hardware::HardwareParametersMockupWithGpusOnly hardwareParameters(4, 4);
+        enableSpecificDeviceTypeOnly(CL_DEVICE_TYPE_GPU, hardwareParameters);
     }
 
-    BOOST_AUTO_TEST_CASE(disableGpusByCommandLine)
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(checkDeviceAvailability)
+
+    /*
+     * NOTE: The following two tests are to create explicit tests in ctest in order to make the user easily discover
+     *       which type of device is available on his/her architecture.
+     */
+    BOOST_AUTO_TEST_CASE(areCpusAvailable)
     {
-        const hardware::HardwareParametersMockupWithoutGpus hardwareParameters(4, 4);
-        disableSpecificDeviceTypeByCommandLine(CL_DEVICE_TYPE_GPU, hardwareParameters);
+        const hardware::HardwareParametersMockupWithCpusOnly hardwareParameters(4, 4);
+        enableSpecificDeviceTypeOnly(CL_DEVICE_TYPE_CPU, hardwareParameters, true);
+    }
+
+    BOOST_AUTO_TEST_CASE(areGpusAvailable)
+    {
+        const hardware::HardwareParametersMockupWithGpusOnly hardwareParameters(4, 4);
+        enableSpecificDeviceTypeOnly(CL_DEVICE_TYPE_GPU, hardwareParameters, true);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
