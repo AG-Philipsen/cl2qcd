@@ -44,13 +44,13 @@ BOOST_AUTO_TEST_SUITE(BOOST_ARGUMENTS)
 
     BOOST_AUTO_TEST_CASE(BOOST_ARGC_1)
     {
-        int expectedNumberOfParameters = 1;
+        int expectedNumberOfParameters = 1;  // just --run_test
         checkArgc(expectedNumberOfParameters);
     }
 
     BOOST_AUTO_TEST_CASE(BOOST_ARGC_2)
     {
-        int expectedNumberOfParameters = 2;
+        int expectedNumberOfParameters = 3;  // one argument is '--'
         checkArgc(expectedNumberOfParameters);
     }
 
@@ -62,12 +62,13 @@ BOOST_AUTO_TEST_SUITE(BOOST_ARGUMENTS)
 
     BOOST_AUTO_TEST_CASE(BOOST_ARGV)
     {
-        int expectedNumberOfParameters = 4;
+        int expectedNumberOfParameters = 5;
         checkArgc(expectedNumberOfParameters);
 
-        checkArgv(1, "firstArgument");
-        checkArgv(2, "secondArgument");
-        checkArgv(3, "thirdArgument");
+        checkArgv(1, "--");
+        checkArgv(2, "firstArgument");
+        checkArgv(3, "secondArgument");
+        checkArgv(4, "thirdArgument");
     }
 
 BOOST_AUTO_TEST_SUITE_END()
