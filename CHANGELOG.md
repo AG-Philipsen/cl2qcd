@@ -14,15 +14,20 @@ In particular (even though this is not a strict, always respected rule), given a
 
  * :heavy_plus_sign: New feature
  * :heavy_check_mark: Enhancement
+ * :recycle: Refactoring
+ * :boom: Substantial change
  * :sos: Bug fix
  * :heavy_minus_sign: Removed feature
 
 ---
 
-## [Unreleased]()XXXXXXX
+## [Unreleased]
 
 ---
 
-## [Version 1.0]()XXXXXXX &nbsp;&nbsp; <sub><sup>XX YY 2018</sub></sup>
+## [Version 1.0] &nbsp;&nbsp; <sub><sup>XX YY 2018</sub></sup>
 
 This has been the first release of the repository.
+
+[Unreleased]: https://github.com/AG-Philipsen/cl2qcd/compare/v1.0...HEAD
+[Version 1.0]: https://github.com/AG-Philipsen/cl2qcd/releases/tag/v1.0
