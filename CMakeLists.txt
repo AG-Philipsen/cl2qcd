@@ -93,8 +93,8 @@ if( LIBXML2_DEFINITIONS )
     add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-# Require 1.48 as boost-regex of 1.46 can't be compiled with c++11-enabled g++-4.7
-find_package(Boost 1.48.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
+# Require 1.59 as boost-unit_test of previous versions do not support disabling tests (--run_test='!<test>' syntax)
+find_package(Boost 1.59.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Define where to find the OpenCL kernels
@@ -164,9 +164,7 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
     ${CMAKE_SOURCE_DIR}/crypto
 )
 
-# Definition of the core application
-set_abs_paths(OPTIMAL_FILES
-)
+
 set(OPTIMAL_USED_LIBS
     ${OPENCL_LIBRARIES}
 #${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
@@ -180,7 +178,19 @@ set(OPTIMAL_USED_LIBS
     executables
 )
 
-add_library(optimal ${OPTIMAL_FILES})
+# Definition of the core application
+set_abs_paths(OPTIMAL_FILES
+    #No file at the moment => DUMMY_SOURCE used below
+)
+
+# Create dummy file since we want an empty shared library before linking (i.e. call to our add_modules macro)
+# NOTE: This is done so here https://github.com/apache/incubator-mxnet/pull/10711
+#       and it is suggested here https://cmake.org/pipermail/cmake/2010-July/038524.html
+#       Maybe in the future CMake will provide a cleaner way to do so.
+set(DUMMY_SOURCE ${CMAKE_BINARY_DIR}/.dummy.cpp)
+file(WRITE ${DUMMY_SOURCE} "")
+add_library(optimal ${DUMMY_SOURCE} ${OPTIMAL_FILES})
+
 # Add all modules
 add_modules(optimal
     meta
