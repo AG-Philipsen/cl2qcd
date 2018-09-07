@@ -19,10 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(geometry
     latticeExtents.cpp
     index.cpp
@@ -30,23 +26,15 @@ add_library(geometry
     parallelization.cpp
 )
 
-target_link_libraries(geometry einhard logger)
+target_link_libraries(geometry
+    einhard
+    logger
+)
 
 #
 # Definition of tests
 #
-add_executable(index index_test.cpp)
-target_link_libraries(index     ${Boost_LIBRARIES} geometry )
-add_test(Index index )
-
-add_executable(latticeExtents latticeExtents_test.cpp)
-target_link_libraries(latticeExtents     ${Boost_LIBRARIES} geometry )
-add_test(LatticeExtents latticeExtents )
-
-add_executable(latticeGrid latticeGrid_test.cpp)
-target_link_libraries(latticeGrid     ${Boost_LIBRARIES} geometry )
-add_test(Grid latticeGrid )
-
-add_executable(parallelizationTest parallelization_test.cpp)
-target_link_libraries(parallelizationTest     ${Boost_LIBRARIES} geometry )
-add_test(parallelization parallelizationTest )
+add_unit_test(NAME geometry/index           LIBRARIES geometry)
+add_unit_test(NAME geometry/latticeExtents  LIBRARIES geometry)
+add_unit_test(NAME geometry/latticeGrid     LIBRARIES geometry)
+add_unit_test(NAME geometry/parallelization LIBRARIES geometry)

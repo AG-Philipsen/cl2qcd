@@ -18,10 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(hardware_lattices
     prng.cpp
     gaugefield.cpp
@@ -37,16 +33,3 @@ target_link_libraries(hardware_lattices
     buffers
     host_functionality
 )
-
-#
-# Definition of tests
-#
-# add_executable(Gaugefield gaugefield_test.cpp)
-# target_link_libraries(Gaugefield     ${Boost_LIBRARIES} geometry crypto)
-# add_test(gaugefield Gaugefield )
-
-# add_unit_test_withLibraries(hardware::lattices::Gaugefield hardware_lattices_gaugefield_test lattices crypto)
-# add_unit_test_withLibraries(hardware::lattices::Gaugemomenta hardware_lattices_gaugemomenta_test lattices crypto)
-# add_unit_test_withLibraries(hardware::lattices::Spinorfield hardware_lattices_spinorfield_test lattices crypto)
-# add_unit_test_withLibraries(hardware::lattices::Spinorfield_eo hardware_lattices_spinorfield_eo_test lattices crypto)
-# add_unit_test_withLibraries(hardware::lattices::Prng hardware_lattices_prng_test lattices crypto)

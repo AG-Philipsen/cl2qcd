@@ -18,10 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-add_executable(boost_test boost_test.cpp)
-target_link_libraries(boost_test
-    ${Boost_LIBRARIES}
-)
-add_test(boost_ARGC_1 boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_1)
-add_test(boost_ARGC_2 boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2 -- ${CMAKE_CURRENT_SOURCE_DIR})
-add_test(boost_ARGV   boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGV   -- "firstArgument" "secondArgument" "thirdArgument")
+add_unit_test(CREATE_ONLY EXECUTABLE boost_test)
+add_unit_test(   ADD_ONLY NAME boost_ARGC_1 EXECUTABLE boost_test COMMAND_LINE_OPTIONS --run_test=BOOST_ARGUMENTS/BOOST_ARGC_1)
+add_unit_test(   ADD_ONLY NAME boost_ARGC_2 EXECUTABLE boost_test COMMAND_LINE_OPTIONS --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2 -- ${CMAKE_CURRENT_SOURCE_DIR})
+add_unit_test(   ADD_ONLY NAME boost_ARGV   EXECUTABLE boost_test COMMAND_LINE_OPTIONS --run_test=BOOST_ARGUMENTS/BOOST_ARGV   -- "firstArgument" "secondArgument" "thirdArgument")

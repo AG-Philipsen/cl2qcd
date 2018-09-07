@@ -19,10 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(ildg_io
     ildgIo_gaugefield.cpp
     ildgIo.cpp
@@ -47,5 +43,5 @@ target_link_libraries(ildg_io
 add_subdirectory(lime)
 add_subdirectory(sourcefileParameters)
 
-add_unit_test_withLibraries(ildgIo_gaugefield ildgIo_gaugefield_test ildg_io)
-add_unit_test_withLibraries(matrixSu3_utilities matrixSu3_utilities_test ildg_io)
+add_unit_test(NAME ildg_io/ildgIo_gaugefield   LIBRARIES ildg_io)
+add_unit_test(NAME ildg_io/matrixSu3_utilities LIBRARIES ildg_io)

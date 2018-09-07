@@ -24,5 +24,5 @@ add_library(solvers
     bicgstab.cpp
 )
 target_link_libraries(solvers
-        algorithms
+    algorithms
 )

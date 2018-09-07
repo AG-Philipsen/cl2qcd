@@ -20,44 +20,31 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(code
-        opencl_module.cpp
-        gaugefield.cpp
-        prng.cpp
-        heatbath.cpp
-        kappa.cpp
-        correlator.cpp
-        correlator_staggered.cpp
-        real.cpp
-        complex.cpp
-        spinors.cpp
-        spinors_staggered.cpp
-        fermions.cpp
-        fermions_staggered.cpp
-        gaugemomentum.cpp
-        molecular_dynamics.cpp
-        buffer.cpp
+    opencl_module.cpp
+    gaugefield.cpp
+    prng.cpp
+    heatbath.cpp
+    kappa.cpp
+    correlator.cpp
+    correlator_staggered.cpp
+    real.cpp
+    complex.cpp
+    spinors.cpp
+    spinors_staggered.cpp
+    fermions.cpp
+    fermions_staggered.cpp
+    gaugemomentum.cpp
+    molecular_dynamics.cpp
+    buffer.cpp
 )
 
 target_link_libraries(code
-        buffers
-        klepsydra
-        einhard
-        hardwareTestUtilities
+    buffers
+    klepsydra
+    einhard
+    hardwareTestUtilities
 )
-
-#
-# Definition of tests
-#
-
-add_subdirectory(miscellaneousTests)
-
-# default random number seed
-configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
 add_library(kernelTestUtilities
     testUtilities.cpp
@@ -75,82 +62,64 @@ target_link_libraries(kernelTestUtilities
     geometry
 )
 
-add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities)
+add_subdirectory(miscellaneousTests)
 
-add_executable(hardware_code_gaugefield_test gaugefield_test.cpp)
-target_link_libraries(hardware_code_gaugefield_test kernelTestUtilities)
-add_test(hardware::code::Gaugefield_CPU       hardware_code_gaugefield_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test -- --useGPU=false --useReconstruct12=true)
-add_test(hardware::code::Gaugefield_GPU       hardware_code_gaugefield_test -- --useGPU=true --useReconstruct12=false)
-add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test -- --useGPU=true --useReconstruct12=true)
+# default random number seed
+configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
-add_executable(hardware_code_spinors_test spinors_test.cpp)
-target_link_libraries(hardware_code_spinors_test kernelTestUtilities)
-add_test(hardware_code_spinors_CPU       hardware_code_spinors_test -- --useGPU=false)
-add_test(hardware_code_spinors_GPU       hardware_code_spinors_test -- --useGPU=true)
+#
+# Definition of tests
+#
+add_unit_test(            NAME hardware/code/KernelTester            LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/gaugefield              LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/spinors                 LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/spinors_merged_kernels  LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/fermions                LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/fermions_merged_kernels LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/spinors_staggered       LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/correlator              LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/real                    LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/gaugemomentum           LIBRARIES kernelTestUtilities) #<--these contain only dummy tests
+add_unit_test(CREATE_ONLY NAME hardware/code/molecular_dynamics      LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/fermions_staggered      LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/correlator_staggered    LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/complex                 LIBRARIES kernelTestUtilities)
 
-add_executable(hardware_code_spinors_merged_kernels_test spinors_merged_kernels_test.cpp)
-target_link_libraries(hardware_code_spinors_merged_kernels_test kernelTestUtilities )
-add_test(hardware_code_spinors_merged_kernels_test_CPU       hardware_code_spinors_merged_kernels_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_spinors_merged_kernels_test_GPU       hardware_code_spinors_merged_kernels_test -- --useGPU=true --useReconstruct12=false)
-
-add_executable(hardware_code_fermions_test fermions_test.cpp)
-target_link_libraries(hardware_code_fermions_test kernelTestUtilities )
-add_test(hardware_code_fermions_CPU       hardware_code_fermions_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_fermions_CPU_REC12 hardware_code_fermions_test -- --useGPU=false --useReconstruct12=true)
-add_test(hardware_code_fermions_GPU       hardware_code_fermions_test -- --useGPU=true --useReconstruct12=false)
-add_test(hardware_code_fermions_GPU_REC12 hardware_code_fermions_test -- --useGPU=true --useReconstruct12=true)
-
-add_executable(hardware_code_fermions_merged_kernels_test fermions_merged_kernels_test.cpp)
-target_link_libraries(hardware_code_fermions_merged_kernels_test kernelTestUtilities)
-add_test(hardware_code_fermions_merged_kernels_test_CPU       hardware_code_fermions_merged_kernels_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_fermions_merged_kernels_test_CPU_REC12 hardware_code_fermions_merged_kernels_test -- --useGPU=false --useReconstruct12=true)
-add_test(hardware_code_fermions_merged_kernels_test_GPU       hardware_code_fermions_merged_kernels_test -- --useGPU=true --useReconstruct12=false)
-add_test(hardware_code_fermions_merged_kernels_test_GPU_REC12 hardware_code_fermions_merged_kernels_test -- --useGPU=true --useReconstruct12=true)
-
-add_executable(hardware_code_spinors_staggered_test spinors_staggered_test.cpp)
-target_link_libraries(hardware_code_spinors_staggered_test kernelTestUtilities)
-add_test(hardware_code_spinors_staggered_CPU       hardware_code_spinors_staggered_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_spinors_staggered_GPU       hardware_code_spinors_staggered_test -- --useGPU=true --useReconstruct12=false)
-
-add_executable(hardware_code_correlator_test correlator_test.cpp)
-target_link_libraries(hardware_code_correlator_test kernelTestUtilities )
-add_test(hardware_code_correlator_CPU       hardware_code_correlator_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_correlator_GPU       hardware_code_correlator_test -- --useGPU=true --useReconstruct12=false)
-
-add_executable(hardware_code_real_test real_test.cpp)
-target_link_libraries(hardware_code_real_test kernelTestUtilities)
-add_test(hardware_code_real_CPU       hardware_code_real_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_real_GPU       hardware_code_real_test -- --useGPU=true --useReconstruct12=false)
-
-# todo: these contain only dummy tests
-add_executable(hardware_code_gaugemomentum_test gaugemomentum_test.cpp)
-target_link_libraries(hardware_code_gaugemomentum_test kernelTestUtilities )
-add_test(hardware_code_gaugemomentum_CPU       hardware_code_gaugemomentum_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_gaugemomentum_CPU_REC12 hardware_code_gaugemomentum_test -- --useGPU=false --useReconstruct12=true)
-add_test(hardware_code_gaugemomentum_GPU       hardware_code_gaugemomentum_test -- --useGPU=true --useReconstruct12=false)
-add_test(hardware_code_gaugemomentum_GPU_REC12 hardware_code_gaugemomentum_test -- --useGPU=true --useReconstruct12=true)
-
-add_executable(hardware_code_molecular_dynamics_test molecular_dynamics_test.cpp)
-target_link_libraries(hardware_code_molecular_dynamics_test kernelTestUtilities )
-add_test(hardware_code_molecular_dynamics_CPU       hardware_code_molecular_dynamics_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_molecular_dynamics_CPU_REC12 hardware_code_molecular_dynamics_test -- --useGPU=false --useReconstruct12=true)
-add_test(hardware_code_molecular_dynamics_GPU       hardware_code_molecular_dynamics_test -- --useGPU=true --useReconstruct12=false)
-add_test(hardware_code_molecular_dynamics_GPU_REC12 hardware_code_molecular_dynamics_test -- --useGPU=true --useReconstruct12=true)
-
-add_executable(hardware_code_fermions_staggered_test fermions_staggered_test.cpp)
-target_link_libraries(hardware_code_fermions_staggered_test kernelTestUtilities)
-add_test(hardware_code_fermions_staggered_CPU       hardware_code_fermions_staggered_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_fermions_staggered_CPU_REC12 hardware_code_fermions_staggered_test -- --useGPU=false --useReconstruct12=true)
-add_test(hardware_code_fermions_staggered_GPU       hardware_code_fermions_staggered_test -- --useGPU=true --useReconstruct12=false)
-add_test(hardware_code_fermions_staggered_GPU_REC12 hardware_code_fermions_staggered_test -- --useGPU=true --useReconstruct12=true)
-
-add_executable(hardware_code_correlator_staggered_test correlator_staggered_test.cpp)
-target_link_libraries(hardware_code_correlator_staggered_test kernelTestUtilities)
-add_test(hardware_code_correlator_staggered_CPU       hardware_code_correlator_staggered_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_correlator_staggered_GPU       hardware_code_correlator_staggered_test -- --useGPU=true --useReconstruct12=false)
-
-add_executable(hardware_code_complex_test complex_test.cpp)
-target_link_libraries(hardware_code_complex_test kernelTestUtilities )
-add_test(hardware_code_complex_CPU       hardware_code_complex_test -- --useGPU=false --useReconstruct12=false)
-add_test(hardware_code_complex_GPU       hardware_code_complex_test -- --useGPU=true --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugefield_CPU                    COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugefield_CPU_REC12              COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugefield_GPU                    COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugefield_GPU_REC12              COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/spinors_CPU                       COMMAND_LINE_OPTIONS -- --useGPU=false                         )
+add_unit_test(ADD_ONLY    NAME hardware/code/spinors_GPU                       COMMAND_LINE_OPTIONS -- --useGPU=true                          )
+add_unit_test(ADD_ONLY    NAME hardware/code/spinors_merged_kernels_CPU        COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/spinors_merged_kernels_GPU        COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_CPU                      COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_CPU_REC12                COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_GPU                      COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_GPU_REC12                COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_merged_kernels_CPU       COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_merged_kernels_CPU_REC12 COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_merged_kernels_GPU       COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_merged_kernels_GPU_REC12 COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/spinors_staggered_CPU             COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/spinors_staggered_GPU             COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/correlator_CPU                    COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/correlator_GPU                    COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/real_CPU                          COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/real_GPU                          COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugemomentum_CPU                 COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugemomentum_CPU_REC12           COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugemomentum_GPU                 COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/gaugemomentum_GPU_REC12           COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/molecular_dynamics_CPU            COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/molecular_dynamics_CPU_REC12      COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/molecular_dynamics_GPU            COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/molecular_dynamics_GPU_REC12      COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_staggered_CPU            COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_staggered_CPU_REC12      COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_staggered_GPU            COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/fermions_staggered_GPU_REC12      COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true )
+add_unit_test(ADD_ONLY    NAME hardware/code/correlator_staggered_CPU          COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/correlator_staggered_GPU          COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/complex_CPU                       COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(ADD_ONLY    NAME hardware/code/complex_GPU                       COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)

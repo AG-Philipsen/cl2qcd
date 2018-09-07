@@ -19,10 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(buffers
     buffer.cpp
     prng_buffer.cpp
@@ -42,12 +38,11 @@ target_link_libraries(buffers
 #
 # Definition of tests
 #
-
-add_unit_test_withLibraries(hardware::buffers::Buffer buffer_test buffers crypto)
-add_unit_test_withLibraries(hardware::buffers::PRNGBuffer prng_buffer_test buffers crypto)
-add_unit_test_withLibraries(hardware::buffers::SU3 su3_test buffers crypto)
-add_unit_test_withLibraries(hardware::buffers::Plain plain_test buffers crypto)
-add_unit_test_withLibraries(hardware::buffers::Spinor spinor_test buffers crypto)
-add_unit_test_withLibraries(hardware::buffers::Gaugemomentum gaugemomentum_test buffers crypto)
-add_unit_test_withLibraries(hardware::buffers::Matrix3x3 3x3_test buffers crypto)
-add_unit_test_withLibraries(hardware::buffers::SU3vec su3vec_test buffers crypto)
+add_unit_test(NAME hardware/buffers/buffer        LIBRARIES buffers crypto)
+add_unit_test(NAME hardware/buffers/prng_buffer   LIBRARIES buffers crypto)
+add_unit_test(NAME hardware/buffers/su3           LIBRARIES buffers crypto)
+add_unit_test(NAME hardware/buffers/plain         LIBRARIES buffers crypto)
+add_unit_test(NAME hardware/buffers/spinor        LIBRARIES buffers crypto)
+add_unit_test(NAME hardware/buffers/gaugemomentum LIBRARIES buffers crypto)
+add_unit_test(NAME hardware/buffers/3x3           LIBRARIES buffers crypto)
+add_unit_test(NAME hardware/buffers/su3vec        LIBRARIES buffers crypto)

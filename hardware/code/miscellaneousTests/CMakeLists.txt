@@ -19,31 +19,22 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-add_executable(su2su3extend su2su3extend.cpp)
-target_link_libraries(su2su3extend kernelTestUtilities )
-add_test(Su2su3extend_CPU su2su3extend -- --useGPU=false)
-add_test(Su2su3extend_GPU su2su3extend -- --useGPU=true)
+add_unit_test(CREATE_ONLY NAME hardware/code/miscellaneousTests/Calc_staple        LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/miscellaneousTests/gaugefield_convert LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/miscellaneousTests/local_Q            LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/miscellaneousTests/su2su3extend       LIBRARIES kernelTestUtilities)
+add_unit_test(CREATE_ONLY NAME hardware/code/miscellaneousTests/geometry           LIBRARIES kernelTestUtilities)
 
-add_executable(gaugefield_convert gaugefield_convert.cpp)
-target_link_libraries(gaugefield_convert kernelTestUtilities)
-add_test(Gaugefield_Conversion_CPU gaugefield_convert -- --useGPU=false )
-add_test(Gaugefield_Conversion_GPU gaugefield_convert -- --useGPU=true )
-
-#@todo: these tests contain only dummy test and need to be worked on
-add_executable(hardware_code_geometry geometry.cpp)
-target_link_libraries(hardware_code_geometry     kernelTestUtilities )
-add_test(geometry hardware_code_geometry)
-
-add_executable(calc_staple Calc_staple_test.cpp)
-target_link_libraries(calc_staple kernelTestUtilities )
-add_test(Calc_staple_1_CPU       calc_staple -- --useGPU=false --useReconstruct12=false)
-add_test(Calc_staple_1_CPU_REC12 calc_staple -- --useGPU=false --useReconstruct12=true)
-add_test(Calc_staple_1_GPU       calc_staple -- --useGPU=true  --useReconstruct12=false)
-add_test(Calc_staple_1_GPU_REC12 calc_staple -- --useGPU=true  --useReconstruct12=true)
-
-add_executable(localQ local_Q_test.cpp)
-target_link_libraries(localQ kernelTestUtilities)
-add_test(LocalQ_1_CPU       localQ -- --useGPU=false --useReconstruct12=false)
-add_test(LocalQ_1_CPU_REC12 localQ -- --useGPU=false --useReconstruct12=true)
-add_test(LocalQ_1_GPU       localQ -- --useGPU=true  --useReconstruct12=false)
-add_test(LocalQ_1_GPU_REC12 localQ -- --useGPU=true  --useReconstruct12=true)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/Calc_staple_CPU        COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/Calc_staple_CPU_REC12  COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/Calc_staple_GPU        COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/Calc_staple_GPU_REC12  COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/gaugefield_convert_CPU COMMAND_LINE_OPTIONS -- --useGPU=false )
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/gaugefield_convert_GPU COMMAND_LINE_OPTIONS -- --useGPU=true )
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/local_Q_CPU            COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=false)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/local_Q_CPU_REC12      COMMAND_LINE_OPTIONS -- --useGPU=false --useReconstruct12=true)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/local_Q_GPU            COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=false)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/local_Q_GPU_REC12      COMMAND_LINE_OPTIONS -- --useGPU=true  --useReconstruct12=true)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/su2su3extend_CPU       COMMAND_LINE_OPTIONS -- --useGPU=false)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/su2su3extend_GPU       COMMAND_LINE_OPTIONS -- --useGPU=true)
+add_unit_test(   ADD_ONLY NAME hardware/code/miscellaneousTests/geometry) # <-- this contains only dummy test and need to be worked on

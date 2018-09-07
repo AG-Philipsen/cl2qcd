@@ -18,10 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(fermionmatrix
     fermionmatrix.cpp
     explicit.cpp
@@ -34,7 +30,7 @@ target_link_libraries(fermionmatrix
     lattices
 )
 
-add_unit_test(physics::fermionmatrix::<explicit> explicit_test)
-add_unit_test(physics::fermionmatrix::<fermionmatrix> fermionmatrix_test)
-add_unit_test(physics::fermionmatrix::<explicit_stagg> explicit_stagg_test)
-add_unit_test(physics::fermionmatrix::<fermionmatrix_stagg> fermionmatrix_stagg_test)
+add_unit_test(NAME physics/fermionmatrix/explicit            LIBRARIES fermionmatrix)
+add_unit_test(NAME physics/fermionmatrix/fermionmatrix       LIBRARIES fermionmatrix)
+add_unit_test(NAME physics/fermionmatrix/explicit_stagg      LIBRARIES fermionmatrix)
+add_unit_test(NAME physics/fermionmatrix/fermionmatrix_stagg LIBRARIES fermionmatrix)

@@ -28,5 +28,5 @@
 
 BOOST_AUTO_TEST_CASE(GEOMETRY)
 {
-    BOOST_ERROR("not implemented");
+    BOOST_ERROR("Nothing to test, still to be implemented!");
 }

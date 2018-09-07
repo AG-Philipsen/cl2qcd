@@ -18,10 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(lime
     limeUtilities.cpp
     limeFileReader.cpp
@@ -37,4 +33,4 @@ target_link_libraries(lime
     sourcefileParameters
 )
 
-add_unit_test_withLibraries(limeFileReader limeFileReader_test lime)
+add_unit_test(NAME ildg_io/lime/limeFileReader LIBRARIES lime)

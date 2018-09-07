@@ -19,6 +19,6 @@
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 add_executable(bandwidth bandwidth.cpp)
-target_link_libraries( bandwidth
+target_link_libraries(bandwidth
     optimal
 )

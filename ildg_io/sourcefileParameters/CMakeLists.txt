@@ -18,10 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(sourcefileParameters
     SourcefileParameters.cpp
     SourcefileParameters_utilities.cpp
@@ -34,4 +30,4 @@ target_link_libraries(sourcefileParameters
     ${LIBXML2_LIBRARIES}
 )
 
-add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test sourcefileParameters)
+add_unit_test(NAME ildg_io/sourcefileParameters/SourcefileParameters LIBRARIES sourcefileParameters)

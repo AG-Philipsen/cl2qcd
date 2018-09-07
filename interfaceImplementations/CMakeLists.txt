@@ -18,15 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
-add_unit_test_withLibraries(hardware::Parameters hardwareParameters_test  meta)
-add_unit_test_withLibraries(hardware::code::Parameters openClKernelParameters_test meta)
-add_unit_test_withLibraries(physics::Parameters physicsParameters_test meta exceptions)
-add_unit_test_withLibraries(physics::observables::Parameters observablesParameters_test meta)
-add_unit_test_withLibraries(physics::lattices::Parameters latticesParameters_test meta)
-add_unit_test_withLibraries(physics::fermionmatrix::Parameters fermionmatrixParameters_test meta)
-add_unit_test_withLibraries(physics::algorithms::Parameters algorithmsParameters_test meta)
-add_unit_test_withLibraries(physics::interfacesHandler interfacesHandler_test meta exceptions)
+add_unit_test(NAME interfacesImplementations/hardwareParameters      LIBRARIES meta)
+add_unit_test(NAME interfacesImplementations/openClKernelParameters  LIBRARIES meta)
+add_unit_test(NAME interfacesImplementations/physicsParameters       LIBRARIES meta exceptions)
+add_unit_test(NAME interfacesImplementations/observablesParameters   LIBRARIES meta)
+add_unit_test(NAME interfacesImplementations/latticesParameters      LIBRARIES meta)
+add_unit_test(NAME interfacesImplementations/fermionmatrixParameters LIBRARIES meta)
+add_unit_test(NAME interfacesImplementations/algorithmsParameters    LIBRARIES meta)
+add_unit_test(NAME interfacesImplementations/interfacesHandler       LIBRARIES meta exceptions)

@@ -19,10 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(gaugeObservables
     gaugeObservables.cpp
 )
@@ -49,12 +45,12 @@ target_link_libraries(observables
 #
 # Definition of tests
 #
-
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
-add_unit_test_withLibraries(physics::gaugeObservables gaugeObservables_test observables)
-add_unit_test_withLibraries(physics::observables::wilson::twoFlavourChiralCondensate wilsonTwoFlavourChiralCondensate_test lattices observables)
-add_test(physics::observables::wilson::twoFlavourChiralCondensate_GPU wilsonTwoFlavourChiralCondensate_test -- --useGPU=true)
-add_unit_test_withLibraries(physics::observables::wilson::twoFlavourCorrelators wilsonTwoFlavourCorrelators_test lattices observables)
-add_unit_test_withLibraries(physics::observables::staggered::ChiralCondensate staggeredChiralCondensate_test lattices observables)
-add_unit_test_withLibraries(physics::observables::staggered::twoFlavourCorrelators staggeredTwoFlavourCorrelators_test lattices observables)
+add_unit_test(            NAME physics/gaugeObservables                                  LIBRARIES observables)
+add_unit_test(CREATE_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate      LIBRARIES lattices observables)
+add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_CPU  COMMAND_LINE_OPTIONS -- --useGPU=false)
+add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_GPU  COMMAND_LINE_OPTIONS -- --useGPU=true )
+add_unit_test(            NAME physics/observables/wilsonTwoFlavourCorrelators           LIBRARIES lattices observables)
+add_unit_test(            NAME physics/observables/staggeredChiralCondensate             LIBRARIES lattices observables)
+add_unit_test(            NAME physics/observables/staggeredTwoFlavourCorrelators        LIBRARIES lattices observables)

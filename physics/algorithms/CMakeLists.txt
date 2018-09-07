@@ -20,10 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(algorithms
     su3heatbath.cpp
     inversion.cpp
@@ -55,12 +51,11 @@ target_link_libraries(algorithms
 #
 # Definition of tests
 #
-
-add_unit_test(physics::algorithms::<fermion_force> fermion_force_test)
-add_unit_test(physics::algorithms::<fermion_force_staggered> fermion_force_staggered_test)
-add_unit_test(physics::algorithms::<forces> forces_test)
-add_unit_test(physics::algorithms::<molecular_dynamics> molecular_dynamics_test)
-add_unit_test(physics::algorithms::<rational_approximation> rational_approximation_test ${CMAKE_CURRENT_SOURCE_DIR}/rational_approximation_test_input)
-add_unit_test(physics::algorithms::solver::<solver_shifted> solver_shifted_test)
-add_unit_test(physics::algorithms::<find_minmax_eigenvalue> find_minmax_eigenvalue_test)
-add_unit_test(physics::algorithms::<metropolis> metropolis_test)
+add_unit_test(NAME physics/algorithms/fermion_force           LIBRARIES algorithms)
+add_unit_test(NAME physics/algorithms/fermion_force_staggered LIBRARIES algorithms)
+add_unit_test(NAME physics/algorithms/forces                  LIBRARIES algorithms)
+add_unit_test(NAME physics/algorithms/molecular_dynamics      LIBRARIES algorithms)
+add_unit_test(NAME physics/algorithms/rational_approximation  LIBRARIES algorithms COMMAND_LINE_OPTIONS ${CMAKE_CURRENT_SOURCE_DIR}/rational_approximation_test_input)
+add_unit_test(NAME physics/algorithms/solver_shifted          LIBRARIES algorithms)
+add_unit_test(NAME physics/algorithms/find_minmax_eigenvalue  LIBRARIES algorithms)
+add_unit_test(NAME physics/algorithms/metropolis              LIBRARIES algorithms)

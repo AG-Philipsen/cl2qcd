@@ -20,10 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(meta
     parametersBasic.cpp
     parametersConfig.cpp
@@ -55,11 +51,10 @@ target_link_libraries(meta
 #
 # Definition of tests
 #
-
 configure_file(test_input_1 test_input_1 COPYONLY)
 configure_file(test_input_2 test_input_2 COPYONLY)
 configure_file(test_input_aliases test_input_aliases COPYONLY)
 
-add_unit_test_withLibraries(meta::Inputparameters inputparameters_test meta)
-add_unit_test_withLibraries(meta::ConfigFileNormalizer config_file_normalizer_test meta)
-add_unit_test_withLibraries(meta::TypeOps type_ops_test meta)
+add_unit_test(NAME meta/inputparameters        LIBRARIES meta)
+add_unit_test(NAME meta/config_file_normalizer LIBRARIES meta)
+add_unit_test(NAME meta/type_ops               LIBRARIES meta)

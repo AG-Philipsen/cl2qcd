@@ -20,10 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(prng
     prng.cpp
     utilities.cpp
@@ -53,9 +49,8 @@ target_link_libraries(physics
 #
 # Definition of tests
 #
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/prngstate_brokenTag prngstate_brokenTag COPYONLY )
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/prngstate_brokenTag  prngstate_brokenTag COPYONLY )
-
-add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware)
-add_unit_test_withLibraries(physics::<sources> sources_test physics)
-add_unit_test_withLibraries(physics::<utilities> utilities_test physics)
+add_unit_test(NAME physics/prng      LIBRARIES prng meta hardware)
+add_unit_test(NAME physics/sources   LIBRARIES physics)
+add_unit_test(NAME physics/utilities LIBRARIES physics)

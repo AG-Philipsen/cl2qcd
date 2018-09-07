@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-add_library(ranlux ranlxs.c ranlxd.c)
+add_library(ranlux
+    ranlxs.c
+    ranlxd.c
+)
 
-add_executable(testlx testlx.c)
-target_link_libraries(testlx ranlux)
-
-add_test(NAME Ranlux COMMAND testlx)
-set_tests_properties(Ranlux PROPERTIES PASS_REGULAR_EXPRESSION "ranlxs and ranlxd work correctly on this machine")
+add_unit_test(NAME ranlux/testlx EXECUTABLE testlx SOURCE_FILES testlx.c LIBRARIES ranlux)
+set_tests_properties(ranlux/testlx PROPERTIES PASS_REGULAR_EXPRESSION "ranlxs and ranlxd work correctly on this machine")

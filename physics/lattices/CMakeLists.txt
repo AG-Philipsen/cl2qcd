@@ -20,16 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(gaugefield
     gaugefield.cpp
-#     ../../hardware/lattices/gaugefield.cpp
-#     ../../hardware/lattices/gaugemomenta.cpp
-#     ../../hardware/lattices/spinorfield.cpp
-#     ../../hardware/lattices/prng.cpp
 )
 
 target_link_libraries(gaugefield
@@ -58,14 +50,13 @@ target_link_libraries(lattices
 #
 # Definition of tests
 #
-add_unit_test_withLibraries(physics::lattices::Gaugefield gaugefield_test gaugefield meta hardware gaugeObservables prng ildg_io host_functionality)
-add_unit_test_withLibraries(physics::lattices::Spinorfield spinorfield_test lattices)
-add_unit_test_withLibraries(physics::lattices::Spinorfield_eo spinorfield_eo_test lattices)
-add_unit_test_withLibraries(physics::lattices::Scalar<hmc_complex> scalar_complex_test lattices)
-add_unit_test_withLibraries(physics::lattices::SwappableSpinorfield swappable_spinorfield_test lattices)
-add_unit_test_withLibraries(physics::lattices::Gaugemomenta gaugemomenta_test lattices)
-add_unit_test_withLibraries(physics::lattices::Staggeredfield_eo staggeredfield_eo_test lattices)
-add_unit_test_withLibraries(physics::lattices::Algebra_Real algebra_real_test lattices)
-add_unit_test_withLibraries(physics::lattices::Vector vector_test lattices)
-
-add_unit_test(physics::lattices::Rooted_Staggeredfield_eo rooted_staggeredfield_eo_test)
+add_unit_test(NAME physics/lattices/scalar_complex           LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/vector                   LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/algebra_real             LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/gaugefield               LIBRARIES gaugefield meta hardware gaugeObservables prng ildg_io host_functionality)
+add_unit_test(NAME physics/lattices/gaugemomenta             LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/spinorfield              LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/spinorfield_eo           LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/swappable_spinorfield    LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/staggeredfield_eo        LIBRARIES lattices)
+add_unit_test(NAME physics/lattices/rooted_staggeredfield_eo LIBRARIES lattices)

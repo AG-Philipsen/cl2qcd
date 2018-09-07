@@ -19,22 +19,14 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(transfer
-            transfer.cpp
-            ocl_copy.cpp
-            async_ocl_copy.cpp
-            dgma.cpp
-           )
+    transfer.cpp
+    ocl_copy.cpp
+    async_ocl_copy.cpp
+    dgma.cpp
+)
 
 target_link_libraries(transfer
-                      hardware
-                      buffers
-                     )
-
-#
-# Definition of tests
-#
+    hardware
+    buffers
+)

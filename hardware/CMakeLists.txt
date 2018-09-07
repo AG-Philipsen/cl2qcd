@@ -20,10 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
 add_library(hardware
     system.cpp
     device.cpp
@@ -36,7 +32,6 @@ add_library(hardware
 add_library(hardwareTestUtilities
     hardwareTestUtilities.cpp
 )
-
 
 add_modules(hardware
     buffers
@@ -52,12 +47,10 @@ target_link_libraries(hardware     ${OPENCL_LIBRARIES} exceptions crypto meta ge
 #
 # Definition of tests
 #
-
-add_unit_test_withLibraries(hardware::System system_test hardware crypto)
-add_unit_test_withLibraries(hardware::Device device_test hardware crypto)
-add_unit_test_withLibraries(hardware::ProfilingData profiling_data_test hardware crypto)
-add_unit_test_withLibraries(hardware::SynchronizationEvent synchronization_event_test hardware crypto)
-
-add_executable(openclCompiler_test opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
-target_link_libraries(openclCompiler_test ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
-add_test(openclCompiler openclCompiler_test)
+add_unit_test(CREATE_ONLY   NAME hardware/system                LIBRARIES hardware crypto)
+add_unit_test(   ADD_ONLY   NAME hardware/system                COMMAND_LINE_OPTIONS --run_test=!checkDeviceAvailability)
+add_unit_test(   ADD_ONLY   NAME Availability_GPUs              COMMAND_LINE_OPTIONS --run_test=checkDeviceAvailability   EXECUTABLE hardware_system_test   SOURCE_FILES system_test.cpp)
+add_unit_test(              NAME hardware/device                LIBRARIES hardware crypto)
+add_unit_test(              NAME hardware/profiling_data        LIBRARIES hardware crypto)
+add_unit_test(              NAME hardware/synchronization_event LIBRARIES hardware crypto)
+add_unit_test(              NAME hardware/opencl_compiler       LIBRARIES crypto einhard ${OPENCL_LIBRARIES} SOURCE_FILES opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
