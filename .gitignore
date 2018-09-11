@@ -7,15 +7,8 @@
 *.pyc
 *.orig
 
-.cproject
-.metadata/
-.project
-.settings/
-
 \#*\#
 .\#*
-
-.idea
 
 gaugeobservables_beta*
 conf.?????
@@ -23,17 +16,23 @@ cl_kernelsource.cl
 time_measurement_0
 time_measurement_1
 
-/build/
-/debug/
-/doc/
+#Exclude most common folders
+/[bB]uild/
+/[dD]ebug/
 
-README.html
+#Exclude everything in doc folder except LaTeX files and configuration files
+/doc/*
+!/doc/*.tex
+!/doc/CMakeLists.txt
+!/doc/Doxyfile.in
 
+#Exclude some Eclipse files
 *.cproject
+*.html
 *.project
 *.settings/
 *.pydevproject
+*.texlipse
 
-/Debug/
-
+#Exclude symlink created by hooks setup
 /_clang-format
