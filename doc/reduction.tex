@@ -1,0 +1,242 @@
+% Copyright (c) 2015,2018 Alessandro Sciarra
+%
+% This file is part of CL2QCD.
+%
+% CL2QCD is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% CL2QCD is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
+
+\documentclass[a4paper,11pt]{article}
+\usepackage[english]{babel}
+\usepackage[applemac]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{slashed}
+\usepackage{amsmath,amssymb,mathabx}
+\usepackage{geometry}
+\usepackage{xcolor,array}
+\usepackage{fancyvrb}       %Personalizzazione ambiente Verbatim
+
+\geometry{textwidth=16cm,textheight=23cm,heightrounded,headsep=12pt,vmarginratio=1:1}
+
+%Commands
+\newcommand{\row}[1]{line~\textcolor{red}{#1}}
+\newcommand{\rows}[2]{lines~\textcolor{red}{#1}$\div$\textcolor{red}{#2}}
+\renewcommand{\theFancyVerbLine}{\textcolor{red}{\footnotesize\arabic{FancyVerbLine}}}
+\newcommand{\cut}{\texttt{cut1}}
+\newcommand{\ccut}{\texttt{cut2}}
+\newcommand{\idx}{\texttt{idx}}
+\newcolumntype{P}{>{\rule[-0.3cm]{0pt}{0.8cm}\centering$}p{4mm}<{$}}
+\newcolumntype{Q}{>{\rule[-0.4cm]{0pt}{1cm}\centering$}p{9mm}<{$}}
+\newcolumntype{R}{>{\rule[-0.4cm]{0pt}{1cm}\centering$}p{24mm}<{$}}
+\title{\vspace*{-1.5cm}\huge\textbf {On reduction}\vspace{-0.5cm}}
+\author{\small \texttt{of} \emph{Alessandro Sciarra}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent Let us start recalling the code:
+\begin{Verbatim}[gobble=0,numbers=left,numbersep=12pt,stepnumber=1,fontsize=\small]
+  //reduction
+  if(local_size == 1) {
+    ((out))[group_id].re += tmp_pol.re;
+    ((out))[group_id].im += tmp_pol.im;
+  }else{
+    //wait for all threads to end calculations
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+   //!!CP: this should be checked by someone else than me
+   //perform reduction
+   out_loc[idx].re = tmp_pol.re;
+   out_loc[idx].im = tmp_pol.im;
+   int cut1;
+   int cut2 = local_size;
+   for(cut1 = local_size / 2; cut1 > 0; cut1 /= 2) {
+     for(int i = idx + cut1; i < cut2; i += cut1) {
+       ((out_loc)[idx]).re +=  ((out_loc)[i]).re;
+       ((out_loc)[idx]).im +=  ((out_loc)[i]).im;
+     }
+     //!!CP: is this dangerous inside a for-loop?
+     barrier(CLK_LOCAL_MEM_FENCE);
+     cut2 = cut1;
+   }
+   if(idx == 0) {
+     out[group_id].re = out_loc[0].re;
+     out[group_id].im = out_loc[0].im;
+   }
+ }
+\end{Verbatim}
+that is nothing but a part of the \texttt{gaugeobservables\_polyakov.cl} file. In order to check if it is correct or not,
+a good strategy is to follow it through an example. Actually, we will consider \emph{two} examples, the first with
+\texttt{local\_size}$=2^{n}$ and the second with \texttt{local\_size}$\neq2^{n}$.
+
+\subsection*{First example: \texttt{local\_size}$=8$ }
+
+Basically, what we have to do is to check how the components of the vector \texttt{out\_loc} are
+summed (and replaced). So, to make the example easier to be understood, we use the following representation of such
+a vector:
+
+\begin{center}
+\begin{tabular}{!{\vrule width 1.5pt}P*{7}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+\end{center}
+
+\noindent where in each component we put the index of that cell instead of its content.
+We will also indicate the iterations of the outer \texttt{for} loop (\row{15}) with the symbol $\bullet$,
+while the inner \texttt{for} loop (\row{16}) iterations will be addressed as $\circ$. Since \texttt{local\_size}$=8$,
+the reduction starts with \texttt{cut2}$=8$.
+\newpage
+\begin{itemize}
+%%%
+  \item \cut$=\frac{1}{2}\,$\ccut$=4$ that is bigger than 0
+  \begin{itemize}
+  \item[$\circ$] \idx{} can be $0,1,2,3$ so that \idx$+$\cut$=4,5,6,7$.
+
+\begin{center}
+\begin{tabular}{!{\vrule width 1.5pt}Q*{3}{|Q}*{4}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+0+4 & 1+5 & 2+6 & 3+7 & 4 & 5 & 6 & 7 \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+\end{center}
+
+      \ccut$\;\to\;$\ccut$=$\cut$=4$
+  \end{itemize}
+%%%
+\medskip
+%%%
+  \item \cut$=\frac{1}{2}\,$\ccut$=2$ that is bigger than 0
+  \begin{itemize}
+  \item[$\circ$] \idx{} can be $0,1$ so that \idx$+$\cut$=2,3$.
+
+\begin{center}
+\begin{tabular}{!{\vrule width 1.5pt}R|R*{2}{|Q}*{4}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+0+4+2+6 & 1+5+3+7 & 2+6 & 3+7 & 4 & 5 & 6 & 7 \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+\end{center}
+
+      \ccut$\;\to\;$\ccut$=$\cut$=2$
+  \end{itemize}
+%%%
+\medskip
+%%%
+  \item \cut$=\frac{1}{2}\,$\ccut$=1$ that is bigger than 0
+  \begin{itemize}
+  \item[$\circ$] \idx{} can be only $0$ so that \idx$+$\cut$=1$.
+
+\begin{center}
+\begin{tabular}{!{\vrule width 1.5pt}R|R*{2}{|Q}*{4}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+\sum_{i=0}^{7} i & 1+5+3+7 & 2+6 & 3+7 & 4 & 5 & 6 & 7 \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+\end{center}
+
+      \ccut$\;\to\;$\ccut$=$\cut$=1$
+  \end{itemize}
+%%%
+\medskip
+%%%
+  \item \cut$=\frac{1}{2}\,$\ccut$=0$ that is \emph{not} bigger than 0 $\Rightarrow$ \verb"break".
+\end{itemize}
+
+\noindent In this example all is fine and there is no race-condition. Obviously, one must be sure that
+the barrier call into the \texttt{for} loop (\row{21}) is safe.
+
+\subsection*{Second example: \texttt{local\_size}$=6$ }
+
+Let us now turn to  the other example, with \texttt{local\_size}$\neq2^{n}$: we will see in a moment
+that the reduction is no more deterministic. This time, the \texttt{out\_loc} vector will be
+
+\begin{center}
+\begin{tabular}{!{\vrule width 1.5pt}P*{5}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+0 & 1 & 2 & 3 & 4 & 5 \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+\end{center}
+
+\noindent and, since \texttt{local\_size}$=6$, the loops start with \texttt{cut2}$=6$.
+\begin{itemize}
+%%%
+  \item \cut$=\frac{1}{2}\,$\ccut$=3$ that is bigger than 0
+  \begin{itemize}
+  \item[$\circ$] \idx{} can be $0,1,2$ so that \idx$+$\cut$=3,4,5$.
+
+\begin{center}
+\begin{tabular}{!{\vrule width 1.5pt}Q*{2}{|Q}*{3}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+0+3 & 1+4 & 2+5 & 3 & 4 & 5 \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+\end{center}
+
+      \ccut$\;\to\;$\ccut$=$\cut$=3$
+  \end{itemize}
+%%%
+\medskip
+%%%
+  \item \cut$=\frac{1}{2}\,$\ccut$=1$ (the result is the cast \texttt{(int)(1.5)}) that is bigger than 0
+  \begin{itemize}
+  \item[$\circ$] \idx{} can be $0,1$ so that \idx$+$\cut$=1,2$.
+
+\begin{center}
+\color{blue}
+\begin{tabular}{!{\vrule width 1.5pt}R|R|Q*{3}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+\sum_{i=0}^{5} i  & 1+4+2+5 & 2+5 & 3 & 4 & 5  \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+
+\medskip
+
+\color{red}
+\begin{tabular}{!{\vrule width 1.5pt}R|R|Q*{3}{|P}!{\vrule width 1.5pt}}
+\noalign{\hrule height 1.5pt}
+0+3+1+4 & 1+4+2+5 & 2+5 & 3 & 4 & 5 \tabularnewline
+\noalign{\hrule height 1.5pt}
+\end{tabular}
+\end{center}
+
+      \ccut$\;\to\;$\ccut$=$\cut$=1$
+  \end{itemize}
+%%%
+\medskip
+%%%
+  \item \cut$=\frac{1}{2}\,$\ccut$=0$ that is \emph{not} bigger than 0 $\Rightarrow$ \verb"break".
+\end{itemize}
+
+\noindent In the second iteration of the outer \texttt{for} loop, two scenarios were drawn:
+\begin{itemize}
+  \item[$\star$] \textcolor{blue}{The third cell is added to the second \emph{\underline{before}} that the second is added to the first;}
+  \item[$\star$] \textcolor{red}{The third cell is added to the second \emph{\underline{after}} that the second is added to the first.}
+\end{itemize}
+It is clear that in the first case we get the correct result and that in the second we do not. So we can conclude that
+the reduction performed as shown in \rows{15}{23} gives the exact result \emph{if and only if} \texttt{local\_size}$=2^{n}$;
+for sure, in such a case, there will be no race-condition and this algorithm is still reliable when the exponent $n$ grows up.
+
+
+
+
+
+
+
+
+
+
+\end{document}

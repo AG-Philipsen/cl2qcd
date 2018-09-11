@@ -1,0 +1,564 @@
+% Copyright (c) 2016,2018 Alessandro Sciarra
+%
+% This file is part of CL2QCD.
+%
+% CL2QCD is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% CL2QCD is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
+
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[dvipsnames,usenames]{xcolor}
+\usepackage{geometry}
+\usepackage{indentfirst}
+\usepackage{amsmath,amssymb,bbm,mathabx}
+\usepackage{slashed}
+\usepackage{microtype}
+\usepackage{braket}
+\usepackage{simplewick}
+\usepackage{graphicx}
+\usepackage{cleveref}
+\usepackage{cancel}
+\usepackage{nameref}
+
+%geometry
+\geometry{textheight=23cm,textwidth=17cm,hmarginratio=1:1,vmarginratio=1:1}
+%cleveref
+\crefname{equation}{Eq.}{Eqs.}
+
+%Commands
+\newcommand{\Eq}[1]{Eq.~\eqref{eq:#1}}
+\newcommand{\Eqs}[1]{Eqs.~\eqref{eq:#1}}
+\newcommand{\M}[1]{\color{OliveGreen}#1\color{black}}
+\renewcommand*\thesubsection{\arabic{subsection}}
+
+%opening
+\title{\vspace*{-2cm}\huge{\textbf{On boundary conditions in simulations}}\vspace{-0.2cm}}
+\author{\texttt{of} \emph{Alessandro Sciarra}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+The way to impose some particular boundary conditions (BC) in a simulation is not unique. Let us suppose
+that we want the fermionic field satisfy the following property:
+\begin{subequations}\label{eq:1}
+\begin{equation}\label{eq:1a}
+ \chi(n+N_\mu\,\hat{e}_\mu)=e^{\imath\theta_\mu}\chi(n) \;,
+\end{equation}
+where $n\equiv(n_x,n_y,n_z,n_t)$, $N_\mu$ is the extension of the lattice in the $\mu$--direction and $\theta_\mu$ is a
+global parameter\footnote{The BC on the gauge field are assumed to be periodic.}. Observe that \Eqs{1} implies
+\begin{equation}\label{eq:1b}
+ \chi(n-N_\mu\,\hat{e}_\mu)=e^{-\imath\theta_\mu}\chi(n) \;,
+\end{equation}
+\end{subequations}
+sending $n\to n-N_\mu\,\hat{e}_\mu$. We will focus only on the staggered formulation
+and, in particular, we will recall the two main possibilities to impose the BC of \Eqs{1}.
+It is quite easy to apply all the following arguments to different formulations (e.g. Wilson
+fermions), but we prefer not to do that, leaving this to the interested Reader.
+
+\noindent Just to fix the notation, we will refer to the standard staggered action as
+\begin{equation}\label{eq:2}
+  S=\frac{1}{2}\sum_{n,\mu}\bar\chi(n)\eta_\mu(n)\,\Bigl[U_\mu(n)^{\phantom{\dag}}\chi(n+\hat\mu)
+					  -U^\dag_\mu(n-\hat\mu)\chi(n-\hat\mu)\Bigr]+M_0\sum_n \bar\chi(n)\chi(n)\;,
+\end{equation}
+where
+\begin{equation*}
+ \left\{
+   \begin{aligned}
+     \eta_1(n)&=1 \\
+     \eta_\mu(n)&=(-1)^{\sum_{\nu<\mu}n_\nu} \quad\mbox{if}\quad \mu\neq1
+   \end{aligned}
+  \right.
+\end{equation*}
+and the color index has been omitted.
+
+\subsection{Distributing the BC on the whole lattice}\label{Str1}
+
+One very easy possibility to impose \Eqs{1} is to make a unitary abelian transformation on the fields that
+we want to satisfy such BC\footnote{See \texttt{arXiv:hep-lat/0405002v2}.}.
+In particular, let us consider the following transformation\footnote{Remark that
+$T(n\pm N_\mu\hat{e}_\mu)=e^{\mp\imath\theta_\mu}\:T(n)\:$, where
+$T(n)=\exp\bigl(-\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}\bigr)$.}:
+\begin{subequations}\label{eq:3}
+\begin{align}
+ \chi'(n) &=e^{-\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}}\:\chi(n) \\
+ \bar\chi'(n) &=e^{+\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}}\:\bar\chi(n)\;;
+\end{align}
+\end{subequations}
+it is easy to show that, if the $\chi'$ field has \emph{periodic} BC in every direction, then the $\chi$
+field satisfy \Eqs{1}.
+
+The transformation above in the standard staggered action leads to:
+\begin{equation}\label{eq:4}
+  S=\frac{1}{2}\sum_{n,\mu}\bar\chi'(n)\eta_\mu(n)\,\Bigl[e^{\imath\frac{\theta_\mu}{N_\mu}}\:
+	U_\mu(n)^{\phantom{\dag}}\chi'(n+\hat\mu)-e^{-\imath\frac{\theta_\mu}{N_\mu}}\:
+	U^\dag_\mu(n-\hat\mu)\chi'(n-\hat\mu)\Bigr]+M_0\sum_n \bar\chi'(n)\chi'(n)\;.
+\end{equation}
+From \Eq{4} we can state that \emph{during a simulation} one can impose the desired BC by using a
+fermionic field that has \emph{periodic} BC, but that obeys a modified Dirac equation.
+In other words, it is sufficient to multiply \underline{each} link by the proper phase.
+For future convenience, let us indicate the modified Dirac operator as
+\begin{equation*}
+ M^\theta_{n,m} \equiv \frac{1}{2}\sum_{\mu=1}^4\eta_\mu(n)\,\Bigl[
+                 e^{\imath\frac{\theta_\mu}{N_\mu}}\:U_\mu(n)^{\phantom{\dag}}\delta_{n+\hat\mu,m}
+                -e^{-\imath\frac{\theta_\mu}{N_\mu}}\:U^\dag_\mu(n-\hat\mu)\delta_{n-\hat\mu,m}\Bigr]+M_0\delta_{n,m}\;.
+\end{equation*}
+
+\textcolor{red}{It is worth remarking that \Eq{4} is nothing more than a rewriting of the
+action, and no particular simmetry of the theory has been used.} It is simply easier by
+the programming point of view to deal with periodic fermionic fields (in every direction),
+because then it has not to be checked in the code whether the boundary of the lattice
+is beeing crossed\footnote{In principle, one could directly implement \cref{eq:1a,eq:1b} using
+some \emph{if}--statements evaluating the coordinates of the forward and backward next-neighbor.
+Nevertheless this is particularly time consuming because one should continuously check where
+he is on the lattice.}.
+
+% For future convenience, let us introduce some new notation to rewrite \Eqs{3}. Defining
+% \[
+%  T_\mu(n) \equiv e^{\imath \frac{n_\mu\,\theta_\mu}{N_\mu}}\;,
+% \]
+% we have that
+% \[
+%  e^{+\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}}=\prod_{\mu=1}^4 T_\mu(n) \equiv T(n)\;.
+% \]
+% Obviously, from \Eqs{3} we can write
+% \[
+%  \chi(n) =T(n)\:\chi(n) \qquad\Leftrightarrow\qquad
+%  \bar\chi(n) =T^\dag(n)\:\bar\chi(n)\;,
+% \]
+% and it is important to remark that
+% \[
+%  T(n\pm N_\mu\hat{e}_\mu)=e^{\pm\imath\theta_\mu}\:T(n)\;.
+% \]
+
+
+\subsection{Leaving the BC at the end of the lattice}\label{Str2}
+
+Another possibility to impose the desired BC is to leave them at some point on the lattice.
+This statement could sound completely the opposite of what said above, but there is a trick
+to easily do that. Basically, the staggered phases $\eta_\mu(n)$ can be included in links
+and forgotten during a simulation. Before doing that, one can multiply one staggered phase in
+each direction by a proper factor, imposing in this way \Eqs{1}. Let us see now in more
+details how this preocedure works.
+
+First of all let us remark that, without loss of generality, we can choose to impose \Eqs{1}
+at the end of the lattice in each direction, namely
+\begin{equation}\label{eq:5}
+  \begin{aligned}
+    \chi(N_\mu\,\hat{e}_\mu)&=e^{\imath\theta_\mu}\chi(\underline{0}) \\
+    \chi(-1\,\hat{e}_\mu)&=e^{-\imath\theta_\mu}\chi((N_\mu-1)\,\hat{e}_\mu) \;,
+  \end{aligned}
+\end{equation}
+with $n=(0,0,0,0)\equiv\underline{0}$. Observe that the other three arguments of the $\chi$-field
+in the equations above are to be read as four vectors $(n_x,n_y,n_z,n_t)$ with $\forall n_\nu$ for $\nu\neq\mu$
+(and $n_\nu$ at the end of the lattice for $\nu=\mu$). So, one can think that the fermionic field takes a
+phase \emph{only} between the last and the first site in each direction. Now, to gather some ideas
+about the general argument, let us consider only non-periodic BC in the time direction (the generalization
+to the other case is trivial and it will be made later on). Let us indicate the site coordinates as
+$n\equiv(\vec{n},t)$: \Eq{1a} and \Eq{1b} become
+\begin{subequations}\label{eq:6}
+  \begin{equation}\label{eq:6a}
+    \begin{aligned}
+      \chi(\vec{n},\:N_t) &=e^{\imath\theta_t}\:\chi(\vec{n},\:0) \\
+      \chi(\vec{n},\:-1)  &=e^{-\imath\theta_t}\:\chi(\vec{n},\:N_t-1) \;.
+    \end{aligned}
+  \end{equation}
+for the temporal direction and
+  \begin{equation}\label{eq:6b}
+    \begin{aligned}
+      \chi(N_i\,\hat{e}_i,\:t) &=\chi(\vec{0},\:t) \\
+      \chi(-1\,\hat{e}_i,\:t)  &=\chi((N_i-1)\,\hat{e}_i,\:t) \;.
+    \end{aligned}
+  \end{equation}
+\end{subequations}
+for spatial directions. Again, the other three arguments of the $\chi$-field
+in the equations above are to be read as vectors $(n_x,n_y,n_z)$ with $\forall n_j=0$ for $j\neq i$
+(and $n_j$ at the end of the lattice for $j=i$). Defining $M_{n,m}$ so that
+\[
+ S=\sum_{n,m}\bar\chi(n)\:M_{n,m}\:\chi(m) \;,
+\]
+it is easy to see that
+\begin{equation}\label{eq:7}
+ \chi(n)=\sum_m M_{n,m}\:\chi(m)=\frac{1}{2}\sum_\mu \eta_\mu(n)\,\Bigl[U_\mu(n)^{\phantom{\dag}}\chi(n+\hat\mu)
+					  -U^\dag_\mu(n-\hat\mu)\chi(n-\hat\mu)\Bigr]+M_0 \chi(n)\;.
+\end{equation}
+Obviously, there is an expression like \Eq{7} for each site of the lattice. Nevertheless, the
+temporal phase $\theta_t$ will appear only if $n=(\vec{n},\:0)$ and $n=(\vec{n},\:N_t-1)$; in particular:
+\begin{subequations}\label{eq:8}
+\begin{align}
+ \chi(\vec{n},\:0)&=\frac{1}{2}\:\eta_t(\vec{n},\:0)\Bigl[U^{\phantom{\dag}}_t(\vec{n},\:0)\:\chi(\vec{n},\:1)
+					-U^\dag_t(\vec{n},\:-1)\:\chi(\vec{n},\:-1)\Bigr]+(\dots)= \notag \\[0.5ex]
+	&=\frac{1}{2}\:\eta_t(\vec{n},\:0)\Bigl[U^{\phantom{\dag}}_t(\vec{n},\:0)\:\chi(\vec{n},\:1)
+		-e^{-\imath\theta_t}U^\dag_t(\vec{n},\:N_t-1)\:\chi(\vec{n},\:N_t-1)\Bigr]+(\dots)= \notag \\[0.5ex]
+	&=\frac{1}{2}\:\Bigl[\eta_t(\vec{n},\:0)U^{\phantom{\dag}}_t(\vec{n},\:0)\:\chi(\vec{n},\:1)
+		-e^{-\imath\theta_t}\eta_t(\vec{n},\:\textcolor{blue}{N_t-1})U^\dag_t(\vec{n},\:N_t-1)
+		\:\chi(\vec{n},\:N_t-1)\Bigr]+(\dots) =\notag\\[0.5ex]
+	&=\frac{1}{2}\:\Bigl[\eta_t(\vec{n},\:0)U^{\phantom{\dag}}_t(\vec{n},\:0)\:\chi(\vec{n},\:1)
+		-\Bigl(e^{\imath\theta_t}\eta_t(\vec{n},\:N_t-1)\Bigr)^{\star}U^\dag_t(\vec{n},\:N_t-1)
+		\:\chi(\vec{n},\:N_t-1)\Bigr]+(\dots) \displaybreak[3]\\[1.5ex]
+ \chi(\vec{n},\:N_t-1)&=\frac{1}{2}\:\eta_t(\vec{n},\:N_t-1)\Bigl[U^{\phantom{\dag}}_t(\vec{n},\:N_t-1)\:\chi(\vec{n},\:N_t)
+					-U^\dag_t(\vec{n},\:N_t-2)\:\chi(\vec{n},\:N_t-2)\Bigr]+(\dots)= \notag \\[0.5ex]
+	&=\frac{1}{2}\:\eta_t(\vec{n},\:N_t-1)\Bigl[e^{\imath\theta_t}U^{\phantom{\dag}}_t(\vec{n},\:N_t-1)
+		\:\chi(\vec{n},\:0)-U^\dag_t(\vec{n},\:N_t-2)\:\chi(\vec{n},\:N_t-2)\Bigr]+(\dots)=  \\[0.5ex]
+	&=\frac{1}{2}\:\Bigl[e^{\imath\theta_t}\eta_t(\vec{n},N_t-1)U^{\phantom{\dag}}_t(\vec{n},\:N_t-1)\:\chi(\vec{n},\:0)
+		-\eta_t(\vec{n},\:\textcolor{blue}{N_t-2})U^\dag_t(\vec{n},\:N_t-2)\:\chi(\vec{n},\:N_t-2)
+		\Bigr]+(\dots)\;;\notag
+\end{align}
+\end{subequations}
+where the $(\dots)$ include the remaining terms. In both first steps, \Eqs{6a} were used, while in both last steps
+we took into account that the staggered phase $\eta_\mu(n)$ does not depend on $n_\mu$. From \Eqs{8} it is easy
+to read how to impose \emph{during a simulation} the BC~\eqref{eq:5}: on condition that each staggered phase
+appears \emph{exactly} next to his link, it is sufficient to multiply the staggered phases
+$\eta_t(\vec{n},N_t-1)$ by $e^{\imath\theta_t}$ and to take the complex conjugate whenever they
+appear next to the hermitean conjugate of a link. It is then clear why staggered phases are often
+included in links (remark that, if this is the case, the complex conjugate is automatically taken,
+thanks to the $\dag$-operator). \textcolor{red}{It is worth remarking that once we modify staggered
+phases, then we have to make the fermionic field satisfy \emph{periodic} BC in \emph{every} direction,
+because otherwise the BC phase would appear more than only once.}
+
+\smallskip
+
+To impose the general condition reported in \Eqs{1}, it will be necessary to multiply the
+staggered phases in direction $\mu$ by $e^{\imath\theta_\mu}$ at the end of the lattice
+in such a direction (and, again, make the phases appear next to their links and take
+the complex conjugate properly). Here, again, we can define a modified Dirac operator as
+\begin{equation*}
+ \tilde{M}_{n,m}\equiv\frac{1}{2}\sum_{\mu=1}^4\eta_\mu(n)\,\Bigl[
+                      \tilde{U}'_\mu(n)^{\phantom{\dag}}\delta_{n+\hat\mu,m}-
+                      \tilde{U}'^{\:\dag}_\mu(n-\hat\mu)\delta_{n-\hat\mu,m}\Bigr]+M_0\delta_{n,m}\;,
+\end{equation*}
+where
+\begin{alignat*}{3}
+ \bullet& \quad\tilde{U}'_\mu(n)&&=\begin{cases} U_\mu(n) &\text{if }n\neq N_\mu-1 \\
+                                 e^{\imath\theta_\mu} U_\mu(n) &\text{if }n=N_\mu-1 \end{cases} \qquad&&,\\[1ex]
+ \bullet& \quad\tilde{U}'^{\:\dag}_\mu(n)&&=\begin{cases} U_\mu(n) &\text{if }n\neq 0 \\
+                                 e^{-\imath\theta_\mu} U_\mu(n) &\text{if }n=0 \end{cases}&&.
+\end{alignat*}
+
+
+\section*{Are the two strategies connected?}
+
+So far we explained how to behave in a simulation to impose the desired BC, but we did not
+really justified why we are allowed to procede in such a way. Furthermore anyone will be
+wondering whether the two possibilities above depicted are or not equivalent and, in case, why.
+To answer this question, let us go through the second procedure once again, this time in a
+more formal way. At the end it will be clear which is the connection between the two strategies
+and how they are linked.
+
+\medskip
+
+Let us start again from the action of the theory,
+\begin{equation*}
+  S=\frac{1}{2}\sum_{n,\mu}\bar\chi(n)\eta_\mu(n)\,\Bigl[U_\mu(n)^{\phantom{\dag}}\chi(n+\hat\mu)
+					  -U^\dag_\mu(n-\hat\mu)\chi(n-\hat\mu)\Bigr]+M_0\sum_n \bar\chi(n)\chi(n)\;,
+\end{equation*}
+where the fermionic field $\chi$ satisfies the BC~\eqref{eq:1}. If we make the transformation done
+in §\ref{Str1} we pass to fermionic fields with periodic BC in all directions and the action becomes
+\begin{equation*}
+  S=\frac{1}{2}\sum_{n,\mu}\bar\chi'(n)\eta_\mu(n)\,\Bigl[e^{\imath\frac{\theta_\mu}{N_\mu}}\:
+	U_\mu(n)^{\phantom{\dag}}\chi'(n+\hat\mu)-e^{-\imath\frac{\theta_\mu}{N_\mu}}\:
+	U^\dag_\mu(n-\hat\mu)\chi'(n-\hat\mu)\Bigr]+M_0\sum_n \bar\chi'(n)\chi'(n)\;,
+\end{equation*}
+exactly the same as in \Eq{4}. Then we perform another transformation, this time on links, that reads
+\begin{equation}\label{eq:9}
+ U'_\mu(n)=G(n)\:U_\mu(n)\:G^{-1}(n+\hat\mu) \;,
+\end{equation}
+where
+\begin{equation*}
+ G(n)=e^{-\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}}\qquad \mbox{with}\qquad  G(n\pm N_\mu\hat{e}_\mu)=G(n)\;.
+\end{equation*}
+Putting \Eq{9} in \Eq{10}, we have
+\begin{align*}
+ S=\frac{1}{2}\sum_{n,\mu}\bar\chi'(n)\eta_\mu(n)\,\Bigl[&e^{\imath\frac{\theta_\mu}{N_\mu}}\:
+	G^{-1}(n)\:U'_\mu(n)^{\phantom{\dag}}G(n+\hat\mu)\:\chi'(n+\hat\mu)+\notag\\
+	-&e^{-\imath\frac{\theta_\mu}{N_\mu}}\:
+	G^{-1}(n)\:U'^{\:\dag}_\mu(n-\hat\mu)G(n-\hat\mu)\chi'(n-\hat\mu)\Bigr]+M_0\sum_n \bar\chi'(n)\chi'(n)\;.
+\end{align*}
+Now, with a bit of algebra, we have the following cases
+\begin{alignat*}{2}
+  \bullet& \quad e^{\imath\frac{\theta_\mu}{N_\mu}}\:G(n)^{-1}\:G(n+\hat\mu)&&=\left\{
+        \begin{aligned}
+         1 &\quad\mbox{if}\quad n_\mu \neq N_\mu-1 \\
+         e^{\imath\theta_\mu} &\quad\mbox{if}\quad n_\mu = N_\mu-1
+        \end{aligned}
+        \right.\\[1ex]
+  \bullet& \quad e^{-\imath\frac{\theta_\mu}{N_\mu}}\:G(n)^{-1}\:G(n-\hat\mu)&&=\left\{
+        \begin{aligned}
+         1 &\quad\mbox{if}\quad n_\mu \neq 0 \\
+         e^{-\imath\theta_\mu} &\quad\mbox{if}\quad n_\mu = 0
+        \end{aligned}
+        \right.
+\end{alignat*}
+that put in the action give
+\begin{equation}\label{eq:10}
+ S=\frac{1}{2}\sum_{n,\mu}\bar\chi'(n)\eta_\mu(n)\,
+   \Bigl[\tilde{U}'_\mu(n)^{\phantom{\dag}}\:\chi'(n+\hat\mu)-
+         \tilde{U}'^{\:\dag}_\mu(n-\hat\mu)\chi'(n-\hat\mu)\Bigr]+M_0\sum_n \bar\chi'(n)\chi'(n)\;,
+\end{equation}
+where $\tilde{U}'_\mu(n)$ and $\tilde{U}'^{\:\dag}_\mu(n)$ are the same as those defined at the
+end of §\ref{Str2}. We can now easily rewrite \Eq{10} making staggered phases complex and moving
+them next to (and ideally also inside) the links:
+\begin{equation}\label{eq:11}
+ S=\frac{1}{2}\sum_{n,\mu}\bar\chi'(n)\,
+   \Bigl[\tilde{\eta}_\mu(n)\:U'_\mu(n)^{\phantom{\dag}}\chi'(n+\hat\mu)-
+         \tilde{\eta}^\star_\mu(n-\hat\mu)\:U'^{\:\dag}_\mu(n-\hat\mu)\chi'(n-\hat\mu)\Bigr]+M_0\sum_n \bar\chi'(n)\chi'(n)\;,
+\end{equation}
+with
+\[
+ \tilde{\eta}_\mu(n)=\begin{cases} \eta_\mu(n) &\text{if }n\neq N_\mu-1 \\
+                                 e^{\imath\theta_\mu} \eta_\mu(n) &\text{if }n=N_\mu-1 \end{cases} \qquad
+                                 \text{and}\qquad \tilde{\eta}_\mu(-\hat\mu)=\eta_\mu(N_\mu-1)\;.
+\]
+Once again we obtained the same result of §\ref{Str2}: to impose BC~\eqref{eq:1}, it is
+necessary to multiply the staggered phases in direction $\mu$ by $e^{\imath\theta_\mu}$
+at the end of the lattice in such a direction (and make the phases appear \emph{exactly}
+next to their links and take the complex conjugate properly).
+
+\medskip
+
+We are now ready to compare the two strategies. From the previous detailed analysis it should
+be clear that \textcolor{blue}{\emph{to pass from strategy §\ref{Str1} to strategy §\ref{Str2}
+one has to transform the link configuration accordingly to \Eq{9}}}. Then, to understand
+why this transformation is allowed, one can give the following argument. The partition
+function on which the (R)HMC algorithm is based reads
+\begin{equation}\label{eq:12}
+ \mathcal{Z}=\int DU \:\text{det}M\: e^{-S[U]}\;,
+\end{equation}
+where det$M$ is the fermionic determinant that arises from the functional integration on fermionic
+fields, while $S[U]$ is the gauge part of the action. To gauge transform $\mathcal{Z}$, one only
+need to send $U_\mu(n)$ into $G(n)\:U_\mu(n)\:G^{-1}(n+\hat\mu)$, since it is the only present field.
+It easily turns out that $\mathcal{Z}$ is invariant under this transformation\footnote{The Haar measure
+$DU$ and $S[U]$ are invariant by definition; to prove that det$M$ is invariant one can rewrite it as
+\[
+ \text{det}M=\exp[Tr(\ln M)]
+\]
+and then expand the $\ln(M_0\:\mathbbm{1}+D)$ in series. The trace will make
+only closed loops on the lattice survive and then each term of the series is explicitly gauge invariant.}.
+Then, the two strategies lead to algorithm based on
+\[
+ \mathcal{Z}^\theta=\int DU \:\text{det}M^\theta\: e^{-S[U]}\qquad \text{from §\ref{Str1}}\;,
+\]
+and
+\[
+ \tilde{\mathcal{Z}}=\int DU \:\text{det}\tilde{M}\: e^{-S[U]}\qquad \text{from §\ref{Str2}}\;.
+\]
+But we showed that
+\[
+ M^\theta\;\xrightarrow{U'=GUG^{-1}}\;\tilde{M}\qquad\Rightarrow\qquad \mathcal{Z}^\theta=\tilde{\mathcal{Z}}\;,
+\]
+from which we conclude that both algorithms give the same expectation values of gauge invariant observables.
+
+
+
+
+
+
+
+
+
+
+\color{OliveGreen}
+\subsubsection*{Thought:}
+
+It is well known that the action is invariant under local gauge transformations,
+then we can do one without changing the physics described by $S$. Recalling that
+on the lattice
+\begin{subequations}\label{eq:A1}
+  \begin{align}
+   \chi(n) \,&\to\, \chi'(n)=G(n)\:\chi(n) \label{eq:A1a}\\
+   U_\mu(n) \,&\to\, U'_\mu(n)=G(n)\:U_\mu(n)\:G^{-1}(n+\hat\mu) \;, \label{eq:A1b}
+  \end{align}
+\end{subequations}
+under the gauge transformation $G(n)$, let us consider
+\begin{equation}\label{eq:A2}
+ G(n)=e^{-\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}}\;.
+\end{equation}
+Of course, \Eqs{A1} do not make $S$ change. Ignoring the mass term, we have
+\begin{align}\label{eq:A3}
+ S'=\frac{1}{2}\sum_{n,\mu} \eta_\mu(n)\:\bar\chi'(n)\:G(n)\,
+                     \Bigl[&G^{-1}(n)\:U'_\mu(n)^{\phantom{\dag}}G(n+\hat\mu)\:G^{-1}(n+\hat\mu)\:\chi'(n+\hat\mu)+\notag\\
+                    -&G^{-1}(n)\:U'^{\:\dag}_\mu(n-\hat\mu)G(n-\hat\mu)\:G^{-1}(n-\hat\mu)\:\chi'(n-\hat\mu)\Bigr]=S\;.
+\end{align}
+In \Eq{A3} we fixed how $G(n)$ behaves wrapping once around the lattice: it does not matter how it does
+but this behaviour must be fixed to leave $S$ unchanged. On the contrary, the strategy depicted in the
+section \emph{\nameref{Str2}} is equivalent to put \Eqs{A1} into $S$ making $G(n)$ behave when wrapping
+around the lattice as the field it is acting on. This means that in \Eq{A1a} it is
+\[
+ e^{-\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}}
+ \qquad\Leftrightarrow\qquad G(n\pm N_\mu\hat{e}_\mu)=e^{\mp\imath\theta_\mu}\:G(n)\;,
+\]
+while in \Eq{A1b} it is
+\[
+ e^{-\imath\sum_\mu\frac{\theta_\mu\:(n_\mu)(\text{mod }N_\mu)}{N_\mu}}
+ \qquad\Leftrightarrow\qquad G(n\pm N_\mu\hat{e}_\mu)=G(n)\;.
+\]
+
+
+
+
+
+
+
+
+
+
+
+
+
+% \subsection*{A very simple test whose result remains unclear...}
+%
+% As well known, during the development of a code, it is very useful to implement tests
+% for its different parts. For the Dirac operator, for example, a good test is to calculate with a
+% Reference Code the squarenorm of the field $\chi(n)=\sum_m M_{n,m}\:\chi(m)$, and then
+% to repeat such a calculation with the own code, obtaining (hopefully) the same squarenorm.
+% At first, one can start with a very very simple set-up, i.e. all links equal to $\mathbbm{1}$,
+% all fields $\chi(m)=(1,1,1)$, the mass equal to zero and, finally, some BC.
+%
+% \smallskip
+%
+% \noindent Let us focus on the following set-up:
+% \begin{itemize}
+%  \item $N_\mu=4\quad \forall \mu$;
+%  \item $\chi(m)=(1,1,1)\equiv\vec{v}\quad \forall m$;
+%  \item $U_t(\vec{0},0)$ random matrix of $SU(3)$ and all other links equal to $\mathbbm{1}_{3\times3}$;
+%  \item Periodic BC in spatial directions and \emph{antiperiodic} BC in the temporal direction
+%        ($\theta_t=1$ and $\theta_i=0$);
+%  \item $M_0=0$.
+% \end{itemize}
+% In this situation it is possible to calculate the result a priori: let us do such a calculation
+% first imposing the BC modifing the staggered phases, and then tranforming the staggered field.
+%
+% \subsubsection*{First method:}
+%
+% Calculating the field $\chi(n)$ following the first procedure, i.e. imposing \Eqs{3} and \Eqs{3b},
+% it is easy to demonstrate that $\chi(n)$ does not vanish only if
+% $n=(\vec{n},\:0)$, $n=(\vec{0},\:1)$ or $n=(\vec{n},\:N_t-1)$.
+% In these three cases, indicating with $U$ the only link not equal to $\mathbbm{1}$, we get:
+% \begin{subequations}\label{eq:8}
+% \begin{alignat}{2}
+%  \chi(\vec{0},\:0)&=\frac{1}{2}\:\eta_t(\vec{0},\:0)\;\Bigl[U+\mathbbm{1}\Bigr]\cdot\vec{v}  \\[0.5ex]
+%  \chi(\vec{0},\:1)&=\frac{1}{2}\:\eta_t(\vec{0},\:1)\;\Bigl[\mathbbm{1}-U^\dag\Bigr]\cdot\vec{v}  \\[0.5ex]
+%  \chi(\vec{n},\:0)&=\frac{1}{2}\:\eta_t(\vec{n},\:0)\;\Bigl[\mathbbm{1}+\mathbbm{1}\Bigr]\cdot\vec{v}
+%   &\qquad\quad&\forall\:\vec{n}\neq\vec{0} \\[0.5ex]
+%  \chi(\vec{n},\:N_t-1)&=\frac{1}{2}\:\eta_t(\vec{n},\:N_t-1)\;\Bigl[-\mathbbm{1}-\mathbbm{1}\Bigr]\cdot\vec{v}
+%  &&\forall\:\vec{n}\;;
+% \end{alignat}
+% \end{subequations}
+% therefore
+% \begin{equation*}
+%  |\chi|^2=\sum_{\vec{n}\neq\vec{0}}\;\Bigl\{\bigl|\chi(\vec{n},0)\bigr|^2+\bigl|\chi(\vec{n},N_t-1)\bigr|^2\Bigr\}
+%           +\bigr|\chi(\vec{0},0)\bigl|^2+\bigr|\chi(\vec{0},1)\bigl|^2+\bigl|\chi(\vec{0},N_t-1)\bigr|^2\;.
+% \end{equation*}
+% Since
+% \[
+% \begin{aligned}
+%  4\cdot\bigl|\chi(\vec{0},0)\bigr|^2 &= \vec{v}^\dag\cdot\bigl(\mathbbm{1}+U^\dag\bigr)\cdot
+% 					\bigl(\mathbbm{1}+U\bigr)\cdot\vec{v}=
+% 					\vec{v}^\dag\cdot\bigl(2\:\mathbbm{1}+U^\dag+U\bigr)\cdot\vec{v}\\[0.5ex]
+%  4\cdot\bigl|\chi(\vec{0},1)\bigr|^2 &= \vec{v}^\dag\cdot\bigl(\mathbbm{1}-U\bigr)\cdot
+% 					\bigl(\mathbbm{1}-U^\dag\bigr)\cdot\vec{v}=
+% 					\vec{v}^\dag\cdot\bigl(2\:\mathbbm{1}-U^\dag-U\bigr)\cdot\vec{v}\\[0.5ex]
+%  \bigl|\chi(\vec{n},0)\bigr|^2 &= \vec{v}^\dag\cdot\vec{v}\qquad\quad\forall\:\vec{n}\neq\vec{0}\\[0.5ex]
+%  \bigl|\chi(\vec{n},N_t-1)\bigr|^2 &= \vec{v}^\dag\cdot\vec{v}\qquad\quad\forall\:\vec{n}\;,
+% \end{aligned}
+% \]
+% then we obtain
+% \begin{equation}\label{eq:9}
+%  |\chi|^2=\sum_{\vec{n}\neq\vec{0}}\;\bigl( 2\,\vec{v}^\dag\cdot\vec{v}\bigr)
+%          + 2\, \vec{v}^\dag\cdot\vec{v}
+%          =(4^3-1)\cdot2\cdot 3+2\cdot3=384\;.
+% \end{equation}
+%
+% \subsubsection*{Second method:}
+%
+% Let us now try to derive again the result of \Eq{9}, following the second procedure, i.e. following
+% \Eq{7}. It is worth remarking that fields $\chi$ and $\chi'$ have the same squarenorm, as we can see
+% from \Eqs{6}:
+% \begin{equation*}
+%  |\chi'|^2=\sum_n\:\bigl|\chi'(n)\bigr|^2=\sum_n\:\Bigl|e^{-\imath\sum_\mu\frac{\theta_\mu\:n_\mu}{N_\mu}}\:\chi(n)\Bigr|^2
+%          = \sum_n\:\bigl|\chi(n)\bigr|^2=|\chi|^2\;;
+% \end{equation*}
+% this allows us to work from now on with the field $\chi'$ which we will refer to simply as $\chi$. Furthermore,
+% the equation above justifies somehow why we expect the same test result with both procedures.
+%
+% This time, the field $\chi(n)$ will be non-zero on all the lattice ($\alpha=1/4$):
+%
+% \begin{subequations}\label{eq:10}
+% \begin{align}
+%  \chi(\vec{0},\:0)&=\frac{1}{2}\:\eta_t(\vec{n},\:0)\;\Bigl[e^{\imath\alpha\pi}U-
+% 					e^{-\imath\alpha\pi}\mathbbm{1}\Bigr]\cdot\vec{v}  \\[0.5ex]
+%  \chi(\vec{0},\:1)&=\frac{1}{2}\:\eta_t(\vec{n},\:1)\;\Bigl[e^{\imath\alpha\pi}\mathbbm{1}-
+% 					e^{-\imath\alpha\pi}U^\dag\Bigr]\cdot\vec{v}  \\[0.5ex]
+%  \chi(\vec{n},\:t)&=\frac{1}{2}\:\eta_t(\vec{n},\:t)\;\Bigl[e^{\imath\alpha\pi}-
+% 					e^{-\imath\alpha\pi}\Bigr]\mathbbm{1}\cdot\vec{v} \label{eq:10c}
+% \end{align}
+% \end{subequations}
+% where in \Eq{10c} $n\neq(\vec{0},0)$ and $n\neq(\vec{0},1)$. Hence
+% \begin{equation*}
+%  |\chi|^2=\bigl|\chi(\vec{0},0)\bigr|^2+\bigr|\chi(\vec{0},1)\bigl|^2+
+% 	  \sum_{\substack{n\neq(\vec{0},0)\\n\neq(\vec{0},1)}}\bigl|\chi(\vec{n},t)\bigr|^2\;.
+% \end{equation*}
+% It is easy to calculate explicitly the last term:
+% \begin{equation}\label{eq:11}
+%   \sum_{\substack{n\neq(\vec{0},0)\\n\neq(\vec{0},1)}}\bigl|\chi(\vec{n},t)\bigr|^2=
+%   (4^4-2)\cdot\sin^2(\alpha\pi)\cdot|\vec{v}|^2=381\;.
+% \end{equation}
+% Regarding the other two terms we have:
+% \[
+%   \bigl|\chi(\vec{n},0)\bigr|^2 =\bigl|\chi(\vec{n},1)\bigr|^2 =
+%   \frac{1}{4}\;\vec{v}^\dag\cdot\bigl(2\:\mathbbm{1}-e^{-2\imath\alpha\pi}U^\dag-
+%   e^{2\imath\alpha\pi}U\bigr)\cdot\vec{v}\;,
+% \]
+% therefore
+% \begin{align}\label{eq:12}
+%  \bigl|\chi(\vec{n},0)\bigr|^2+\bigl|\chi(\vec{n},1)\bigr|^2 &=
+%  \vec{v}^\dag\cdot\vec{v}-2\:\Re\bigl(e^{2\imath\alpha\pi}U\bigr)=\notag\\[0.75ex]
+%  &=3-\vec{v}^\dag\cdot\Bigl[\Re\bigl(e^{2\imath\alpha\pi}\bigr)\,\Re(U)
+%                           -\Im\bigl(e^{2\imath\alpha\pi}\bigr)\,\Im(U)\Bigr]\cdot\vec{v}=\notag\\[0.75ex]
+%  &=3-\vec{v}^\dag\cdot\Bigl[\cos(2\imath\alpha\pi)\,\Re(U)
+%                            -\sin(2\imath\alpha\pi)\,\Im(U)\Bigr]\cdot\vec{v}=\notag\\[0.5ex]
+%  &=3+\sum_{i=1}^3\sum_{j=1}^3 \Im\bigl(U_{i,j}\bigr) \;,
+% \end{align}
+% where we used the explicit value of $\alpha$. Putting \Eq{11} and \Eq{12} together, we get
+% \begin{equation}\label{eq:13}
+%  |\chi|^2=384+\sum_{i=1}^3\sum_{j=1}^3 \Im\bigl(U_{i,j}\bigr)\;.
+% \end{equation}
+% Now, if we want \Eq{13} agree with \Eq{9}, then $\sum_{i=1}^3\sum_{j=1}^3 \Im\bigl(U_{i,j}\bigr)$
+% should be zero. The problem is that, if we consider as an example
+% \[
+%  U=\frac{1}{\sqrt{2}}\,\begin{pmatrix}
+%     1&\imath&0\\
+%     \imath&1&0\\
+%     0&0&\sqrt{2}
+%    \end{pmatrix}\;,
+% \]
+% then
+% \[
+%  \sum_{i=1}^3\sum_{j=1}^3 \Im\bigl(U_{i,j}\bigr)=
+%  \frac{1}{\sqrt{2}} \sum_{i=1}^3\sum_{j=1}^3 \begin{pmatrix}
+%     0&1&0\\
+%     1&0&0\\
+%     0&0&0
+%    \end{pmatrix}_{i,j}=\sqrt{2}\neq0.
+% \]
+
+
+
+
+
+
+
+
+\end{document}

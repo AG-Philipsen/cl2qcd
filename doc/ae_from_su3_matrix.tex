@@ -1,0 +1,182 @@
+% Copyright (c) 2013,2018 Alessandro Sciarra
+%
+% This file is part of CL2QCD.
+%
+% CL2QCD is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% CL2QCD is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
+
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[dvipsnames,usenames]{xcolor}
+\usepackage{geometry}
+\usepackage{indentfirst}
+\usepackage{amsmath,amssymb,bbm,mathabx}
+\usepackage{slashed}
+\usepackage{microtype}
+\usepackage{braket}
+\usepackage{simplewick}
+\usepackage{graphicx}
+\usepackage{cleveref}
+\usepackage{cancel}
+\usepackage{nccmath} %For fleqn environment
+
+%geometry
+\geometry{textheight=23cm,textwidth=16cm,hmarginratio=1:1,vmarginratio=1:1}
+%cleveref
+\crefname{equation}{Eq.}{Eqs.}
+
+%Commands
+\newcommand{\Eq}[1]{Eq.~\eqref{eq:#1}}
+\newcommand{\Eqs}[1]{Eqs.~\eqref{eq:#1}}
+
+%opening
+\title{\vspace*{-2cm}\huge{\textbf{\texttt{ae} object from su(3) matrix}}\vspace{-0.2cm}}
+\author{\texttt{of} \emph{Alessandro Sciarra}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+It is well known that whatever elements $\Omega\in SU(3)$ can be written as
+\begin{equation}\label{eq:1}
+ \Omega=\exp\Biggl(\imath\sum_{k=1}^8 a^k\, T_k\Biggr)\;,
+\end{equation}
+where $a^k$ are the 8 \emph{real} numbers needed to parameterize $\Omega$.
+The generators $T_k$ are chosen as traceless, complex, and hermitian $3\times3$
+matrices obeying the normalization condition
+\begin{equation}\label{eq:2}
+ Tr[T_j\,T_k]=\frac{1}{2}\:\delta_{jk}\;.
+\end{equation}
+The standard representation of the generators for $SU(3)$ is given by
+\begin{equation}\label{eq:3}
+ T_k=\frac{\lambda_k}{2}\;,
+\end{equation}
+where $\lambda_k$ are the so called \emph{Gell-Mann matrices}:
+\begin{alignat*}{4}
+ \lambda_1 &= \left(
+	      \begin{array}{ccc}
+	      0 & 1 & 0 \\
+	      1 & 0 & 0 \\
+	      0 & 0 & 0
+	      \end{array}
+	      \right) \qquad&
+ \lambda_2 &= \left(
+	      \begin{array}{ccc}
+	       0 & -i & 0 \\
+	       i & 0 & 0 \\
+	       0 & 0 & 0
+	       \end{array}
+	       \right) \qquad&
+ \lambda_3 &= \left(
+	      \begin{array}{ccc}
+	      1 & 0 & 0 \\
+	      0 & -1 & 0 \\
+	      0 & 0 & 0
+	      \end{array}
+	      \right) \\[1ex]
+ \lambda_4 &= \left(
+	      \begin{array}{ccc}
+	      0 & 0 & 1 \\
+	      0 & 0 & 0 \\
+	      1 & 0 & 0
+	      \end{array}
+	      \right) \qquad&
+ \lambda_5 &= \left(
+	      \begin{array}{ccc}
+	      0 & 0 & -i \\
+	      0 & 0 & 0 \\
+	      i & 0 & 0
+	      \end{array}
+	      \right) \qquad&
+ \lambda_6 &= \left(
+	      \begin{array}{ccc}
+	      0 & 0 & 0 \\
+	      0 & 0 & 1 \\
+	      0 & 1 & 0
+	      \end{array}
+	      \right) \\[1ex]
+ \lambda_7 &= \left(
+	      \begin{array}{ccc}
+	      0 & 0 & 0 \\
+	      0 & 0 & -i \\
+	      0 & i & 0
+	      \end{array}
+	      \right) \qquad&
+ \lambda_8 &= \frac{1}{\sqrt{3}}\left(
+	      \begin{array}{ccc}
+	      1 & 0 & 0 \\
+	      0 & 1 & 0 \\
+	      0 & 0 & -2
+	      \end{array}
+	      \right)\;.
+\end{alignat*}
+
+The problem we want to address now is the following: given a generic $su(3)$ matrix
+how can we reconstruct the 8 real coefficients $a^k$ of \Eq{1}? It is basically
+an algebra calculation. Let us observe that a generic $su(3)$ matrix $M$ has the form
+\begin{equation}\label{eq:4}
+ M=\left(
+  \begin{array}{ccc}
+   m_1 & m_2+\imath\: m_3 & m_4+\imath\: m_5 \\
+   m_2-\imath\: m_3 & m_6 & m_7+\imath\: m_8 \\
+   m_4-\imath\: m_5 & m_7-\imath\: m_8 & -m_1-m_6
+  \end{array}
+ \right)\;,
+\end{equation}
+since it has to be hermitian and traceless ($m_i\in\mathbb{R}$). Moreover, it is straightforward
+to check that
+\begin{equation}\label{eq:5}
+ \sum_{k=1}^8 a^k\, T_k = \frac{1}{2}
+    \left(
+      \begin{array}{ccc}
+        a_3+\frac{a_8}{\sqrt{3}} & a_1-i a_2 & a_4-i a_5 \\
+	a_1+i a_2 & \frac{a_8}{\sqrt{3}}-a_3 & a_6-i a_7 \\
+	a_4+i a_5 & a_6+i a_7 & -\frac{2 a_8}{\sqrt{3}}
+      \end{array}
+    \right)\;;
+\end{equation}
+hence, to answer our question, we have only to set the r.h.s. of \Eq{4} equal to the r.h.s. of \Eq{5}.
+Taking into account that  we are dealing with hermitian, traceless matrices, we have then only 5 equations,
+whose some are complex:
+\begin{equation}
+ \left\{
+  \begin{aligned}
+    a_1-i\:a_2 &= 2\:(m_2+\imath\: m_3) \\
+    a_4-i\:a_5 &= 2\:(m_4+\imath\: m_5) \\
+    a_8-\sqrt{3}\:a_3 &= 2\sqrt{3}\: m_6 \\
+    a_6-i\:a_7 &= 2\:(m_7+\imath\: m_8) \\
+    -2\:a_8 &= - 2\sqrt{3}\:(m_1+m_6)
+  \end{aligned}
+ \right.\;.
+\end{equation}
+Solving the system, above we obtain:
+\begin{equation}
+ \left\{
+  \begin{aligned}
+    a_1 &= 2\:m_2 \\
+    a_2 &= -2\:m_3 \\
+    a_3 &= m_1-m_6 \\
+    a_4 &= 2\:m_4 \\
+    a_5 &= -2\:m_5 \\
+    a_6 &= 2\:m_7 \\
+    a_7 &= -2\:m_8 \\
+    a_8 &= \sqrt{3}\:(m_1+m_6)
+  \end{aligned}
+ \right.
+\end{equation}
+that conludes our calculation.
+
+
+\end{document}
