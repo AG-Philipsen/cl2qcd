@@ -48,8 +48,8 @@ target_link_libraries(hardware     ${OPENCL_LIBRARIES} exceptions crypto meta ge
 # Definition of tests
 #
 add_unit_test(CREATE_ONLY   NAME hardware/system                LIBRARIES hardware crypto)
-add_unit_test(   ADD_ONLY   NAME hardware/system                COMMAND_LINE_OPTIONS --run_test=!checkDeviceAvailability)
-add_unit_test(   ADD_ONLY   NAME Availability_GPUs              COMMAND_LINE_OPTIONS --run_test=checkDeviceAvailability   EXECUTABLE hardware_system_test   SOURCE_FILES system_test.cpp)
+add_unit_test(   ADD_ONLY   NAME hardware/system                COMMAND_LINE_OPTIONS --run_test=!devices/areGpusAvailable)
+add_unit_test(   ADD_ONLY   NAME Availability_GPUs              COMMAND_LINE_OPTIONS --run_test=devices/areGpusAvailable   EXECUTABLE hardware_system_test   SOURCE_FILES system_test.cpp)
 add_unit_test(              NAME hardware/device                LIBRARIES hardware crypto)
 add_unit_test(              NAME hardware/profiling_data        LIBRARIES hardware crypto)
 add_unit_test(              NAME hardware/synchronization_event LIBRARIES hardware crypto)
