@@ -65,7 +65,7 @@ namespace hardware {
          *
          * \param event An OpenCL profiling event
          */
-        ProfilingData& operator+=(const cl_event& event);
+        ProfilingData& add(const cl_event& event, const cl_profiling_info = CL_PROFILING_COMMAND_START);
 
       private:
         /**

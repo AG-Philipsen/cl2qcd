@@ -24,10 +24,10 @@
 
 #include "system.hpp"
 
-hardware::ProfilingData& hardware::ProfilingData::operator+=(const cl_event& event)
+hardware::ProfilingData& hardware::ProfilingData::add(const cl_event& event, const cl_profiling_info initialTimePoint)
 {
     cl_ulong time_start, time_end;
-    cl_int err = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &time_start, NULL);
+    cl_int err = clGetEventProfilingInfo(event, initialTimePoint, sizeof(cl_ulong), &time_start, NULL);
     if (err) {
         throw hardware::OpenclException(err, "clGetEventProfilingInfo", __FILE__, __LINE__);
     }

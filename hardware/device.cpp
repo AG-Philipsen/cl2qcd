@@ -232,7 +232,7 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
             throw hardware::OpenclException(clerr, "clWaitForEvents", __FILE__, __LINE__);
         }
 
-        profiling_data[kernel] += profiling_event;
+        profiling_data[kernel].add(profiling_event);
     }
 }
 

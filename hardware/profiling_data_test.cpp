@@ -69,7 +69,14 @@ BOOST_AUTO_TEST_CASE(add_value)
         for (size_t i = 0; i < 3; i++) {
             clEnqueueMarker(profilingDataTestCommandQueueHelper(device), &event);
             clWaitForEvents(1, &event);
-            data += event;
+            /*
+             * NOTE: Here we test a profiler using a clMarker in the queue and, since this is not a kernel for which a
+             * proper execution exists, it is better to use CL_PROFILING_COMMAND_QUEUED as starting point in time.
+             * Indeed, using the default CL_PROFILING_COMMAND_START (which refers to the begin of the execution) makes
+             * clGetEventProfilingInfo fail on CPU (it still passes on GPU). Maybe this is an architecture dependent
+             * behavior, though.
+             */
+            data.add(event, CL_PROFILING_COMMAND_QUEUED);
             clReleaseEvent(event);
             BOOST_REQUIRE_EQUAL(data.get_num_values(), old_data.get_num_values() + 1);
             BOOST_REQUIRE_GE(data.get_total_time(), old_data.get_total_time());
