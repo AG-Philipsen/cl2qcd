@@ -98,6 +98,7 @@ void hardware::code::Spinors::fill_kernels()
         global_squarenorm_eoprec         = 0;
         convertSpinorfieldToSOA_eo       = 0;
         convertSpinorfieldFromSOA_eo     = 0;
+        saxpy_AND_squarenorm_eo          = 0;
     }
     // Always build non eo-prec kernels
     generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield")
@@ -130,13 +131,25 @@ void hardware::code::Spinors::clear_kernels()
         clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
         if (clerr != CL_SUCCESS)
             throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+        clerr = clReleaseKernel(convert_from_eoprec);
+        if (clerr != CL_SUCCESS)
+            throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+        clerr = clReleaseKernel(convert_to_eoprec);
+        if (clerr != CL_SUCCESS)
+            throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+        clerr = clReleaseKernel(set_eoprec_spinorfield_cold);
+        if (clerr != CL_SUCCESS)
+            throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+        clerr = clReleaseKernel(sax_eoprec);
+        if (clerr != CL_SUCCESS)
+            throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
         clerr = clReleaseKernel(saxpy_eoprec);
         if (clerr != CL_SUCCESS)
             throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
         clerr = clReleaseKernel(saxpy_arg_eoprec);
         if (clerr != CL_SUCCESS)
             throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-        clerr = clReleaseKernel(sax_eoprec);
+        clerr = clReleaseKernel(saxsbypz_eoprec);
         if (clerr != CL_SUCCESS)
             throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
         clerr = clReleaseKernel(scalar_product_eoprec);
@@ -154,6 +167,11 @@ void hardware::code::Spinors::clear_kernels()
         clerr = clReleaseKernel(convertSpinorfieldFromSOA_eo);
         if (clerr != CL_SUCCESS)
             throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+        if (kernelParameters->getUseMergeKernelsSpinor()) {
+            clerr = clReleaseKernel(saxpy_AND_squarenorm_eo);
+            if (clerr != CL_SUCCESS)
+                throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+        }
     }
     // Always build non eo-prec kernels
     clerr = clReleaseKernel(generate_gaussian_spinorfield);
@@ -1153,9 +1171,6 @@ void hardware::code::Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::
 hardware::code::Spinors::Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters,
                                  const hardware::Device* device)
     : Opencl_Module(kernelParameters, device)
-    , generate_gaussian_spinorfield(0)
-    , generate_gaussian_spinorfield_eo(0)
-    , saxpy_AND_squarenorm_eo(0)
 {
     fill_kernels();
 
