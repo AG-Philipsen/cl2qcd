@@ -55,12 +55,12 @@ endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 # Add endianess information
 include(TestBigEndian)
 TEST_BIG_ENDIAN(BIG_ENDIAN)
-message("Big Endian: ${BIG_ENDIAN}")
+message(STATUS "Big Endian: ${BIG_ENDIAN}")
 if(BIG_ENDIAN)
-    message("Big endian arch..")
+    message(STATUS "Big endian architecture!")
     add_definitions( "BIG_ENDIAN_ARCH=1" )
 else()
-    message("Little endian arch..")
+    message(STATUS "Little endian architecture!")
 endif()
 
 # Make sure we can compile agains opencl
