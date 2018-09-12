@@ -27,4 +27,4 @@ target_link_libraries(crypto
     ${Nettle_LIBRARIES}
 )
 
-add_unit_test(NAME crypto EXECUTABLE crypto_test SOURCE_FILES test.cpp LIBRARIES crypto)
+add_unit_test(NAME crypto/test EXECUTABLE crypto_test SOURCE_FILES test.cpp LIBRARIES crypto)

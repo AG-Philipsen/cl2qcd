@@ -193,12 +193,12 @@ add_library(optimal ${DUMMY_SOURCE} ${OPTIMAL_FILES})
 
 # Add all modules
 add_modules(optimal
-    meta
     hardware
     geometry
-    host_functionality
-    ildg_io
     physics
+    meta
+    ildg_io
+    host_functionality
     einhard
     executables
 )
@@ -239,6 +239,7 @@ add_subdirectory(ranluxcl)
 # Crypto
 add_subdirectory(crypto)
 
+# Interfaces
 add_subdirectory(interfaceImplementations)
 
 option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
