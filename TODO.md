@@ -25,6 +25,10 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
              Adjust the `CMakeLists.txt` file, using our `add_unit_test` **CMake** macro.
  - [ ] :mag: Add tests to the hardware/lattices folder, where part of the functionality that was in physics/lattices has been moved to.
              Remove consistently tests from physics/lattices which will be moved.
+ - [ ] :recycle: :fire: At the level of `hardware/code`, all the classes with `cl_kernels` as private members should initialize them to `0` in the constructor initializer list.
+                        Then, in the `fill_kernels` function, some of them should be built depending on the parameters.
+                        In this way, those not built would automatically be set to `0`.
+                        At the moment, this is not consistently done in all modules and often some `cl_kernels` are set to `0` in the `fill_kernels` function.
 
 ### Normal priority
 
