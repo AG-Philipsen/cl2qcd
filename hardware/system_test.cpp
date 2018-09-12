@@ -183,10 +183,16 @@ BOOST_AUTO_TEST_SUITE(devices)
     }
 
     /*
-     * NOTE: The following test is basically identical to "enableGpusOnly" but it fails in case no GPU
-     *       is available. It is meant to create an explicit test case in ctest in order to make the
-     *       user easily discover which type of device is available on the used architecture.
+     * NOTE: The following tests are basically identical to "enable[CG]pusOnly" but they fail in case no device
+     *       of the given type is available. They are meant to create explicit test cases in ctest in order
+     *       to make the user easily discover which type of device is available on the used architecture.
      */
+    BOOST_AUTO_TEST_CASE(areCpusAvailable)
+    {
+        const hardware::HardwareParametersMockupWithCpusOnly hardwareParameters(4, 4);
+        enableSpecificDeviceTypeOnly(CL_DEVICE_TYPE_CPU, hardwareParameters, true);
+    }
+
     BOOST_AUTO_TEST_CASE(areGpusAvailable)
     {
         const hardware::HardwareParametersMockupWithGpusOnly hardwareParameters(4, 4);
