@@ -32,6 +32,8 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
 
 ### Normal priority
 
+ - [ ] :recycle: In every class, all members should be initialised to meaningful values in the initialisation list.
+                 This is not done everywhere consistently and it should be checked and fixed.
 
 ### Low priority
 
