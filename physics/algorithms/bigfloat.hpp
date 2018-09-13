@@ -32,6 +32,21 @@
  *
  */
 
+/*
+ * According to https://git.reviewboard.kde.org/r/122441/
+ *
+ * "The <cstddef> header was updated for C++11 support and this breaks some libraries which misuse macros
+ * meant for internal use by GCC only. For instance with GMP versions up to 5.1.3, you may see:
+ *
+ * /usr/include/c++/4.9.0/cstddef:51:11: error: ‘::max_align_t’ has not been declared using ::max_align_t;
+ *
+ * A workaround until libraries get updated is to include <cstddef> or <stddef.h> before any headers from that library."
+ */
+#if __GNU_MP_VERSION < 5 || (__GNU_MP_VERSION == 5 && __GNU_MP_VERSION_MINOR < 1) || \
+    (__GNU_MP_VERSION == 5 && __GNU_MP_VERSION_MINOR == 1 && __GNU_MP_VERSION_PATCHLEVEL < 3)
+#    include <stddef.h>
+#endif
+
 #include <gmp.h>
 #include <mpf2mpfr.h>
 #include <mpfr.h>
