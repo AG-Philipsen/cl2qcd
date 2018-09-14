@@ -109,45 +109,23 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
                          std::string eoOptionIn = "false", std::string startconditionOptionIn = "cold",
                          std::string sourcefileOptionIn = "conf.00200")
     {
-        std::string numberOfSources_option = "--nSources=" + boost::lexical_cast<std::string>(numberOfSources);
-        std::string fermactOption          = "--fermionAction=" + fermactOptionIn;
-        std::string sourceTypeOption       = "--sourceType=" + sourceTypeOptionIn;
-        std::string sourceContentOption    = "--sourceContent=one";
-        std::string pbpVersionOption       = "--pbpVersion=" + pbpVersionOptionIn;
-        std::string startconditionOption   = "--startCondition=" + startconditionOptionIn;
-        std::string sourcefileOption       = "--initialConf=" + sourcefileOptionIn;
-        std::string eoOption               = "--useEO=" + eoOptionIn;
+        std::vector<std::string> parameters{{"foo", "--nTime=4", "--nSpace=4", "--kappa=0.15", "--mu=4.",
+                                             "--measurePbp=true", "--nSources=" + std::to_string(numberOfSources),
+                                             "--fermionAction=" + fermactOptionIn, "--sourceType=" + sourceTypeOptionIn,
+                                             "--sourceContent=one", "--pbpVersion=" + pbpVersionOptionIn,
+                                             "--startCondition=" + startconditionOptionIn,
+                                             "--initialConf=" + sourcefileOptionIn, "--useEO=" + eoOptionIn}};
+        std::vector<const char*> c_parameters{};
+        for (auto& string : parameters)
+            c_parameters.push_back(string.c_str());
 
-        int numberOfOptions = 14;
-
-        int numberOfParametersFromBoost = boost::unit_test::framework::master_test_suite().argc;
-        std::vector<std::string> boostOptions;
-        if (numberOfParametersFromBoost > 1) {
-            for (int i = 1; i < numberOfParametersFromBoost; i++) {
-                boostOptions.push_back(boost::unit_test::framework::master_test_suite().argv[i]);
-            }
-            numberOfOptions++;
-        } else {
-            boostOptions.push_back("");
+        for (int i = 1; i < boost::unit_test::framework::master_test_suite().argc; i++) {
+            c_parameters.push_back(boost::unit_test::framework::master_test_suite().argv[i]);
+            if (strcmp(c_parameters.back(), "--") == 0)
+                c_parameters.pop_back();
         }
 
-        const char* _params[] = {"foo",
-                                 "--nTime=4",
-                                 "--nSpace=4",
-                                 "--kappa=0.15",
-                                 "--mu=4.",
-                                 "--measurePbp=true",
-                                 fermactOption.c_str(),
-                                 sourceTypeOption.c_str(),
-                                 sourceContentOption.c_str(),
-                                 numberOfSources_option.c_str(),
-                                 pbpVersionOption.c_str(),
-                                 eoOption.c_str(),
-                                 startconditionOption.c_str(),
-                                 sourcefileOption.c_str(),
-                                 boostOptions[0].c_str()};
-
-        meta::Inputparameters params(numberOfOptions, _params);
+        meta::Inputparameters params(c_parameters.size(), c_parameters.data());
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
         hardware::System system(hP, kP);
@@ -176,8 +154,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         int numberOfSources = 9;
         std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
 
-        testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume",
-                        (std::string) "std", (std::string) "false");
+        testMeasurement(referenceValues, numberOfSources, "twistedmass", "volume", "std", "false");
     }
 
     BOOST_AUTO_TEST_CASE(MEASURE_EO)
@@ -185,8 +162,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         int numberOfSources = 9;
         std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
 
-        testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume",
-                        (std::string) "std", (std::string) "true");
+        testMeasurement(referenceValues, numberOfSources, "twistedmass", "volume", "std", "true");
     }
 
     BOOST_AUTO_TEST_CASE(MEASURE_ONE_END_TRICK)
@@ -194,8 +170,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         int numberOfSources = 9;
         std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
 
-        testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume",
-                        (std::string) "tm_one_end_trick");
+        testMeasurement(referenceValues, numberOfSources, "twistedmass", "volume", "tm_one_end_trick");
     }
 
     BOOST_AUTO_TEST_CASE(MEASURE_Z_SLICE)
@@ -203,8 +178,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         int numberOfSources = 9;
         std::vector<double> referenceValues(numberOfSources, 1.16971963846964e-01);
 
-        testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "zslice",
-                        (std::string) "std");
+        testMeasurement(referenceValues, numberOfSources, "twistedmass", "zslice", "std");
     }
 
     BOOST_AUTO_TEST_CASE(MEASURE_CONFIGURATION_1)
@@ -212,8 +186,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         int numberOfSources = 9;
         std::vector<double> referenceValues(numberOfSources, 6.86307941352032e-02);
 
-        testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "zslice",
-                        (std::string) "std", (std::string) "false", (std::string) "continue");
+        testMeasurement(referenceValues, numberOfSources, "twistedmass", "zslice", "std", "false", "continue");
     }
 
     BOOST_AUTO_TEST_CASE(MEASURE_CONFIGURATION_2)
@@ -221,8 +194,7 @@ BOOST_AUTO_TEST_SUITE(MEASURE)
         int numberOfSources = 9;
         std::vector<double> referenceValues(numberOfSources, 1.35706953188924e-01);
 
-        testMeasurement(referenceValues, numberOfSources, (std::string) "wilson", (std::string) "zslice",
-                        (std::string) "std", (std::string) "false", (std::string) "continue");
+        testMeasurement(referenceValues, numberOfSources, "wilson", "zslice", "std", "false", "continue");
     }
 
 BOOST_AUTO_TEST_SUITE_END()
