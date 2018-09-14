@@ -25,6 +25,16 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
              Adjust the `CMakeLists.txt` file, using our `add_unit_test` **CMake** macro.
  - [ ] :mag: Add tests to the hardware/lattices folder, where part of the functionality that was in physics/lattices has been moved to.
              Remove consistently tests from physics/lattices which will be moved.
+ - [ ] :mag: Refactor all tests in `physics`, relying to analytically determined values (or on reference values calculated in Mathematica).
+             In this refactoring, mockups for the parameters should be created.
+             Afterwards, the dependence on `meta` of `system` can be finally removed (i.e. remove `System(meta::Inputparameters& parameters)` constructor).
+ - [ ] :mag: :question: The `--nDevices=1` option is not specified in all tests.
+                        When not specified, the test runs on all available devices.
+                        Should this be the case, or is it better to act differently?
+ - [ ] :mag: :question: In most of the tests at the physics level contain the initialisation of a C-array of `char*` to be passed as kind of `argv` to the `Inputparameters` class.
+                        This implies that the size of such an array is hard-coded as `argc` and this aspect is definitely not nice to have.
+                        It is in general easier to build a `std::vector<std::string>` and then convert it to `std::vector<const char*>`, whose methods `size()` and `data()` give `argc` and `argv`, respectively and dynamically.
+                        In the future, maybe, once refactored all the tests in physics with mockups for the parameters, this `argc/argv` approach might not be needed.
  - [ ] :recycle: :fire: At the level of `hardware/code`, all the classes with `cl_kernels` as private members should initialize them to `0` in the constructor initializer list.
                         Then, in the `fill_kernels` function, some of them should be built depending on the parameters.
                         In this way, those not built would automatically be set to `0`.
@@ -34,6 +44,11 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
 
  - [ ] :recycle: In every class, all members should be initialised to meaningful values in the initialisation list.
                  This is not done everywhere consistently and it should be checked and fixed.
+ - [ ] :recycle: Around in the code base there are `boost::lexical_cast<std::string>` which should be all replaceable by `std::to_string`, avoiding then the external dependecy.
+                 In particular, there is no [necessity](https://stackoverflow.com/a/29399444) of using this cast at the moment.
+ - [ ] :recycle: Tests should probably in general only accept some given command line options like --useCPU which are then passed in the `CMakeLists.txt` files.
+                 However, no check is ever performed and, if the user/developer manually pass other options, they are sometimes silently ignored.
+                 This should be probably improved.
 
 ### Low priority
 
