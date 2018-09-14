@@ -40,13 +40,12 @@ static void test_sources(std::string type, int num_sources)
 {
     using namespace physics::lattices;
 
-    std::stringstream tmp;
-    tmp << "--nSources=";
-    tmp << num_sources;
-    std::string n_sources_string  = tmp.str();
-    std::string sourcetype_string = std::string("--sourceType=") + type;
-    const char* _params[]         = {"foo", n_sources_string.c_str(), sourcetype_string.c_str()};
-    meta::Inputparameters params(3, _params);
+    std::vector<std::string> parameters{{"foo", "--nSources=" + std::to_string(num_sources), "--sourceType=" + type}};
+    std::vector<const char*> c_parameters{};
+    for (auto& string : parameters)
+        c_parameters.push_back(string.c_str());
+
+    meta::Inputparameters params(c_parameters.size(), c_parameters.data());
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -61,18 +60,17 @@ static void test_sources(std::string type, int num_sources)
     release_spinorfields(sources);
 }
 
-static void test_staggered_sources(std::string type, int num_sources)
+static void test_staggered_sources(const std::string type, int num_sources)
 {
     using namespace physics::lattices;
 
-    std::stringstream tmp;
-    tmp << "--nSources=";
-    tmp << num_sources;
-    std::string n_sources_string  = tmp.str();
-    std::string sourcetype_string = std::string("--sourceType=") + type;
-    const char* _params[]         = {"foo", n_sources_string.c_str(), sourcetype_string.c_str(),
-                             "--fermionAction=rooted_stagg"};
-    meta::Inputparameters params(4, _params);
+    std::vector<std::string> parameters{{"foo", "--nDevices=1", "--fermionAction=rooted_stagg",
+                                         "--nSources=" + std::to_string(num_sources), "--sourceType=" + type}};
+    std::vector<const char*> c_parameters{};
+    for (auto& string : parameters)
+        c_parameters.push_back(string.c_str());
+
+    meta::Inputparameters params(c_parameters.size(), c_parameters.data());
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -91,14 +89,13 @@ static void test_volume_source_stagg(std::string content)
 {
     using namespace physics::lattices;
 
-    std::vector<const char*> options(1, "foo");
-    options.push_back("--nSpace=8");
-    options.push_back("--fermionAction=rooted_stagg");
-    options.push_back("--sourceType=volume");
-    std::string tmp = "--sourceContent=" + content;
-    options.push_back(tmp.c_str());
+    std::vector<std::string> parameters{{"foo", "--nDevices=1", "--nSpace=8", "--fermionAction=rooted_stagg",
+                                         "--sourceType=volume", "--sourceContent=" + content}};
+    std::vector<const char*> c_parameters{};
+    for (auto& string : parameters)
+        c_parameters.push_back(string.c_str());
 
-    meta::Inputparameters params(5, &(options[0]));
+    meta::Inputparameters params(c_parameters.size(), c_parameters.data());
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
