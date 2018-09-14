@@ -309,16 +309,6 @@ BOOST_AUTO_TEST_CASE(mdUpdateStaggeredRootedSpinorfieldEoWithPseudofermions)
         for (const auto& out_j : out)
             BOOST_CHECK_CLOSE(squarenorm(*out_j.get()), 0.66024054611635885, 1e-8);
     }
-    {
-        for (const auto& in_j : in)
-            in_j.get()->set_gaussian(prng);
-        physics::algorithms::md_update_spinorfield(&out, gf, in, system, interfacesHandler,
-                                                   interfacesHandler
-                                                       .getAdditionalParameters<Rooted_Staggeredfield_eo>());
-
-        BOOST_CHECK_CLOSE(squarenorm(*out[0].get()), 455.28018993352305, 1e-8);
-        BOOST_CHECK_CLOSE(squarenorm(*out[1].get()), 538.11156457534264, 1e-8);
-    }
 }
 
 BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)

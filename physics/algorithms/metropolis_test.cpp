@@ -71,14 +71,6 @@ BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEo)
                                                                     interfacesHandler);
         BOOST_CHECK_CLOSE(obs.deltaH, -4.999853415117, 0.01);
     }
-
-    {
-        phi[0].get()->set_gaussian(prng);
-        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
-                                                                    nullptr, spinor_energy_init, system,
-                                                                    interfacesHandler);
-        BOOST_CHECK_CLOSE(obs.deltaH, -570.2704806215952, 0.01);
-    }
 }
 
 BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEoWithPseudofermions)
@@ -123,14 +115,5 @@ BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEoWithPseudofermions)
         BOOST_CHECK_CLOSE(obs.deltaH, -4.999853415117 * 2, 0.01);
         // the reference value here is double the one of the metropolisStaggeredRootedSpinorfieldEo TEST_CASE with the
         // same cold initialization of the spinorfield since we use the same Rational_Approximation
-    }
-
-    {
-        for (const auto& phi_j : phi)
-            phi_j.get()->set_gaussian(prng);
-        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
-                                                                    nullptr, spinor_energy_init, system,
-                                                                    interfacesHandler);
-        BOOST_CHECK_CLOSE(obs.deltaH, -1059.318832641, 0.01);
     }
 }
