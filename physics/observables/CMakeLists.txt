@@ -47,7 +47,7 @@ target_link_libraries(observables
 #
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
-add_unit_test(            NAME physics/gaugeObservables                                  LIBRARIES observables)
+add_unit_test(            NAME physics/observables/gaugeObservables                      LIBRARIES observables)
 add_unit_test(CREATE_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate      LIBRARIES lattices observables)
 add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_CPU  COMMAND_LINE_OPTIONS -- --useGPU=false)
 add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_GPU  COMMAND_LINE_OPTIONS -- --useGPU=true )
