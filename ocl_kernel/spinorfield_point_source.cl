@@ -35,7 +35,7 @@ __kernel void create_point_source(__global spinor* const restrict b, int i, int 
                     coord.z      = z;
                     int posSpace = get_nspace(coord);
 
-                    put_spinor_to_field(set_spinor_zero(), b, posSpace, t);
+                    putSpinor(b, get_pos(posSpace, t), set_spinor_zero());
                 }
             }
         }

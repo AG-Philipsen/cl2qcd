@@ -45,7 +45,7 @@ __kernel void fermion_force(__global const Matrixsu3StorageType* const restrict 
             ae ae_tmp = getAe(out, global_link_pos);
 
             if (dir == 0) {
-                y = get_spinor_from_field(Y, n, t);
+                y = getSpinor(Y, get_pos(n, t));
                 ///////////////////////////////////
                 // Calculate gamma_5 y
                 ///////////////////////////////////
@@ -62,7 +62,7 @@ __kernel void fermion_force(__global const Matrixsu3StorageType* const restrict 
 
                 ///////////////////////////////////
                 // mu = +0
-                plus = get_spinor_from_field(X, n, nn);
+                plus = getSpinor(X, get_pos(n, nn));
                 U    = get_matrixsu3(field, n, t, dir);
                 // if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
@@ -99,9 +99,9 @@ __kernel void fermion_force(__global const Matrixsu3StorageType* const restrict 
 
                 /////////////////////////////////////
                 // mu = -0
-                y    = get_spinor_from_field(Y, n, nn);
+                y    = getSpinor(Y, get_pos(n, nn));
                 y    = gamma5_local(y);
-                plus = get_spinor_from_field(X, n, t);
+                plus = getSpinor(X, get_pos(n, t));
                 // if chemical potential is activated, U has to be multiplied by appropiate factor
                 // this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
                 //  (exp(iq)U)^+ = exp(-iq)U^+
@@ -139,7 +139,7 @@ __kernel void fermion_force(__global const Matrixsu3StorageType* const restrict 
                 ae_tmp = acc_factor_times_algebraelement(ae_tmp, 1., tr_lambda_u(v1));
 
             } else {
-                y = get_spinor_from_field(Y, n, t);
+                y = getSpinor(Y, get_pos(n, t));
                 ///////////////////////////////////
                 // Calculate gamma_5 y
                 ///////////////////////////////////
@@ -156,7 +156,7 @@ __kernel void fermion_force(__global const Matrixsu3StorageType* const restrict 
                 /////////////////////////////////
                 // mu = +1
                 nn   = get_neighbor(n, dir);
-                plus = get_spinor_from_field(X, nn, t);
+                plus = getSpinor(X, get_pos(nn, t));
                 U    = get_matrixsu3(field, n, t, dir);
 
                 if (dir == 1) {
@@ -210,9 +210,9 @@ __kernel void fermion_force(__global const Matrixsu3StorageType* const restrict 
 
                 ///////////////////////////////////
                 // mu = -1
-                y    = get_spinor_from_field(Y, nn, t);
+                y    = getSpinor(Y, get_pos(nn, t));
                 y    = gamma5_local(y);
-                plus = get_spinor_from_field(X, n, t);
+                plus = getSpinor(X, get_pos(n, t));
 
                 if (dir == 1) {
                     ///////////////////////////////////

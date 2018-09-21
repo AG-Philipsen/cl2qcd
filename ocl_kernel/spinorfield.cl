@@ -21,17 +21,12 @@
 /** @file
  * Device code for operations on the spinor field
  */
-
-spinor get_spinor_from_field(__global const spinor* const restrict in, const int n, const int t)
+inline spinor getSpinor(__global const spinor* const restrict in, const uint idx)
 {
-    int pos = get_pos(n, t);
-    spinor out;
-    out = in[pos];
-    return out;
+    return in[idx];
 }
 
-void put_spinor_to_field(const spinor in, __global spinor* const restrict out, const int n, const int t)
+inline void putSpinor(__global spinor* const restrict out, const uint idx, const spinor val)
 {
-    int pos  = get_pos(n, t);
-    out[pos] = in;
+    out[idx] = val;
 }

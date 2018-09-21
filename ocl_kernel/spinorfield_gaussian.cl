@@ -85,7 +85,7 @@ __kernel void generate_gaussian_spinorfield(__global spinor* const restrict out,
         // multiply by sigma
         out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
-        put_spinor_to_field(out_tmp, out, pos.space, pos.time);
+        putSpinor(out, get_site_idx(pos), out_tmp);
     }
 
     prng_storeState(rngStates, &rnd);

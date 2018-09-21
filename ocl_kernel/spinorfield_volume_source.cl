@@ -137,7 +137,7 @@ create_volume_source(__global spinor* const restrict b, __global rngStateStorage
                            "zero...\n");
                 out_tmp = set_spinor_zero();
         }
-        put_spinor_to_field(out_tmp, b, pos.space, pos.time);
+        putSpinor(b, get_site_idx(pos), out_tmp);
     }
 
     prng_storeState(rngStates, &rnd);

@@ -139,7 +139,7 @@ __kernel void create_timeslice_source(__global spinor* const restrict b,
                         out_tmp = set_spinor_zero();
                 }
             }
-            put_spinor_to_field(out_tmp, b, id_vol, t);
+            putSpinor(b, get_pos(id_vol, t), out_tmp);
         }
     }
 

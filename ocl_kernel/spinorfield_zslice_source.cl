@@ -149,7 +149,7 @@ __kernel void create_zslice_source(__global spinor* const restrict b,
                                 out_tmp = set_spinor_zero();
                         }
                     }
-                    put_spinor_to_field(out_tmp, b, pos.space, pos.time);
+                    putSpinor(b, get_site_idx(pos), out_tmp);
                 }
             }
         }
