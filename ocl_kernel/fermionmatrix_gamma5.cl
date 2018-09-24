@@ -22,7 +22,7 @@ __kernel void gamma5(__global spinor* const restrict inout)
 {
     spinor out_tmp;
 
-    PARALLEL_FOR (id_local, SPINORFIELDSIZE_LOCAL) {
+    PARALLEL_FOR (id_local, SPINORFIELDSIZE_MEM) {
         st_idx pos = get_st_idx_from_site_idx(id_local);
         out_tmp    = getSpinor(inout, get_site_idx(pos));
         out_tmp    = gamma5_local(out_tmp);
