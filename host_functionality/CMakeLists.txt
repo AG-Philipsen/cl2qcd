@@ -22,10 +22,17 @@ add_library(logger
     logger.cpp
 )
 
+target_link_libraries(logger
+    einhard
+)
+
 add_library(host_functionality
     host_operations_gaugefield.cpp
     host_use_timer.cpp
     host_random.cpp
 )
 
-target_link_libraries(host_functionality logger ranlux)
+target_link_libraries(host_functionality
+    logger
+    ranlux
+)

@@ -30,7 +30,6 @@ target_link_libraries(ildg_io
     ${LIME_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     # this needs to be a stand-alone library...
-    einhard
     logger
     exceptions
     meta

@@ -27,7 +27,6 @@ add_library(geometry
 )
 
 target_link_libraries(geometry
-    einhard
     logger
 )
 

@@ -27,7 +27,6 @@ add_library(lime
 target_link_libraries(lime
     ${LIME_LIBRARIES}
     ${LIBXML2_LIBRARIES}
-    einhard
     logger
     exceptions
     sourcefileParameters
