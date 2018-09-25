@@ -24,6 +24,8 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
  - [ ] :new: Require at least version `1.60` of `boost` in order to freely use new unit tests features about [command line options](https://www.boost.org/doc/libs/1_60_0/libs/test/doc/html/boost_test/change_log.html).
              The code base has been already prepared for that and it should be matter of few changes in the main `CMakeLists.txt` file.
              However, tests should be run to check that everything is really fine.
+ - [ ] :new: :question: [It seems](https://stackoverflow.com/a/42124857) that for more recent versions of `boost`, also recent versions of **CMake** are needed to correctly detect dependencies in `boost`.
+                        It might be good to implement some kind of check in the main `CMakeLists.txt` file (note that for `boost 1.62` also `CMake 3.7` [is needed](https://stackoverflow.com/a/40929234)).
  - [ ] :mag: Write meaningful tests for executables, avoiding, if possible, any non-deterministic behaviour.
              Adjust the `CMakeLists.txt` file, using our `add_unit_test` **CMake** macro.
  - [ ] :mag: Add tests to the hardware/lattices folder, where part of the functionality that was in physics/lattices has been moved to.
@@ -42,6 +44,8 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
                         Then, in the `fill_kernels` function, some of them should be built depending on the parameters.
                         In this way, those not built would automatically be set to `0`.
                         At the moment, this is not consistently done in all modules and often some `cl_kernels` are set to `0` in the `fill_kernels` function.
+ - [ ] :recicle: :cl: Names of functions, variables, etc. in the `ocl_kernel` directory are definitely bad and it is very hard to read the code because of that.
+                      Some work should be done to improve the situation, but tests should be run carefully to check that nothing was broken.
 
 ### Normal priority
 
