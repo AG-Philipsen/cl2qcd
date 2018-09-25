@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-add_unit_test(CREATE_ONLY EXECUTABLE boost_test)
+add_unit_test(CREATE_ONLY EXECUTABLE boost_test LIBRARIES logger)
 add_unit_test(   ADD_ONLY NAME boost/boost_ARGC_1 EXECUTABLE boost_test COMMAND_LINE_OPTIONS --run_test=BOOST_ARGUMENTS/BOOST_ARGC_1)
 add_unit_test(   ADD_ONLY NAME boost/boost_ARGC_2 EXECUTABLE boost_test COMMAND_LINE_OPTIONS --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2 -- ${CMAKE_CURRENT_SOURCE_DIR})
 add_unit_test(   ADD_ONLY NAME boost/boost_ARGV   EXECUTABLE boost_test COMMAND_LINE_OPTIONS --run_test=BOOST_ARGUMENTS/BOOST_ARGV   -- "firstArgument" "secondArgument" "thirdArgument")

@@ -19,18 +19,33 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../host_functionality/logger.hpp"
+
 #include <iostream>
+
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE staple_test
 #include <boost/test/unit_test.hpp>
+#include <boost/version.hpp>
+
+/*
+ * TODO: Since version 1.60 of boost,
+ *          https://www.boost.org/doc/libs/1_60_0/libs/test/doc/html/boost_test/change_log.html
+ *       the boost command line parameters have been forced to be separated from the user program ones using a '--'
+ *       on the command line. Since version 1.60 Such a '--' is not figuring in the argc/argv of the master_test_suite
+ *       of boost while in previous version it does. Therefore, there might be an inconsistency between different
+ *       installations. This has been taken into account here using the version.hpp header. Note that at the moment
+ *       we require version 1.59 of boost in order to use smart filtering in the hardware::System test, but everywhere
+ *       we already prepared the code base to use the new '--' convention introduced with boost 1.60. The next step will
+ *       be to require such a version, cleaning up the code here.
+ */
 
 void printInfo(int expectedNumberOfParameters)
 {
-    std::cout << "Testing passing of arguments from boost master_test_suite..." << std::endl;
-    std::cout << "Getting number of arguments, this should be equal to " << expectedNumberOfParameters << "!"
-              << std::endl;
-    std::cout << "If this test fails, it might indicate a problem of boost with the used compiler..." << std::endl;
+    logger.info() << "Testing passing of arguments from boost master_test_suite...";
+    logger.info() << "Getting number of arguments, this should be equal to " << expectedNumberOfParameters << "!";
+    logger.info() << "If this test fails, it might indicate a problem of boost with the used compiler...";
 }
 
 void checkArgc(int expectedNumberOfParameters)
@@ -44,13 +59,17 @@ BOOST_AUTO_TEST_SUITE(BOOST_ARGUMENTS)
 
     BOOST_AUTO_TEST_CASE(BOOST_ARGC_1)
     {
-        int expectedNumberOfParameters = 1;  // just --run_test
+        // Run as: ./boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_1
+        int expectedNumberOfParameters = 1;
         checkArgc(expectedNumberOfParameters);
     }
 
     BOOST_AUTO_TEST_CASE(BOOST_ARGC_2)
     {
-        int expectedNumberOfParameters = 3;  // one argument is '--'
+        // Run as: ./boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2 -- "firstParam"
+        int expectedNumberOfParameters = 2;
+        if (BOOST_VERSION < 106000)
+            expectedNumberOfParameters = 3;  // boost args still count (plus '--')!
         checkArgc(expectedNumberOfParameters);
     }
 
@@ -62,13 +81,19 @@ BOOST_AUTO_TEST_SUITE(BOOST_ARGUMENTS)
 
     BOOST_AUTO_TEST_CASE(BOOST_ARGV)
     {
-        int expectedNumberOfParameters = 5;
+        // Run as:
+        // ./boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2 -- "firstArgument" "secondArgument" "thirdArgument"
+        int expectedNumberOfParameters = 4, argIndex = 1;
+
+        if (BOOST_VERSION < 106000) {
+            expectedNumberOfParameters = 5;  // boost args still count (plus '--')!
+            checkArgv(argIndex++, "--");
+        }
         checkArgc(expectedNumberOfParameters);
 
-        checkArgv(1, "--");
-        checkArgv(2, "firstArgument");
-        checkArgv(3, "secondArgument");
-        checkArgv(4, "thirdArgument");
+        checkArgv(argIndex++, "firstArgument");
+        checkArgv(argIndex++, "secondArgument");
+        checkArgv(argIndex++, "thirdArgument");
     }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -21,6 +21,9 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
 
 ### High priority
 
+ - [ ] :new: Require at least version `1.60` of `boost` in order to freely use new unit tests features about [command line options](https://www.boost.org/doc/libs/1_60_0/libs/test/doc/html/boost_test/change_log.html).
+             The code base has been already prepared for that and it should be matter of few changes in the main `CMakeLists.txt` file.
+             However, tests should be run to check that everything is really fine.
  - [ ] :mag: Write meaningful tests for executables, avoiding, if possible, any non-deterministic behaviour.
              Adjust the `CMakeLists.txt` file, using our `add_unit_test` **CMake** macro.
  - [ ] :mag: Add tests to the hardware/lattices folder, where part of the functionality that was in physics/lattices has been moved to.
