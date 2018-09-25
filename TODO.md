@@ -44,7 +44,7 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
                         Then, in the `fill_kernels` function, some of them should be built depending on the parameters.
                         In this way, those not built would automatically be set to `0`.
                         At the moment, this is not consistently done in all modules and often some `cl_kernels` are set to `0` in the `fill_kernels` function.
- - [ ] :recicle: :cl: Names of functions, variables, etc. in the `ocl_kernel` directory are definitely bad and it is very hard to read the code because of that.
+ - [ ] :recycle: :cl: Names of functions, variables, etc. in the `ocl_kernel` directory are definitely bad and it is very hard to read the code because of that.
                       Some work should be done to improve the situation, but tests should be run carefully to check that nothing was broken.
 
 ### Normal priority
