@@ -540,7 +540,11 @@ void physics::lattices::Spinorfield_eo::mark_halo_clean(unsigned width) const
 
 unsigned physics::lattices::Spinorfield_eo::get_valid_halo_width() const
 {
+#ifdef LAZY_HALO_UPDATES
     return valid_halo_width;
+#else
+    return 0;
+#endif
 }
 
 void physics::lattices::copyData(const physics::lattices::Spinorfield_eo* to,
