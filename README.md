@@ -1,4 +1,4 @@
-CL2QCD
+CL2QCD &nbsp;&nbsp; [![version][Release-badge]](https://github.com/AG-Philipsen/cl2qcd/releases/tag/v1.0)
 ======
 
 CL2QCD is a Lattice QCD application based on OpenCL, applicable to CPUs and GPUs.
@@ -64,3 +64,6 @@ However, it includes some bundled third-party code licensed under own licenses.
 * Einhard is distributed under the terms of the [GPLv3](LICENSE).
 * Klepsydra is distributed under the terms of the [GPLv3](LICENSE).
 * The CPP bindings for OpenCL are copyrighted by Khronos and may be [distributed freely](hacks/cl_hpp/CL/cl.hpp).
+
+
+[Release-badge]: https://img.shields.io/badge/Last%20Release-v1.0-orange.svg
