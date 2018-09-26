@@ -49,6 +49,8 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
 
 ### Normal priority
 
+ - [ ] :fire: :question: The compilation with the **CMake** variable `LAZY_HALO_UPDATES` switched off has been fixed in commit 88affa4, but in general one should guarantee the correctness of multi-GPU support independently from the state of the **CMake** variables `LAZY_HALO_UPDATES` and `ASYNC_HALO_UPDATES`.
+                         Specific tests, if possible, should be developed and this could be a good opportunity to make arbitrary the direction in which the lattice is split.
  - [ ] :recycle: In every class, all members should be initialised to meaningful values in the initialisation list.
                  This is not done everywhere consistently and it should be checked and fixed.
  - [ ] :recycle: Around in the code base there are `boost::lexical_cast<std::string>` which should be all replaceable by `std::to_string`, avoiding then the external dependency.
