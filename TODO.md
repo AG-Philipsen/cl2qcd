@@ -21,6 +21,7 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
 
 ### High priority
 
+ - [ ] :fire: :recycle: At the moment the information written in the header of every LIME file is basically meaningless and actually misleading. Parameters written there are not correct and they should be consistent with those of the run that produced such a configuration. Moreover, the hmcversion should be called according to the algorithm and its value should be a string containing the code name and the real version (e.g. `CL2QCD_v1.0`).
  - [ ] :new: Require at least version `1.60` of `boost` in order to freely use new unit tests features about [command line options](https://www.boost.org/doc/libs/1_60_0/libs/test/doc/html/boost_test/change_log.html).
              The code base has been already prepared for that and it should be matter of few changes in the main `CMakeLists.txt` file.
              However, tests should be run to check that everything is really fine.
@@ -55,7 +56,7 @@ Rather refer to the [CHANGELOG](https://github.com/AG-Philipsen/cl2qcd/blob/mast
                  This is not done everywhere consistently and it should be checked and fixed.
  - [ ] :recycle: Around in the code base there are `boost::lexical_cast<std::string>` which should be all replaceable by `std::to_string`, avoiding then the external dependency.
                  In particular, there is no [necessity](https://stackoverflow.com/a/29399444) of using this cast at the moment.
- - [ ] :recycle: Tests should probably in general only accept some given command line options like --useCPU which are then passed in the `CMakeLists.txt` files.
+ - [ ] :recycle: Tests should probably in general only accept some given command line options like `--useCPU` which are then passed in the `CMakeLists.txt` files.
                  However, no check is ever performed and, if the user/developer manually pass other options, they are sometimes silently ignored.
                  This should be probably improved.
 
