@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2014,2015 Christopher Pinke
- * Copyright (c) 2014,2015,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2015,2018-2019 Alessandro Sciarra
  * Copyright (c) 2015,2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -77,7 +77,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                                                    "hmcObsToSingleFile", "hmcObsPrefix", "hmcObsPostfix",
                                                    "rhmcObsToSingleFile", "rhmcObsPrefix", "rhmcObsPostfix"}))
             .add(ParametersMonteCarlo::options.keepOnlySome(
-                {"nThermalizationSteps", "nOverrelaxationSteps", "useAnisotropy", "xi"}))
+                {"nThermalizationSteps", "nHeatbathSteps", "nOverrelaxationSteps", "useAnisotropy", "xi"}))
             .add(ParametersGauge::options.keepOnlySome({"beta"}))
             .add(ParametersObs::options.keepOnlySome({"measureTransportCoefficientKappa", "measureRectangles"}));
 
