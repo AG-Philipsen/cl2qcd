@@ -26,7 +26,7 @@
 # Copy this script to .git/hooks to enforce policy
 # (or use automatic hooks setup)
 #
-# Copyright (c) 2017 Alessandro Sciarra
+# Copyright (c) 2017,2019 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -93,5 +93,5 @@ if [ "$actualBranch" = 'master' ]; then
 fi
 
 #Remove commit file if not needed
-rm -f "$commitMessageFile" || exit $BHMAS_failureExitCode
+rm -f "$commitMessageFile" || exit ${CL2QCD_failureExitCode}
 printf '\n'
