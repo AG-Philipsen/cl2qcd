@@ -89,9 +89,9 @@ PenaltyExcessCharacter: 1000
 PenaltyReturnTypeOnItsOwnLine: 10
 PointerAlignment: Left
 RawStringFormats:
-  - Delimiter:       pb
-    Language:        TextProto
-    BasedOnStyle:    google
+  - Delimiters: [pb]
+    Language:  TextProto
+    BasedOnStyle: llvm
 ReflowComments:  true
 SortIncludes:    true
 SortUsingDeclarations: true
