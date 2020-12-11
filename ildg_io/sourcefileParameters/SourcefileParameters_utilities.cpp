@@ -1,7 +1,7 @@
 /** @file
  *
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -27,7 +27,10 @@
 #include <boost/regex.hpp>
 #include <iterator>
 
+// The following macro is to avoid to pull in C++ code from libxml dependences in C-linkage:
+//  -> https://lists.gnucash.org/pipermail/gnucash-devel/2015-August/038915.html
 extern "C" {
+#define U_SHOW_CPLUSPLUS_API 0
 #include <libxml/parser.h>
 #include <libxml/xmlreader.h>
 #include <lime_fixed_types.h>
