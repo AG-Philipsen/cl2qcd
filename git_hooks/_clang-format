@@ -88,10 +88,6 @@ PenaltyBreakString: 100
 PenaltyExcessCharacter: 1000
 PenaltyReturnTypeOnItsOwnLine: 10
 PointerAlignment: Left
-RawStringFormats:
-  - Delimiters: [pb]
-    Language:  TextProto
-    BasedOnStyle: llvm
 ReflowComments:  true
 SortIncludes:    true
 SortUsingDeclarations: true
