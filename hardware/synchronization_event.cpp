@@ -2,7 +2,7 @@
  * Implementation of the hardware::SynchronizationEvent class
  *
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -61,12 +61,16 @@ hardware::SynchronizationEvent& hardware::SynchronizationEvent::operator=(const 
     return *this;
 }
 
-hardware::SynchronizationEvent::~SynchronizationEvent()
+hardware::SynchronizationEvent::~SynchronizationEvent() noexcept(false)
 {
     if (event) {
         cl_int err = clReleaseEvent(event);
         if (err) {
-            throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+            if (std::uncaught_exceptions() != 0)
+                logger.fatal() << "OpenCL failed. Error code " << err << " in clRetainEvent at " << __FILE__ << ":"
+                               << __LINE__;
+            else
+                throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
         }
     }
 }

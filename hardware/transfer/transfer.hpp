@@ -2,7 +2,7 @@
  * Interface for buffer transfer methods
  *
  * Copyright (c) 2013,2014 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -49,7 +49,8 @@ namespace hardware {
         Transfer(Device* src, Device* dest) : src_device(src), dest_device(dest){};
 
       public:
-        virtual ~Transfer(){};
+        // Make dtor throwing since child classes do so through SynchronizationEvent members
+        virtual ~Transfer() noexcept(false){};
         Transfer(Transfer const&) = delete;
         Transfer& operator=(Transfer const&) = delete;
 

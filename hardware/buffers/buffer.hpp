@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -266,7 +266,7 @@ namespace hardware {
 
           public:
             MappedBufferHandle(MappedBufferHandle const&) = delete;
-            ~MappedBufferHandle();
+            ~MappedBufferHandle() noexcept(false);
             void* get_mapped_ptr() const;
             hardware::SynchronizationEvent get_map_event() const;
 
