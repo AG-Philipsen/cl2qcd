@@ -1,7 +1,7 @@
 /** @file
  *
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -42,7 +42,7 @@ bool checkLimeEntryForBinaryData(std::string lime_type, LimeEntryTypes limeEntry
                : false;
 }
 
-void checkIfFileExists(std::string file) throw(File_Exception)
+void checkIfFileExists(std::string file)
 {
     FILE* checker;
     checker = fopen(file.c_str(), "r");
@@ -97,7 +97,7 @@ void LimeFileReader::extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderDat
     }
 }
 
-void checkPrecision(int desiredPrecision, int actualPrecision) throw(Print_Error_Message)
+void checkPrecision(int desiredPrecision, int actualPrecision)
 {
     if (desiredPrecision != actualPrecision)
         throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting",
@@ -210,7 +210,7 @@ void LimeFileReader::handleLimeEntry_scidacChecksum(char* buffer, std::string li
     sourcefileParameters::setFromLimeEntry_scidacChecksum(parameters, buffer, numberOfBytes);
 }
 
-void LimeFileReader::handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error)
+void LimeFileReader::handleLimeEntry_inverter(std::string lime_type)
 {
     if (LimeFileReader::limeFileProp.numberOfFermionicEntries > 1) {
         logger.warn() << "Reading more than one fermion field is not implemented yet! Skip this entry...";
@@ -226,7 +226,7 @@ void LimeFileReader::handleLimeEntry_inverter(std::string lime_type) throw(std::
     }
 }
 
-void LimeFileReader::handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error)
+void LimeFileReader::handleLimeEntry_etmcPropagator(std::string lime_type)
 {
     if (LimeFileReader::limeFileProp.numberOfFermionicEntries > 1) {
         logger.warn() << "Reading more than one fermion field is not implemented yet! Skip this entry...";

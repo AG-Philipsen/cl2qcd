@@ -2,7 +2,7 @@
  * Reader for LIME files
  *
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -51,8 +51,8 @@ class LimeFileReader : public LimeFileReader_basic {
     void
     handleLimeEntry_ildg(Sourcefileparameters& parameters, char* buffer, std::string lime_type, size_t numberOfBytes);
     void handleLimeEntry_scidacChecksum(char* buffer, std::string lime_type, size_t numberOfBytes);
-    void handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error);
-    void handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error);
+    void handleLimeEntry_inverter(std::string lime_type);
+    void handleLimeEntry_etmcPropagator(std::string lime_type);
 
     int desiredPrecision;
 };

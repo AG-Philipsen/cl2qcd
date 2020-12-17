@@ -260,7 +260,7 @@ int calcNumberOfEntriesForGaugefield(const Sourcefileparameters params)
     return (int)(params.lx) * (params.ly) * (params.lz) * (params.lt) * 2 * 4 * 9;
 }
 
-int calcNumberOfEntriesBasedOnFieldType(const Sourcefileparameters params) throw(Print_Error_Message)
+int calcNumberOfEntriesBasedOnFieldType(const Sourcefileparameters params)
 {
     std::string fieldType = params.field;
 
