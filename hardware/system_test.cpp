@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
         const hardware::HardwareParametersMockup hardwareParameters(4, 4);
         const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
         hardware::System system(hardwareParameters, kernelParameters);
-        BOOST_REQUIRE(static_cast<const cl_context>(system.getContext()));
+        BOOST_REQUIRE(static_cast<cl_context>(system.getContext()));
     }
 
     BOOST_AUTO_TEST_CASE(enoughDevicesExist)
