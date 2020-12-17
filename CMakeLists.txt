@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2011-2014 Matthias Bach
 # Copyright (c) 2011-2015 Christopher Pinke
-# Copyright (c) 2013-2015,2018 Alessandro Sciarra
+# Copyright (c) 2013-2015,2018,2020 Alessandro Sciarra
 # Copyright (c) 2016 Francesca Cuteri
 #
 # This file is part of CL2QCD.
@@ -73,10 +73,9 @@ if( NOT OPENCL_HAS_CPP_BINDINGS )
 elseif( OPENCL_HAS_CPP_BINDINGS )
     message (STATUS "OpenCL CPP bindings found" )
 endif( NOT OPENCL_HAS_CPP_BINDINGS )
-# Make sure we can uses OpenCL 1.1 features on AMD APP 2.7
-# (multiple macro needed, see #if in https://stackoverflow.com/a/33018003)
-add_definitions(-DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
-add_definitions(-DCL_USE_DEPRECATED_OPENCL_1_2_APIS)
+# Make OpenCL 1.2 target version -> in include/CL/cl_version.h macros for older deprecated features are
+# automatically defined depending on the CL_TARGET_OPENCL_VERSION macro value
+add_definitions(-DCL_TARGET_OPENCL_VERSION=120)
 
 find_package( LIME REQUIRED )
 include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
