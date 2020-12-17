@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2013-2015,2018 Alessandro Sciarra
+ * Copyright (c) 2013-2015,2018,2020 Alessandro Sciarra
  * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -136,7 +136,7 @@ std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, 
     }
 }
 
-std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_ferm_obs_to_single_file()) {
         return parameters.get_ferm_obs_corr_prefix() + parameters.get_ferm_obs_corr_postfix();
@@ -158,7 +158,7 @@ std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters,
     }
 }
 
-std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_gauge_obs_to_single_file()) {
         return parameters.get_gauge_obs_prefix() + parameters.get_gauge_obs_postfix();
@@ -180,7 +180,7 @@ std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std
     }
 }
 
-std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_hmc_obs_to_single_file()) {
         return parameters.get_hmc_obs_prefix() + parameters.get_hmc_obs_postfix();
@@ -202,7 +202,7 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
     }
 }
 
-std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_rhmc_obs_to_single_file()) {
         return parameters.get_rhmc_obs_prefix() + parameters.get_rhmc_obs_postfix();
