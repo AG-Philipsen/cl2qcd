@@ -44,7 +44,6 @@ KernelTester::KernelTester(std::string kernelNameIn, const hardware::HardwarePar
     }
 }
 
-#include <boost/test/floating_point_comparison.hpp>
 KernelTester::~KernelTester() noexcept(false)
 {
     if (system) {
