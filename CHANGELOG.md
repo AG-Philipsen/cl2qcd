@@ -23,6 +23,8 @@ Refer also to the [TODO](TODO.md) file to get more information of the changes oc
 
 ## [Unreleased]
 
+ * :heavy_check_mark: The codebase has been revised on modern architectures and code has been improved following compiler warnings and hints.
+
 ---
 
 ## [Version 1.0] &nbsp;&nbsp; <sub><sup>26 September 2018</sub></sup>
