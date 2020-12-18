@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(add_value)
         ProfilingData old_data;
         cl_event event;
         for (size_t i = 0; i < 3; i++) {
-            clEnqueueMarker(profilingDataTestCommandQueueHelper(device), &event);
+            clEnqueueMarkerWithWaitList(profilingDataTestCommandQueueHelper(device), 0, NULL, &event);
             clWaitForEvents(1, &event);
             /*
              * NOTE: Here we test a profiler using a clMarker in the queue and, since this is not a kernel for which a

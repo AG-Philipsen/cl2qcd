@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2016 Christopher Pinke
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2020 Alessandro Sciarra
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -244,7 +244,7 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 
 void hardware::Device::enqueueMarker(cl_event* event) const
 {
-    cl_int err = clEnqueueMarker(command_queue, event);
+    cl_int err = clEnqueueMarkerWithWaitList(command_queue, 0, NULL, event);
     if (err) {
         throw hardware::OpenclException(err, "clEnqueueMarker()", __FILE__, __LINE__);
     }
