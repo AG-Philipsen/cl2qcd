@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014-2016 Christopher Pinke
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2020 Alessandro Sciarra
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
@@ -64,7 +64,7 @@ struct ParameterCollection {
 struct KernelTester {
     KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
                  const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
-    virtual ~KernelTester();
+    virtual ~KernelTester() noexcept(false);
 
   protected:
     const TestParameters testParameters;

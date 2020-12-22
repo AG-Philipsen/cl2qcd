@@ -5,7 +5,7 @@
  * Copyright (c) 2011,2012,2014,2015 Christopher Pinke
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christian Schäfer
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2020 Alessandro Sciarra
  * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -44,10 +44,18 @@
 #endif /* _INKERNEL_ */
 
 /** The floating precision type used by hmc, can be 32 or 64 bit. */
-#ifdef _USEDOUBLEPREC_
+#ifdef _INKERNEL_
+#    ifdef _USEDOUBLEPREC_
 typedef double hmc_float __attribute__((aligned(8)));
-#else
+#    else
 typedef float hmc_float __attribute__((aligned(4)));
+#    endif
+#else
+#    ifdef _USEDOUBLEPREC_
+typedef double hmc_float;
+#    else
+typedef float hmc_float;
+#    endif
 #endif
 
 /** Complex number type, precision is the same as for hmc_float */

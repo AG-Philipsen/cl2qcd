@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -31,7 +31,6 @@
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../meta/type_ops.hpp"
 
-#include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(initialization)

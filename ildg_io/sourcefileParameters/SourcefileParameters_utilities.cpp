@@ -46,7 +46,7 @@ static double castStringToDouble(std::string in)
 {
     try {
         return boost::lexical_cast<double>(in);
-    } catch (std::bad_cast) {
+    } catch (const std::bad_cast&) {
         throw Print_Error_Message("Could not cast string \"" + in + "\" to double!", __FILE__, __LINE__);
     }
 }
@@ -55,7 +55,7 @@ static int castStringToInt(std::string in)
 {
     try {
         return boost::lexical_cast<int>(in);
-    } catch (std::bad_cast) {
+    } catch (const std::bad_cast&) {
         throw Print_Error_Message("Could not cast string \"" + in + "\" to int!", __FILE__, __LINE__);
     }
 }
@@ -260,7 +260,7 @@ int calcNumberOfEntriesForGaugefield(const Sourcefileparameters params)
     return (int)(params.lx) * (params.ly) * (params.lz) * (params.lt) * 2 * 4 * 9;
 }
 
-int calcNumberOfEntriesBasedOnFieldType(const Sourcefileparameters params) throw(Print_Error_Message)
+int calcNumberOfEntriesBasedOnFieldType(const Sourcefileparameters params)
 {
     std::string fieldType = params.field;
 

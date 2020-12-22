@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2014,2015 Christopher Pinke
- * Copyright (c) 2014,2015,2018-2019 Alessandro Sciarra
+ * Copyright (c) 2014,2015,2018-2020 Alessandro Sciarra
  * Copyright (c) 2015,2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -164,7 +164,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
         std::string normalized_file;
         try {
             normalized_file = normalizer(config_file);
-        } catch (std::invalid_argument) {
+        } catch (const std::invalid_argument&) {
             std::cout << "Invalid config file " << config_file << std::endl;
             throw Inputparameters::parse_aborted();
         }

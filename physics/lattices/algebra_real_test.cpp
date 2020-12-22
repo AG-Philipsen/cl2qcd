@@ -1,7 +1,7 @@
 /** @file
  * Unit test for the real algebra operations in physics::lattices
  *
- * Copyright (c) 2014,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2016,2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -29,7 +29,6 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::lattices::algebra_real
-#include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
 
 void test_cgm_update(int switcher)

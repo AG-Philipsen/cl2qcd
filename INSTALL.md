@@ -26,10 +26,10 @@ However, before building CL2QCD as described above, you should make sure that al
 * [Nettle](http://www.lysator.liu.se/~nisse/nettle/)
 
 
-The `C++` compiler must be capable of basic `C++11` features.
+The `C++` compiler must be capable of basic `C++17` features.
 Using one of the following compilers is recommended.
-* [GCC](https://gcc.gnu.org/) &ge; `4.7`
-* [Clang](https://clang.llvm.org/) &ge; `3.2`
+* [GCC](https://gcc.gnu.org/) &ge; `9.3`
+* [Clang](https://clang.llvm.org/) &ge; `5.0`
 
 
 The following software is not required, but used to build documentation and by auxiliary scripts.

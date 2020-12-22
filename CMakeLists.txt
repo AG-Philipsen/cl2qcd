@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2011-2014 Matthias Bach
 # Copyright (c) 2011-2015 Christopher Pinke
-# Copyright (c) 2013-2015,2018 Alessandro Sciarra
+# Copyright (c) 2013-2015,2018,2020 Alessandro Sciarra
 # Copyright (c) 2016 Francesca Cuteri
 #
 # This file is part of CL2QCD.
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required( VERSION 2.8.3 )
+cmake_minimum_required( VERSION 3.8.0 )
 project( OpTiMaL )
 
 # We have some custom CMake stuff
@@ -38,19 +38,33 @@ enable_testing()
 # And enable Dashboard
 include(CTest)
 
+# Require minimum C/C++ standard and disable C/C++ extensions for broadest compatibility across compilers
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
 # Make the compiler bitchy
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
-    set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++11")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    message(STATUS "Compiling C++ code with ${CMAKE_CXX_COMPILER_ID} compiler")
+    set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization")
     set(CMAKE_CXX_FLAGS_RELEASE   "-O4") # LTO on clang, gcc will fall back to O3
     set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
     set(CMAKE_CXX_FLAGS_DEBUGFULL "-g3 -fno-linline")
-endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
-    set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wc++-compat -Wdisabled-optimization -std=c99")
+else()
+  message(FATAL_ERROR "Either g++ or clang++ compiler needed for compilation C++ code!")
+endif()
+if (CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    message(STATUS "Compiling C code with ${CMAKE_C_COMPILER_ID} compiler")
+    set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wc++-compat -Wdisabled-optimization")
     set(CMAKE_C_FLAGS_RELEASE     "-O4") # LTO on clang, gcc will fall back to O3
     set(CMAKE_C_FLAGS_DEBUG       "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
     set(CMAKE_C_FLAGS_DEBUGFULL   "-g3 -fno-linline")
-endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
+else()
+    message(FATAL_ERROR "Either gcc or clang compiler needed for compilation of C code!")
+endif()
 
 # Add endianess information
 include(TestBigEndian)
@@ -73,10 +87,9 @@ if( NOT OPENCL_HAS_CPP_BINDINGS )
 elseif( OPENCL_HAS_CPP_BINDINGS )
     message (STATUS "OpenCL CPP bindings found" )
 endif( NOT OPENCL_HAS_CPP_BINDINGS )
-# Make sure we can uses OpenCL 1.1 features on AMD APP 2.7
-# (multiple macro needed, see #if in https://stackoverflow.com/a/33018003)
-add_definitions(-DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
-add_definitions(-DCL_USE_DEPRECATED_OPENCL_1_2_APIS)
+# Make OpenCL 1.2 target version -> in include/CL/cl_version.h macros for older deprecated features are
+# automatically defined depending on the CL_TARGET_OPENCL_VERSION macro value
+add_definitions(-DCL_TARGET_OPENCL_VERSION=120)
 
 find_package( LIME REQUIRED )
 include_directories( SYSTEM ${LIME_INCLUDE_DIR} )

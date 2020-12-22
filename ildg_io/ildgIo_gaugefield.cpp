@@ -2,7 +2,7 @@
  * Copyright (c) 2011,2014,2015 Christopher Pinke
  * Copyright (c) 2013,2014 Matthias Bach
  * Copyright (c) 2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -28,7 +28,7 @@
 
 using namespace ildgIo;
 
-void checkLimeFileForFieldType(std::string fieldTypeIn) throw(std::logic_error)
+void checkLimeFileForFieldType(std::string fieldTypeIn)
 {
     if (fieldTypeIn != "su3gauge") {
         throw std::logic_error("LIME file does not seem to include gaugefield data. Aborting...");
@@ -228,7 +228,7 @@ static void make_big_endian_from_float(char* out, const hmc_float in)
 #if BIG_ENDIAN_ARCH
         out[i] = raw_in[i];
 #else
-        out[i]     = raw_in[sizeof(hmc_float) - 1 - i];
+        out[i] = raw_in[sizeof(hmc_float) - 1 - i];
 #endif
     }
 }

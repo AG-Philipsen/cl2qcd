@@ -5,7 +5,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -48,7 +48,7 @@ namespace hardware {
           public:
             friend hardware::Device;
 
-            virtual ~Prng();
+            virtual ~Prng() noexcept(false);
 
             ClSourcePackage get_sources() const noexcept;
 

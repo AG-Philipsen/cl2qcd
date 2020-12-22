@@ -1,7 +1,7 @@
 /** @file
  *
  * Copyright (c) 2018 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -35,7 +35,7 @@ double ParametersIntegrator::get_tau() const noexcept
 {
     return tau;
 }
-int ParametersIntegrator::get_integrationsteps(size_t timescale) const noexcept
+int ParametersIntegrator::get_integrationsteps(size_t timescale) const
 {
     switch (timescale) {
         case 0:
@@ -53,7 +53,7 @@ int ParametersIntegrator::get_num_timescales() const noexcept
 {
     return num_timescales;
 }
-common::integrator ParametersIntegrator::get_integrator(size_t timescale) const noexcept
+common::integrator ParametersIntegrator::get_integrator(size_t timescale) const
 {
     switch (timescale) {
         case 0:
@@ -66,7 +66,7 @@ common::integrator ParametersIntegrator::get_integrator(size_t timescale) const 
             throw std::out_of_range("No such timescale");
     }
 }
-double ParametersIntegrator::get_lambda(size_t timescale) const noexcept
+double ParametersIntegrator::get_lambda(size_t timescale) const
 {
     switch (timescale) {
         case 0:

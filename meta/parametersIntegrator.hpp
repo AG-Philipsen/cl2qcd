@@ -1,6 +1,7 @@
 /** @file
  *
  * Copyright (c) 2018 Francesca Cuteri
+ * Copyright (c) 2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -27,10 +28,10 @@ namespace meta {
     class ParametersIntegrator {
       public:
         double get_tau() const noexcept;
-        int get_integrationsteps(size_t timescale) const noexcept;
+        int get_integrationsteps(size_t timescale) const;
         int get_num_timescales() const noexcept;
-        common::integrator get_integrator(size_t timescale) const noexcept;
-        double get_lambda(size_t timescale) const noexcept;
+        common::integrator get_integrator(size_t timescale) const;
+        double get_lambda(size_t timescale) const;
 
       private:
         double tau;
