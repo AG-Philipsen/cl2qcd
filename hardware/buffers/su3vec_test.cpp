@@ -1,7 +1,7 @@
 /** @file
  * Testcases for the hardware::buffers::Spinor class
  *
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
@@ -27,7 +27,7 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::SU3vec
-#include "../../meta/type_ops.hpp"
+#include "../../common_header_files/types_operations.hpp"
 #include "../../meta/util.hpp"
 #include "../interfaceMockups.hpp"
 #include "../system.hpp"

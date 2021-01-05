@@ -2,7 +2,7 @@
  * Implementation of the cg algorithm
  *
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2016 Christopher Czaban
  *
  * This file is part of CL2QCD.
@@ -22,6 +22,8 @@
  */
 
 #include "cg.hpp"
+
+#include "../../../common_header_files/types_operations.hpp"
 
 static std::string create_log_prefix_cg(int number) noexcept;
 //@todo: move to own file

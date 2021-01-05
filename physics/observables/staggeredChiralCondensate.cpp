@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the staggered chiral condensate calculation.
  *
- * Copyright (c) 2014-2016,2018 Alessandro Sciarra
+ * Copyright (c) 2014-2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
@@ -22,6 +22,7 @@
 
 #include "staggeredChiralCondensate.hpp"
 
+#include "../../common_header_files/types_operations.hpp"
 #include "../algorithms/solver_shifted.hpp"
 #include "../fermionmatrix/fermionmatrix_stagg.hpp"
 #include "../lattices/scalar_complex.hpp"

@@ -26,13 +26,13 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::lattice::Gaugefield
+#include "../../common_header_files/types_operations.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/latticesParameters.hpp"
 #include "../../interfaceImplementations/observablesParameters.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../interfaceImplementations/physicsParameters.hpp"
-#include "../../meta/type_ops.hpp"
 #include "../observables/gaugeObservables.hpp"
 
 #include <boost/test/unit_test.hpp>

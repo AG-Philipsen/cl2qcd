@@ -1,7 +1,7 @@
 /** @file
  * Unit test for the physics::lattices::Staggeredfield_eo class
  *
- * Copyright (c) 2013-2016,2018 Alessandro Sciarra
+ * Copyright (c) 2013-2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2016 Francesca Cuteri
@@ -33,7 +33,6 @@
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
-#include "../../meta/type_ops.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <cmath>

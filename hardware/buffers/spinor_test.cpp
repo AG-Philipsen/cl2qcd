@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -27,7 +27,7 @@
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::Spinor
-#include "../../meta/type_ops.hpp"
+#include "../../common_header_files/types_operations.hpp"
 #include "../../meta/util.hpp"
 #include "../interfaceMockups.hpp"
 #include "../system.hpp"

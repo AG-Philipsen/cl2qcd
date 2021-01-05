@@ -2,7 +2,7 @@
  * Operators und utility functions for the custom types
  *
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2014 Christopher Pinke
  *
  * This file is part of CL2QCD.
@@ -28,6 +28,7 @@
 #include "../common_header_files/types.hpp"
 #include "../common_header_files/types_fermions.hpp"
 
+#include <cstdlib>
 #include <ostream>
 
 inline hmc_complex operator+(const hmc_complex& left, const hmc_complex& right)
@@ -112,6 +113,9 @@ inline std::ostream& operator<<(std::ostream& os, const ae& data)
               << data.e5 << ',' << data.e7 << '}';
 }
 
+/*
+ * Random filling tools for arrays of customized types
+ */
 template<typename T>
 inline void fill(T* array, size_t num_elems, int seed = 0)
 {
@@ -120,46 +124,128 @@ inline void fill(T* array, size_t num_elems, int seed = 0)
     }
 }
 template<>
-void fill(hmc_complex* array, size_t num_elems, int seed);
+inline void fill(hmc_complex* array, size_t num_elems, int seed)
+{
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {drand48(), drand48()};
+    }
+}
+
 template<>
-void fill(Matrixsu3* array, size_t num_elems, int seed);
+inline void fill(Matrixsu3* array, size_t num_elems, int seed)
+{
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {{drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()},
+                    {drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()},
+                    {drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()}};
+    }
+}
+
 template<>
-void fill(spinor* array, size_t num_elems, int seed);
+inline void fill(spinor* array, size_t num_elems, int seed)
+{
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {{
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                    },
+                    {
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                        {drand48(), drand48()},
+                    },
+                    {{drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()}},
+                    {{drand48(), drand48()}, {drand48(), drand48()}, {drand48(), drand48()}}};
+    }
+}
+
 template<>
-void fill(su3vec* array, size_t num_elems, int seed);
+inline void fill(su3vec* array, size_t num_elems, int seed)
+{
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {
+            {drand48(), drand48()},
+            {drand48(), drand48()},
+            {drand48(), drand48()},
+        };
+    }
+}
+
 template<>
-void fill(ae* array, size_t num_elems, int seed);
+inline void fill(ae* array, size_t num_elems, int seed)
+{
+    srand48(seed);
+    for (size_t i = 0; i < num_elems; i++) {
+        array[i] = {drand48(), drand48(), drand48(), drand48(), drand48(), drand48(), drand48(), drand48()};
+    }
+}
 
 /*
- * OP counts for complex operations
+ * Operations and memory counts for complex operations
  */
 template<typename S, S (*T)(S)>
 size_t get_flops();
 template<typename S, S (*T)(S, S)>
 size_t get_flops();
 template<>
-size_t get_flops<hmc_complex, complexconj>();
+inline size_t get_flops<hmc_complex, complexconj>()
+{
+    return 0;
+}
 template<>
-size_t get_flops<hmc_complex, complexmult>();
+inline size_t get_flops<hmc_complex, complexmult>()
+{
+    return 6;
+}
 template<>
-size_t get_flops<hmc_complex, complexadd>();
+inline size_t get_flops<hmc_complex, complexadd>()
+{
+    return 2;
+}
 template<>
-size_t get_flops<hmc_complex, complexsubtract>();
+inline size_t get_flops<hmc_complex, complexsubtract>()
+{
+    return 2;
+}
 template<>
-size_t get_flops<hmc_complex, complexdivide>();
+inline size_t get_flops<hmc_complex, complexdivide>()
+{
+    return 11;
+}
+
 template<typename S, S (*T)(S)>
 size_t get_read_write_size();
 template<typename S, S (*T)(S, S)>
 size_t get_read_write_size();
 template<>
-size_t get_read_write_size<hmc_complex, complexconj>();
+inline size_t get_read_write_size<hmc_complex, complexconj>()
+{
+    return 4 * 8;
+}
 template<>
-size_t get_read_write_size<hmc_complex, complexmult>();
+inline size_t get_read_write_size<hmc_complex, complexmult>()
+{
+    return 6 * 8;
+}
 template<>
-size_t get_read_write_size<hmc_complex, complexadd>();
+inline size_t get_read_write_size<hmc_complex, complexadd>()
+{
+    return 6 * 8;
+}
 template<>
-size_t get_read_write_size<hmc_complex, complexsubtract>();
+inline size_t get_read_write_size<hmc_complex, complexsubtract>()
+{
+    return 6 * 8;
+}
 template<>
-size_t get_read_write_size<hmc_complex, complexdivide>();
+inline size_t get_read_write_size<hmc_complex, complexdivide>()
+{
+    return 6 * 8;
+}
 
 #endif /* _META_TYPE_OPS */

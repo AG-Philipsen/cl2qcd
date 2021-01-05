@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016,2017 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,8 +21,8 @@
 #ifndef _HARDWARE_LATTICES_SCALAR_
 #define _HARDWARE_LATTICES_SCALAR_
 
+#include "../../common_header_files/types_operations.hpp"
 #include "../../executables/exceptions.hpp"
-#include "../../meta/type_ops.hpp"
 #include "../buffers/plain.hpp"
 #include "../system.hpp"
 
@@ -188,8 +188,8 @@ namespace hardware {
     }
 
     template<typename SCALAR>
-    const std::vector<const hardware::buffers::Plain<SCALAR>*> hardware::lattices::Scalar<SCALAR>::get_buffers() const
-        noexcept
+    const std::vector<const hardware::buffers::Plain<SCALAR>*>
+    hardware::lattices::Scalar<SCALAR>::get_buffers() const noexcept
     {
         return buffers;
     }
