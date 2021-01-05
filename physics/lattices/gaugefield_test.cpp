@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
- * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015,2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -141,7 +141,9 @@ BOOST_AUTO_TEST_CASE(rectangles)
     const char* _params2[] = {"foo", "--gaugeAction=tlsym", "--nTime=4"};
     meta::Inputparameters params2(3, _params2);
     const GaugefieldParametersImplementation parametersTmp2{&params2};
-    hardware::System system2(params2);
+    hardware::HardwareParametersImplementation hP2(&params2);
+    hardware::code::OpenClKernelParametersImplementation kP2(params2);
+    hardware::System system2(hP2, kP2);
     physics::PrngParametersImplementation prngParameters2(params2);
     physics::PRNG prng2(system, &prngParameters2);
 

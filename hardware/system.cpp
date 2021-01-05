@@ -57,32 +57,8 @@ hardware::System::System(const hardware::HardwareParametersInterface& systemPara
     , transfer_links()
     , hardwareParameters(&systemParameters)
     , kernelParameters(&kernelParameters)
-    , inputparameters(meta::Inputparameters{0, nullptr})  // <- warning at compilation, fine!
-// NOTE: On purpose, we initialize inputparameters with a ref to a temporary object, since it is not used
-//       at all in the System class. This reference is here only for the tests in the physics package and
-//       it will disappear (together with the ctor here below) as soon those tests are refactored!
 {
     kernelBuilder = new hardware::OpenClCode(kernelParameters);
-    setDebugEnvironmentVariables();
-    initOpenCLPlatforms();
-    initOpenCLContext();
-    initOpenCLDevices();
-}
-
-// todo: Remove when this constructor is removed
-#include "../interfaceImplementations/hardwareParameters.hpp"
-#include "../interfaceImplementations/openClKernelParameters.hpp"
-
-hardware::System::System(meta::Inputparameters& parameters)
-    : lG(LatticeGrid(1, LatticeExtents()))
-    , transfer_links()
-    , hardwareParameters(nullptr)
-    , kernelParameters(nullptr)
-    , inputparameters(parameters)
-{
-    hardwareParameters = new hardware::HardwareParametersImplementation(&parameters);
-    kernelParameters   = new hardware::code::OpenClKernelParametersImplementation(parameters);
-    kernelBuilder      = new hardware::OpenClCode(*kernelParameters);
     setDebugEnvironmentVariables();
     initOpenCLPlatforms();
     initOpenCLContext();
@@ -248,13 +224,6 @@ hardware::System::~System()
 const std::vector<hardware::Device*>& hardware::System::get_devices() const noexcept
 {
     return devices;
-}
-
-const meta::Inputparameters& hardware::System::get_inputparameters() const noexcept
-{
-    return inputparameters;
-    // return meta::Inputparameters(0,0); //Note: This returns reference to a temporary object, but this fct. must not
-    // be used anyway and will be removed asap
 }
 
 hardware::OpenclException::OpenclException(int err)
