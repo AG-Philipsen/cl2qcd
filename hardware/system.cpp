@@ -49,6 +49,7 @@ static void setDebugEnvironmentVariables();
 static cl_uint getNumberOfDevicesToBeUsed(cl_uint, const hardware::HardwareParametersInterface&);
 static void filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>&);
 static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::DeviceInfo>&);
+static void abortIfNotEnoughDevicesWereFound(unsigned int, unsigned int);
 
 hardware::System::System(const hardware::HardwareParametersInterface& systemParameters,
                          const hardware::code::OpenClKernelParametersInterface& kernelParameters)
@@ -178,6 +179,7 @@ void hardware::System::initOpenCLDevices()
             device_infos.push_back(dev);
         }
         filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
+        abortIfNotEnoughDevicesWereFound(device_infos.size(), devicesToBeUsed);
 
         // if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA
         // domains (primarily makes testing easier)
@@ -217,10 +219,8 @@ void hardware::System::initOpenCLDevices()
 #endif
             device_infos.push_back(dev);
         }
-    }
-
-    if (device_infos.size() == 0) {
-        throw std::logic_error("Did not find any device! Abort!");
+        filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
+        abortIfNotEnoughDevicesWereFound(device_infos.size(), selection.size());
     }
 
     LatticeGrid lG(device_infos.size(), LatticeExtents(hardwareParameters->getNs(), hardwareParameters->getNt()));
@@ -389,6 +389,15 @@ static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::D
     if (filteredOutDevices != 0)
         logger.warn() << filteredOutDevices << " CPU devices have been filtered out!";
     return filteredDevices;
+}
+
+static void abortIfNotEnoughDevicesWereFound(unsigned int found, unsigned int expected)
+{
+    if (found == 0)
+        throw std::logic_error("No valid device has been found! Abort!");
+    else if (expected != 0 && found != expected)  // expected == 0 means use all valid ones
+        throw std::logic_error(std::to_string(expected) + " devices were requested, but only " + std::to_string(found) +
+                               " were found!");
 }
 
 const hardware::HardwareParametersInterface* hardware::System::getHardwareParameters() const noexcept
