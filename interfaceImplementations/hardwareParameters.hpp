@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2015 Christopher Pinke
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -37,7 +37,7 @@ namespace hardware {
         }
         virtual bool useGpu() const override { return fullParameters->get_use_gpu(); }
         virtual bool useCpu() const override { return fullParameters->get_use_cpu(); }
-        virtual int getMaximalNumberOfDevices() const override { return fullParameters->get_device_count(); }
+        virtual int getNumberOfDevicesToBeUsed() const override { return fullParameters->get_device_count(); }
         virtual std::vector<int> getSelectedDevices() const override { return fullParameters->get_selected_devices(); }
         virtual bool splitCpu() const override { return fullParameters->get_split_cpu(); }
         virtual bool enableProfiling() const override { return fullParameters->get_enable_profiling(); }

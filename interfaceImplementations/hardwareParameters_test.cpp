@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
     BOOST_REQUIRE_EQUAL(hardwareParameters.useGpu(), fullParameters.get_use_gpu());
     BOOST_REQUIRE_EQUAL(hardwareParameters.useCpu(), fullParameters.get_use_cpu());
     BOOST_REQUIRE_EQUAL(hardwareParameters.splitCpu(), fullParameters.get_split_cpu());
-    BOOST_REQUIRE_EQUAL(hardwareParameters.getMaximalNumberOfDevices(), fullParameters.get_device_count());
+    BOOST_REQUIRE_EQUAL(hardwareParameters.getNumberOfDevicesToBeUsed(), fullParameters.get_device_count());
     BOOST_REQUIRE_EQUAL(hardwareParameters.getSelectedDevices().size(), fullParameters.get_selected_devices().size());
     BOOST_REQUIRE_EQUAL(hardwareParameters.enableProfiling(), fullParameters.get_enable_profiling());
     BOOST_REQUIRE_EQUAL(hardwareParameters.getNs(), fullParameters.get_nspace());

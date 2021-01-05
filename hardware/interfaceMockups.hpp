@@ -2,7 +2,7 @@
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
  * Copyright (c) 2016 Tim Breitenfelder
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -55,7 +55,7 @@ namespace hardware {
         virtual bool disableOpenCLCompilerOptimizations() const override { return false; }
         virtual bool useGpu() const override { return useGpuValue; }
         virtual bool useCpu() const override { return useCpuValue; }
-        virtual int getMaximalNumberOfDevices() const override { return 1; }
+        virtual int getNumberOfDevicesToBeUsed() const override { return 1; }
         virtual std::vector<int> getSelectedDevices() const override { return std::vector<int>{0}; }
         virtual bool splitCpu() const override { return false; }
         virtual bool enableProfiling() const override { return false; }
@@ -83,7 +83,7 @@ namespace hardware {
             , selectedDevices(selectedDevices)
         {
         }
-        virtual int getMaximalNumberOfDevices() const override { return maximalNumberOfDevices; }
+        virtual int getNumberOfDevicesToBeUsed() const override { return maximalNumberOfDevices; }
         virtual std::vector<int> getSelectedDevices() const override { return selectedDevices; }
 
       private:

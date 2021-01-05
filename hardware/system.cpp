@@ -46,8 +46,7 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
                                                    const LatticeGrid, const hardware::HardwareParametersInterface&,
                                                    const hardware::OpenClCode&);
 static void setDebugEnvironmentVariables();
-static unsigned int
-checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface& hardwareParameters);
+static cl_uint getNumberOfDevicesToBeUsed(cl_uint, const hardware::HardwareParametersInterface&);
 static void filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>&);
 static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::DeviceInfo>&);
 
@@ -164,12 +163,15 @@ void hardware::System::initOpenCLDevices()
     std::list<DeviceInfo> device_infos;
     if (selection.empty()) {
         // use all (or up to max)
-        size_t max_devices = checkMaximalNumberOfDevices(num_devices, *hardwareParameters);
-        for (cl_uint i = 0; i < num_devices && (!max_devices || device_infos.size() < max_devices); ++i) {
+        size_t devicesToBeUsed = getNumberOfDevicesToBeUsed(num_devices, *hardwareParameters);
+        auto someDevicesWereRequestedAndNotYetEnoughWereGathered = [devicesToBeUsed, &device_infos] {
+            return devicesToBeUsed == 0 || device_infos.size() < devicesToBeUsed;
+        };
+        for (cl_uint i = 0; i < num_devices && someDevicesWereRequestedAndNotYetEnoughWereGathered(); ++i) {
             DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
             if (!dev.is_double_supported()) {
-                logger.fatal() << "double not supported on device " << dev.get_name();
+                logger.error() << "Double precision not supported on device " << dev.get_name() << ", skipping it!";
                 continue;
             }
 #endif
@@ -181,7 +183,7 @@ void hardware::System::initOpenCLDevices()
         // domains (primarily makes testing easier)
 #ifdef CL_VERSION_1_2
         if (hardwareParameters->splitCpu() && device_infos.size() == 1 &&
-            device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
+            device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && devicesToBeUsed == 0) {
             cl_device_id original_device                   = device_infos.front().get_id();
             cl_device_partition_property partition_props[] = {CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN,
                                                               CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE, 0};
@@ -352,16 +354,17 @@ static void setDebugEnvironmentVariables()
     }
 }
 
-static unsigned int
-checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface& hardwareParameters)
-{  // here a halo_size of 2 is assumed
-    size_t max_devices                           = ((!hardwareParameters.getMaximalNumberOfDevices())
-                              ? num_devices
-                              : hardwareParameters.getMaximalNumberOfDevices());
-    size_t max_devices_checked_against_halo_size = ((max_devices <= (unsigned)hardwareParameters.getNt() / 2)
-                                                        ? max_devices
-                                                        : hardwareParameters.getNt() / 2);
-    return max_devices_checked_against_halo_size;
+static cl_uint getNumberOfDevicesToBeUsed(cl_uint num_devices, const hardware::HardwareParametersInterface& hP)
+{
+    unsigned int requestedDevices = hP.getNumberOfDevicesToBeUsed();
+    unsigned int nTime            = hP.getNt();
+    // here a halo_size of 2 is assumed
+    cl_uint devicesToBeUsed                       = (requestedDevices == 0) ? num_devices : requestedDevices;
+    cl_uint devicesToBeUsedCheckedAgainstHaloSize = (devicesToBeUsed <= nTime / 2) ? devicesToBeUsed : nTime / 2;
+    if (devicesToBeUsed != devicesToBeUsedCheckedAgainstHaloSize)
+        logger.warn() << "Number of devices to be used was reduced to " << devicesToBeUsedCheckedAgainstHaloSize
+                      << " due to lattice temporal extent and halo size equal to 2.";
+    return devicesToBeUsedCheckedAgainstHaloSize;
 }
 
 static void filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>& gatheredDevices)
