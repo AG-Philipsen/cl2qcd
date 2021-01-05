@@ -42,10 +42,9 @@
 #include <sstream>
 #include <stdexcept>
 
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context,
-                                                   const LatticeGrid lG,
-                                                   const hardware::HardwareParametersInterface& hardwareParameters,
-                                                   const hardware::OpenClCode& openClCodeBuilder);
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>&, cl_context,
+                                                   const LatticeGrid, const hardware::HardwareParametersInterface&,
+                                                   const hardware::OpenClCode&);
 static void setDebugEnvironmentVariables();
 static unsigned int
 checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface& hardwareParameters);
