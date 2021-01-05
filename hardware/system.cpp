@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014-2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -42,7 +42,6 @@
 #include <sstream>
 #include <stdexcept>
 
-static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context,
                                                    const LatticeGrid lG,
                                                    const hardware::HardwareParametersInterface& hardwareParameters,
@@ -50,6 +49,8 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
 static void setDebugEnvironmentVariables();
 static unsigned int
 checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface& hardwareParameters);
+static void filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>&);
+static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::DeviceInfo>&);
 
 hardware::System::System(const hardware::HardwareParametersInterface& systemParameters,
                          const hardware::code::OpenClKernelParametersInterface& kernelParameters)
@@ -175,13 +176,7 @@ void hardware::System::initOpenCLDevices()
 #endif
             device_infos.push_back(dev);
         }
-        // for now, if a gpu was found then throw out cpus
-        for (auto device : device_infos) {
-            if (device.get_device_type() == CL_DEVICE_TYPE_GPU) {
-                device_infos = filter_cpus(device_infos);
-                break;
-            }
-        }
+        filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
 
         // if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA
         // domains (primarily makes testing easier)
@@ -306,17 +301,6 @@ void hardware::print_profiling(const System* system, const std::string& filename
     print_profiling(*system, filename);
 }
 
-static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices)
-{
-    std::list<hardware::DeviceInfo> filtered;
-    for (auto device : devices) {
-        if (device.get_device_type() != CL_DEVICE_TYPE_CPU) {
-            filtered.push_back(device);
-        }
-    }
-    return filtered;
-}
-
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context,
                                                    const LatticeGrid lG,
                                                    const hardware::HardwareParametersInterface& hardwareParameters,
@@ -379,6 +363,30 @@ checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParamet
                                                         ? max_devices
                                                         : hardwareParameters.getNt() / 2);
     return max_devices_checked_against_halo_size;
+}
+
+static void filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>& gatheredDevices)
+{
+    for (auto device : gatheredDevices) {
+        if (device.get_device_type() == CL_DEVICE_TYPE_GPU) {
+            gatheredDevices = filterOutCPUs(gatheredDevices);
+            break;
+        }
+    }
+}
+
+static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::DeviceInfo>& gatheredDevices)
+{
+    std::list<hardware::DeviceInfo> filteredDevices;
+    for (auto device : gatheredDevices) {
+        if (device.get_device_type() != CL_DEVICE_TYPE_CPU) {
+            filteredDevices.push_back(device);
+        }
+    }
+    size_t filteredOutDevices = filteredDevices.size() - gatheredDevices.size();
+    if (filteredOutDevices != 0)
+        logger.warn() << filteredOutDevices << " CPU devices have been filtered out!";
+    return filteredDevices;
 }
 
 const hardware::HardwareParametersInterface* hardware::System::getHardwareParameters() const noexcept
