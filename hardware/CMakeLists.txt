@@ -3,7 +3,7 @@
 # Copyright (c) 2012-2014 Matthias Bach
 # Copyright (c) 2014,2016 Christopher Pinke
 # Copyright (c) 2016 Francesca Cuteri
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -46,9 +46,9 @@ target_link_libraries(hardware
      ${OPENCL_LIBRARIES}
      exceptions
      crypto
-     meta
      geometry
      hardware_lattices
+     ${Boost_LIBRARIES}
 )
 
 #
