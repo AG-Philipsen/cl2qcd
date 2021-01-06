@@ -26,8 +26,8 @@
 static std::tuple<bool, bool, bool> parseBoostRuntimeArguments()
 {
     static bool parsed   = false;
-    static bool useGpu   = false;
-    static bool useCpu   = false;
+    static bool useGpu   = true;
+    static bool useCpu   = true;
     static bool useRec12 = false;
     auto argc            = boost::unit_test::framework::master_test_suite().argc;
     auto argv            = boost::unit_test::framework::master_test_suite().argv;
