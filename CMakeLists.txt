@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2011-2014 Matthias Bach
 # Copyright (c) 2011-2015 Christopher Pinke
-# Copyright (c) 2013-2015,2018,2020 Alessandro Sciarra
+# Copyright (c) 2013-2015,2018,2020-2021 Alessandro Sciarra
 # Copyright (c) 2016 Francesca Cuteri
 #
 # This file is part of CL2QCD.
@@ -106,8 +106,8 @@ if( LIBXML2_DEFINITIONS )
     add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-# Require 1.59 as boost-unit_test of previous versions do not support disabling tests (--run_test='!<test>' syntax)
-find_package(Boost 1.59.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
+# Require 1.60 as boost-unit_test of previous versions do not separate boost arguments and user test command line argumetns.
+find_package(Boost 1.60.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Define where to find the OpenCL kernels
