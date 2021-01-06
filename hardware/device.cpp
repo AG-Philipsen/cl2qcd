@@ -585,8 +585,6 @@ void hardware::Device::markMemReleased(const bool host, const size_t size) const
     } else {
         allocated_bytes -= size;
     }
-    if (allocated_bytes > max_allocated_bytes)
-        max_allocated_bytes = allocated_bytes;
     logger.trace() << "Memory usage on (" << latticeGridIndex.x << "," << latticeGridIndex.y << ","
                    << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << allocated_bytes
                    << " bytes - Maximum usage: " << max_allocated_bytes
@@ -602,6 +600,8 @@ void hardware::Device::markMemAllocated(const bool host, const size_t size) cons
     } else {
         allocated_bytes += size;
     }
+    if (allocated_bytes > max_allocated_bytes)
+        max_allocated_bytes = allocated_bytes;
     logger.trace() << "Memory usage on (" << latticeGridIndex.x << "," << latticeGridIndex.y << ","
                    << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << allocated_bytes
                    << " bytes - Maximum usage: " << max_allocated_bytes
