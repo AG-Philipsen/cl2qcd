@@ -2,7 +2,7 @@
  * Utilities for tests for the hardware classes
  *
  * Copyright (c) 2015,2016 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -30,6 +30,7 @@ void broadcastMessage_fatal(const std::string message);
 void failTest();
 void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System* system);
 bool checkIfNoOpenCLDevicesWereFound(const hardware::OpenclException exception);
+bool checkBoostRuntimeArgumentsForCpuUsage();
 bool checkBoostRuntimeArgumentsForGpuUsage();
 bool checkBoostRuntimeArgumentsForRec12Usage();
 void handleExceptionInTest(hardware::OpenclException& exception);

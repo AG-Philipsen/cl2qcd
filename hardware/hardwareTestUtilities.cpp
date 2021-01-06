@@ -54,6 +54,10 @@ static std::tuple<bool, bool, bool> parseBoostRuntimeArguments()
     return std::make_tuple(useCpu, useGpu, useRec12);
 }
 
+bool checkBoostRuntimeArgumentsForCpuUsage()
+{
+    return std::get<0>(parseBoostRuntimeArguments());
+}
 bool checkBoostRuntimeArgumentsForGpuUsage()
 {
     return std::get<1>(parseBoostRuntimeArguments());
