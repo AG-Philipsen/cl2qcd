@@ -75,7 +75,7 @@ void hardware::System::initOpenCLPlatforms()
     cl_uint numberOfAvailablePlatforms = 0;
     clGetPlatformIDs(0, nullptr, &numberOfAvailablePlatforms);
     if (numberOfAvailablePlatforms > 1) {
-        logger.warn() << "Found " << numberOfAvailablePlatforms << " platforms, take first one...";
+        logger.warn() << "Found " << numberOfAvailablePlatforms << " platforms, take first one!";
     }
 
     std::vector<cl_platform_id> platformIds(numberOfAvailablePlatforms);
@@ -127,7 +127,7 @@ void hardware::System::initOpenCLDevices()
     if (err) {
         throw OpenclException(err, "clGetContextInfo", __FILE__, __LINE__);
     }
-    logger.info() << "Found " << num_devices << " OpenCL devices.";
+    logger.info() << "Found " << num_devices << " OpenCL device(s)";
 
     cl_device_id* device_ids = new cl_device_id[num_devices];
     err = clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_device_id) * num_devices, device_ids, 0);
