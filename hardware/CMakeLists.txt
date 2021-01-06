@@ -51,6 +51,8 @@ target_link_libraries(hardware
      ${Boost_LIBRARIES}
 )
 
+target_link_libraries(hardwareTestUtilities ${Boost_LIBRARIES})
+
 #
 # Definition of tests
 #

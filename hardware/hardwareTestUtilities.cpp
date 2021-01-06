@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2016 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -20,44 +20,47 @@
 
 #include "hardwareTestUtilities.hpp"
 
+#include <boost/program_options.hpp>
 #include <boost/test/unit_test.hpp>
 
-std::pair<bool, bool> checkForBoostRuntimeArguments()
+static std::tuple<bool, bool, bool> parseBoostRuntimeArguments()
 {
-    bool useGpu   = false;
-    bool useRec12 = false;
-    int num_par   = boost::unit_test::framework::master_test_suite().argc;
-    if (num_par > 1) {  // argv[0] is the executable name
-        /*
-         * Here, if the boost version in use is previous to 1.60 but the user uses a "--" to separate boost arguments
-         * from user arguments (as it is mandatory from version 1.60 on), there could be an argv[i] set to "--".
-         * It is harmless now, but maybe not in the future, keep it in mind.
-         */
-        logger.info() << "Found " << num_par << " runtime arguments, checking for gpu and rec12 options...";
-        for (int i = 1; i < num_par; i++) {
-            std::string currentArgument = boost::unit_test::framework::master_test_suite().argv[i];
-            if (currentArgument.find("--useGPU") != std::string::npos) {
-                if (currentArgument.find("true") != std::string::npos) {
-                    useGpu = true;
-                }
-            }
-            if (currentArgument.find("--useReconstruct12") != std::string::npos) {
-                if (currentArgument.find("true") != std::string::npos) {
-                    useRec12 = true;
-                }
-            }
+    static bool parsed   = false;
+    static bool useGpu   = false;
+    static bool useCpu   = false;
+    static bool useRec12 = false;
+    auto argc            = boost::unit_test::framework::master_test_suite().argc;
+    auto argv            = boost::unit_test::framework::master_test_suite().argv;
+    if (parsed == false && argc > 1) {  // argv[0] is the executable name
+        namespace po = boost::program_options;
+        logger.info() << "Found " << argc << " runtime user command line arguments";
+        po::options_description commandLineOptionsDescription("Test command line options");
+        // clang-format off
+        commandLineOptionsDescription.add_options()
+        ("useGPU", po::value<bool>(&useGpu)->default_value(useGpu), "Whether to use GPUs in tests. If set to true and at least one GPU is found, GPUs only are used.")
+        ("useCPU", po::value<bool>(&useCpu)->default_value(useCpu), "Whether to use CPUs in tests.")
+        ("useReconstruct12", po::value<bool>(&useRec12)->default_value(useRec12), "Whether to use the reconstruction technique for the gaugefield in tests.");
+        // clang-format on
+        po::variables_map vm;
+        try {
+            po::store(po::parse_command_line(argc, argv, commandLineOptionsDescription), vm);
+            boost::program_options::notify(vm);
+        } catch (po::error& e) {
+            logger.error() << e.what() << "\n\n" << commandLineOptionsDescription << "\n";
+            exit(1);
         }
+        parsed = true;
     }
-    return std::pair<bool, bool>{useGpu, useRec12};
+    return std::make_tuple(useCpu, useGpu, useRec12);
 }
 
 bool checkBoostRuntimeArgumentsForGpuUsage()
 {
-    return checkForBoostRuntimeArguments().first;
+    return std::get<1>(parseBoostRuntimeArguments());
 }
 bool checkBoostRuntimeArgumentsForRec12Usage()
 {
-    return checkForBoostRuntimeArguments().second;
+    return std::get<2>(parseBoostRuntimeArguments());
 }
 
 void broadcastMessage_warn(const std::string message)
