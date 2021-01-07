@@ -326,12 +326,13 @@ struct MolecularDynamicsTester : public GaugemomentumTester {
         GaugefieldCreator gf(tP.latticeExtents);
         GaugemomentumCreator gm(tP.latticeExtents);
         gaugefieldBuffer         = new hardware::buffers::SU3(calculateGaugefieldSize(tP.latticeExtents), this->device);
+        gaugemomentumBuffer      = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(tP.gaugeFillType);
+        const ae* gm_host        = gm.createGaugemomentumBasedOnFilltype(tP.gmFillType);
         gaugefieldBuffer->load(gf_host);
+        gaugemomentumBuffer->load(gm_host);
         delete[] gf_host;
-        gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
-        code->importGaugemomentumBuffer(gaugemomentumBuffer,
-                                        reinterpret_cast<ae*>(gm.createGaugemomentumBasedOnFilltype(tP.gmFillType)));
+        delete[] gm_host;
         gaugefieldCode        = device->getGaugefieldCode();
         molecularDynamicsCode = device->getMolecularDynamicsCode();
     }
@@ -501,17 +502,14 @@ struct FFermionEvenOddComparator : public MolecularDynamicsTester {
     void fillBuffers(const MolecularDynamicsTestParameters tP)
     {
         GaugemomentumCreator gm(tP.latticeExtents);
-        MolecularDynamicsTester::code->importGaugemomentumBuffer(outNonEo, reinterpret_cast<ae*>(
-                                                                               gm.createGaugemomentumBasedOnFilltype(
-                                                                                   tP.gmFillType)));
-        MolecularDynamicsTester::code->importGaugemomentumBuffer(outEo, reinterpret_cast<ae*>(
-                                                                            gm.createGaugemomentumBasedOnFilltype(
-                                                                                tP.gmFillType)));
-
         NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
         EvenOddSpinorfieldCreator sfEo(tP.latticeExtents);
-        inNonEo1->load(sf.createSpinorfield(tP.spinorFillType));
-        inNonEo2->load(sf.createSpinorfield(tP.spinorFillType));
+        const ae* gm_host     = gm.createGaugemomentumBasedOnFilltype(tP.gmFillType);
+        const spinor* sf_host = sf.createSpinorfield(tP.spinorFillType);
+        outNonEo->load(gm_host);
+        outEo->load(gm_host);
+        inNonEo1->load(sf_host);
+        inNonEo2->load(sf_host);
         sfEo.fillTwoSpinorBuffers(inEo1, tP.spinorFillType, inEo2, tP.spinorFillType);
         sfEo.fillTwoSpinorBuffers(inEo3, tP.spinorFillType, inEo4, tP.spinorFillType);
     }

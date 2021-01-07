@@ -62,9 +62,9 @@ struct SquarenormTester : public GaugemomentumTester {
     {
         GaugemomentumCreator gm(tP.latticeExtents);
         gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
-        hardware::buffers::Gaugemomentum in(tP.latticeExtents, device);
-        code->importGaugemomentumBuffer(gaugemomentumBuffer,
-                                        reinterpret_cast<ae*>(gm.createGaugemomentumBasedOnFilltype(tP.fillType)));
+        const ae* gm_host   = gm.createGaugemomentumBasedOnFilltype(tP.fillType);
+        gaugemomentumBuffer->load(gm_host);
+        delete[] gm_host;
         calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
     }
 
@@ -92,11 +92,12 @@ struct SaxpyTester : public GaugemomentumTester {
     {
         GaugemomentumCreator gm(tP.latticeExtents);
         gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
-        hardware::buffers::Gaugemomentum out(tP.latticeExtents, device);
-        code->importGaugemomentumBuffer(gaugemomentumBuffer,
-                                        reinterpret_cast<ae*>(gm.createGaugemomentumBasedOnFilltype(tP.fillType)));
+        const ae* gm_host   = gm.createGaugemomentumBasedOnFilltype(tP.fillType);
+        gaugemomentumBuffer->load(gm_host);
+        delete[] gm_host;
         doubleBuffer->load(&tP.coefficient);
 
+        hardware::buffers::Gaugemomentum out(tP.latticeExtents, device);
         code->saxpy_device(gaugemomentumBuffer, &out, doubleBuffer, &out);
         calcSquarenormAndStoreAsKernelResult(&out);
     }

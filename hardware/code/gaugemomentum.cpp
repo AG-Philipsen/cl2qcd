@@ -249,7 +249,7 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(
 
                 // get buffer from device
                 cout << "copy buffer to host" << endl;
-                exportGaugemomentumBuffer(ae_tmp, in);
+                in->dump(ae_tmp);
 
                 // write out to file
                 ofstream out("clmem_p_at_inf");
