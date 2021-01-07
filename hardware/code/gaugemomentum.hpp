@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2015 Christopher Pinke
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -45,6 +45,7 @@ namespace hardware {
         class Gaugemomentum : public Opencl_Module {
           public:
             friend hardware::Device;
+            friend hardware::buffers::Gaugemomentum;
 
             virtual ~Gaugemomentum();
 
@@ -133,15 +134,6 @@ namespace hardware {
                           const hardware::Device* device);
 
           private:
-            /**
-             * Collect the kernels for OpenCL.
-             */
-            void fill_kernels();
-            /**
-             * Clear out the kernels,
-             */
-            void clear_kernels();
-
             ClSourcePackage basic_gaugemomentum_code;
 
             // kernels
@@ -152,6 +144,20 @@ namespace hardware {
             cl_kernel gaugemomentum_convert_to_soa;
             cl_kernel gaugemomentum_convert_from_soa;
             cl_kernel gaugemomentum_saxpy;
+
+            void convertGaugemomentumToSOA_device(const hardware::buffers::Gaugemomentum* out,
+                                                  const hardware::buffers::Plain<ae>* in) const;
+            void convertGaugemomentumFromSOA_device(const hardware::buffers::Plain<ae>* out,
+                                                    const hardware::buffers::Gaugemomentum* in) const;
+
+            /**
+             * Collect the kernels for OpenCL.
+             */
+            void fill_kernels();
+            /**
+             * Clear out the kernels,
+             */
+            void clear_kernels();
         };
 
     }  // namespace code

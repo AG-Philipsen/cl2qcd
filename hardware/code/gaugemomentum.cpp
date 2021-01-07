@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -388,21 +388,10 @@ void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::bu
         throw std::invalid_argument("Destination buffer is not of proper size");
     }
 
-    cl_int clerr;
     if (dest->is_soa()) {
         hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, dest->get_device());
         tmp.load(data);
-
-        size_t ls2, gs2;
-        cl_uint num_groups;
-        this->get_work_sizes(gaugemomentum_convert_to_soa, &ls2, &gs2, &num_groups);
-        clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 0, sizeof(cl_mem), dest->get_cl_buffer());
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 1, sizeof(cl_mem), tmp);
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        get_device()->enqueue_kernel(gaugemomentum_convert_to_soa, gs2, ls2);
+        convertGaugemomentumToSOA_device(dest, &tmp);
     } else {
         dest->load(data);
     }
@@ -416,25 +405,51 @@ void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae* const dest,
         throw std::invalid_argument("Source buffer is not of proper size");
     }
 
-    cl_int clerr;
     if (buf->is_soa()) {
         hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, buf->get_device());
-
-        size_t ls2, gs2;
-        cl_uint num_groups;
-        this->get_work_sizes(gaugemomentum_convert_from_soa, &ls2, &gs2, &num_groups);
-        clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 0, sizeof(cl_mem), tmp);
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 1, sizeof(cl_mem), buf->get_cl_buffer());
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        get_device()->enqueue_kernel(gaugemomentum_convert_from_soa, gs2, ls2);
-
+        convertGaugemomentumFromSOA_device(&tmp, buf);
         tmp.dump(dest);
     } else {
         buf->dump(dest);
     }
+}
+
+void hardware::code::Gaugemomentum::convertGaugemomentumToSOA_device(const hardware::buffers::Gaugemomentum* out,
+                                                                     const hardware::buffers::Plain<ae>* in) const
+{
+    if (!out->is_soa()) {
+        throw std::invalid_argument("Destination buffer must be a SOA buffer");
+    }
+
+    size_t ls2, gs2;
+    cl_uint num_groups;
+    this->get_work_sizes(gaugemomentum_convert_to_soa, &ls2, &gs2, &num_groups);
+    cl_int clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 0, sizeof(cl_mem), out->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 1, sizeof(cl_mem), in->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    get_device()->enqueue_kernel(gaugemomentum_convert_to_soa, gs2, ls2);
+}
+
+void hardware::code::Gaugemomentum::convertGaugemomentumFromSOA_device(const hardware::buffers::Plain<ae>* out,
+                                                                       const hardware::buffers::Gaugemomentum* in) const
+{
+    if (!in->is_soa()) {
+        throw std::invalid_argument("Source buffer must be a SOA buffer");
+    }
+
+    size_t ls2, gs2;
+    cl_uint num_groups;
+    this->get_work_sizes(gaugemomentum_convert_from_soa, &ls2, &gs2, &num_groups);
+    cl_uint clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 0, sizeof(cl_mem), out->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 1, sizeof(cl_mem), in->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    get_device()->enqueue_kernel(gaugemomentum_convert_from_soa, gs2, ls2);
 }
 
 ClSourcePackage hardware::code::Gaugemomentum::get_sources() const noexcept
