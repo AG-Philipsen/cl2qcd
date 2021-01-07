@@ -28,6 +28,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::Spinor
 #include "../../common_header_files/types_operations.hpp"
+#include "../../executables/exceptions.hpp"
 #include "../../meta/util.hpp"
 #include "../interfaceMockups.hpp"
 #include "../system.hpp"
@@ -51,48 +52,97 @@ BOOST_AUTO_TEST_CASE(initialization)
     }
 }
 
-BOOST_AUTO_TEST_CASE(import_export)
-{
-    using namespace hardware;
-    using namespace hardware::buffers;
+BOOST_AUTO_TEST_SUITE(import_export)
 
-    LatticeExtents lE(4, 4);
-    const hardware::HardwareParametersMockup hardwareParameters(lE);
-    const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
-    for (Device* device : system.get_devices()) {
-        spinor* buf  = new spinor[elems];
-        spinor* buf2 = new spinor[elems];
-        Spinor dummy(lE, device);
-        fill(buf, elems, 1);
-        fill(buf2, elems, 2);
-        dummy.load(buf);
-        dummy.dump(buf2);
-        BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
-        delete[] buf;
-        delete[] buf2;
+    BOOST_AUTO_TEST_CASE(evenOdd)
+    {
+        using namespace hardware;
+        using namespace hardware::buffers;
+
+        LatticeExtents lE(4, 4);
+        const hardware::HardwareParametersMockup hardwareParameters(lE);
+        const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(lE, true);
+        hardware::System system(hardwareParameters, kernelParameters);
+        const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
+        for (Device* device : system.get_devices()) {
+            spinor* buf  = new spinor[elems];
+            spinor* buf2 = new spinor[elems];
+            fill(buf, elems, 1);
+            Spinor dummy(lE, device);
+            dummy.load(buf);
+            dummy.dump(buf2);
+            BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+            delete[] buf;
+            delete[] buf2;
+        }
     }
-}
+
+    BOOST_AUTO_TEST_CASE(notEvenOdd)
+    {
+        using namespace hardware;
+        using namespace hardware::buffers;
+
+        LatticeExtents lE(4, 4);
+        const hardware::HardwareParametersMockup hardwareParameters(lE);
+        const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(lE, false);
+        hardware::System system(hardwareParameters, kernelParameters);
+        const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
+        for (Device* device : system.get_devices()) {
+            spinor* buf  = new spinor[elems];
+            spinor* buf2 = new spinor[elems];
+            fill(buf, elems, 1);
+            Spinor dummy(lE, device);
+            BOOST_REQUIRE_THROW(dummy.load(buf), Print_Error_Message);
+            BOOST_REQUIRE_THROW(dummy.dump(buf2), Print_Error_Message);
+            // TODO: When non-eo case is implemented, remove the require_throw and add
+            //       BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+            delete[] buf;
+            delete[] buf2;
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(raw)
+    {
+        using namespace hardware;
+        using namespace hardware::buffers;
+
+        LatticeExtents lE(4, 4);
+        const hardware::HardwareParametersMockup hardwareParameters(lE);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+        hardware::System system(hardwareParameters, kernelParameters);
+        const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
+        for (Device* device : system.get_devices()) {
+            spinor* buf  = new spinor[elems];
+            spinor* buf2 = new spinor[elems];
+            fill(buf, elems, 1);
+            Spinor dummy(lE, device);
+            dummy.load_raw(buf);
+            dummy.dump_raw(buf2);
+            BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+            delete[] buf;
+            delete[] buf2;
+        }
+    }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(copy)
 {
     using namespace hardware;
     using namespace hardware::buffers;
 
+    // This test is done only with even-odd on, since load and dump are tested above in all scenarios.
     LatticeExtents lE(4, 4);
     const hardware::HardwareParametersMockup hardwareParameters(lE);
-    const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+    const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(lE, true);
     hardware::System system(hardwareParameters, kernelParameters);
     const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
     for (Device* device : system.get_devices()) {
         spinor* buf  = new spinor[elems];
         spinor* buf2 = new spinor[elems];
+        fill(buf, elems, 1);
         Spinor dummy(lE, device);
         Spinor dummy2(lE, device);
-
-        fill(buf, elems, 1);
-        fill(buf2, elems, 2);
         dummy.load(buf);
         copyData(&dummy2, &dummy);
         dummy2.dump(buf2);
