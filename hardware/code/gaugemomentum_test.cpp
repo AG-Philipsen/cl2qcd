@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015 Christopher Pinke
  * Copyright (c) 2013 Matthias Bach
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -78,9 +78,6 @@ struct SetZeroTester : public GaugemomentumTester {
     {
         GaugemomentumCreator gm(tP.latticeExtents);
         gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
-        code->importGaugemomentumBuffer(gaugemomentumBuffer,
-                                        reinterpret_cast<ae*>(
-                                            gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One)));
         code->set_zero_gaugemomentum(gaugemomentumBuffer);
         calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
     }
@@ -97,8 +94,6 @@ struct SaxpyTester : public GaugemomentumTester {
         gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
         hardware::buffers::Gaugemomentum out(tP.latticeExtents, device);
         code->importGaugemomentumBuffer(gaugemomentumBuffer,
-                                        reinterpret_cast<ae*>(gm.createGaugemomentumBasedOnFilltype(tP.fillType)));
-        code->importGaugemomentumBuffer(&out,
                                         reinterpret_cast<ae*>(gm.createGaugemomentumBasedOnFilltype(tP.fillType)));
         doubleBuffer->load(&tP.coefficient);
 
