@@ -51,34 +51,55 @@ BOOST_AUTO_TEST_CASE(initialization)
     }
 }
 
-BOOST_AUTO_TEST_CASE(import_export)
-{
-    using namespace hardware;
-    using namespace hardware::buffers;
+BOOST_AUTO_TEST_SUITE(import_export)
 
-    LatticeExtents lE(4, 4);
-    const hardware::HardwareParametersMockup hardwareParameters(lE);
-    const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
-    for (Device* device : system.get_devices()) {
-        Matrixsu3* buf(new Matrixsu3[elems]);
-        Matrixsu3* buf2(new Matrixsu3[elems]);
-        SU3 dummy(lE, device);
-        if (dummy.is_soa()) {
-            BOOST_CHECK_THROW(dummy.load(buf), std::logic_error);
-            BOOST_CHECK_THROW(dummy.dump(buf), std::logic_error);
-        } else {
+    BOOST_AUTO_TEST_CASE(SoA_AoS)
+    {
+        using namespace hardware;
+        using namespace hardware::buffers;
+
+        LatticeExtents lE(4, 4);
+        const hardware::HardwareParametersMockup hardwareParameters(lE);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+        hardware::System system(hardwareParameters, kernelParameters);
+        const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
+        for (Device* device : system.get_devices()) {
+            Matrixsu3* buf(new Matrixsu3[elems]);
+            Matrixsu3* buf2(new Matrixsu3[elems]);
             fill(buf, elems, 1);
-            fill(buf2, elems, 2);
+            SU3 dummy(lE, device);
             dummy.load(buf);
             dummy.dump(buf2);
             BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+            delete[] buf;
+            delete[] buf2;
         }
-        delete[] buf;
-        delete[] buf2;
     }
-}
+
+    BOOST_AUTO_TEST_CASE(raw)
+    {
+        using namespace hardware;
+        using namespace hardware::buffers;
+
+        LatticeExtents lE(4, 4);
+        const hardware::HardwareParametersMockup hardwareParameters(lE);
+        const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+        hardware::System system(hardwareParameters, kernelParameters);
+        const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
+        for (Device* device : system.get_devices()) {
+            Matrixsu3* buf(new Matrixsu3[elems]);
+            Matrixsu3* buf2(new Matrixsu3[elems]);
+            fill(buf, elems, 1);
+            SU3 dummy(lE, device);
+            dummy.load_raw(buf);
+            dummy.dump_raw(buf2);
+            BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+            delete[] buf;
+            delete[] buf2;
+        }
+    }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(copy)
 {
@@ -91,21 +112,17 @@ BOOST_AUTO_TEST_CASE(copy)
     hardware::System system(hardwareParameters, kernelParameters);
     const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
     for (Device* device : system.get_devices()) {
-        if (!check_SU3_for_SOA(device)) {
-            Matrixsu3* buf(new Matrixsu3[elems]);
-            Matrixsu3* buf2(new Matrixsu3[elems]);
-            SU3 dummy(lE, device);
-            SU3 dummy2(lE, device);
+        Matrixsu3* buf(new Matrixsu3[elems]);
+        Matrixsu3* buf2(new Matrixsu3[elems]);
+        fill(buf, elems, 1);
+        SU3 dummy(lE, device);
+        SU3 dummy2(lE, device);
+        dummy.load(buf);
+        copyData(&dummy2, &dummy);
+        dummy2.dump(buf2);
+        BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
 
-            fill(buf, elems, 1);
-            fill(buf2, elems, 2);
-            dummy.load(buf);
-            copyData(&dummy2, &dummy);
-            dummy2.dump(buf2);
-            BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
-
-            delete[] buf;
-            delete[] buf2;
-        }
+        delete[] buf;
+        delete[] buf2;
     }
 }
