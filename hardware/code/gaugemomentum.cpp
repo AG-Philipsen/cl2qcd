@@ -281,7 +281,7 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(
                     sqnorm += ae_tmp[i].e7 * ae_tmp[i].e7;
                 }
                 cout << "sqnrom: " << sqnorm << endl;
-                free(ae_tmp);
+                delete[] ae_tmp;
             }
             throw Print_Error_Message("calculation of gaussian gm gave inf! Aborting...", __FILE__, __LINE__);
         }
