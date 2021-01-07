@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2013,2015 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -89,7 +89,9 @@ bool hardware::buffers::Gaugemomentum::is_soa() const noexcept
 void hardware::buffers::Gaugemomentum::load(const ae* ptr, const size_t elems, const size_t offset) const
 {
     if (is_soa()) {
-        throw std::logic_error("Data cannot be loaded into SOA buffers.");
+        auto device  = get_device();
+        auto gm_code = device->getGaugemomentumCode();
+        gm_code->importGaugemomentumBuffer(this, ptr);
     } else {
         Buffer::load(ptr, elems * sizeof(ae), offset * sizeof(ae));
     }

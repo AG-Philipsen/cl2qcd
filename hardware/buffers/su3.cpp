@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015,2016 Francesca Cuteri
  * Copyright (c) 2015 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -87,7 +87,11 @@ bool hardware::buffers::SU3::is_soa() const noexcept
 void hardware::buffers::SU3::load(const Matrixsu3* ptr, const size_t elems, const size_t offset) const
 {
     if (is_soa()) {
-        throw std::logic_error("Data cannot be loaded into SOA buffers.");
+        auto device = get_device();
+        Plain<Matrixsu3> plain(get_elements(), device);
+        plain.load(ptr, elems * sizeof(Matrixsu3), offset * sizeof(Matrixsu3));
+        device->getGaugefieldCode()->convertGaugefieldToSOA_device(this, &plain);
+        device->synchronize();
     } else {
         Buffer::load(ptr, elems * sizeof(Matrixsu3), offset * sizeof(Matrixsu3));
     }
@@ -96,7 +100,10 @@ void hardware::buffers::SU3::load(const Matrixsu3* ptr, const size_t elems, cons
 void hardware::buffers::SU3::dump(Matrixsu3* ptr, const size_t elems, const size_t offset) const
 {
     if (is_soa()) {
-        throw std::logic_error("Data cannot be dumped from SOA buffers.");
+        auto device = get_device();
+        Plain<Matrixsu3> plain(get_elements(), device);
+        device->getGaugefieldCode()->convertGaugefieldFromSOA_device(&plain, this);
+        plain.dump(ptr, elems * sizeof(Matrixsu3), offset * sizeof(Matrixsu3));
     } else {
         Buffer::dump(ptr, elems * sizeof(Matrixsu3), offset * sizeof(Matrixsu3));
     }
