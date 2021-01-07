@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2014-2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
@@ -528,35 +528,6 @@ void hardware::code::Gaugefield::print_profiling(const std::string& filename, in
     Opencl_Module::print_profiling(filename, stout_smear);
     Opencl_Module::print_profiling(filename, convertGaugefieldToSOA);
     Opencl_Module::print_profiling(filename, convertGaugefieldFromSOA);
-}
-
-void hardware::code::Gaugefield::importGaugefield(const hardware::buffers::SU3* gaugefield,
-                                                  const Matrixsu3* const data) const
-{
-    using namespace hardware::buffers;
-
-    logger.trace() << "Import gaugefield to get_device()";
-    if (get_device()->get_prefers_soa()) {
-        Plain<Matrixsu3> tmp(gaugefield->get_elements(), get_device());
-        tmp.load(data);
-        convertGaugefieldToSOA_device(gaugefield, &tmp);
-    } else {
-        gaugefield->load(data);
-    }
-}
-
-void hardware::code::Gaugefield::exportGaugefield(Matrixsu3* const dest, const hardware::buffers::SU3* gaugefield) const
-{
-    using namespace hardware::buffers;
-
-    logger.trace() << "Exporting gaugefield from get_device()";
-    if (get_device()->get_prefers_soa()) {
-        Plain<Matrixsu3> tmp(gaugefield->get_elements(), get_device());
-        convertGaugefieldFromSOA_device(&tmp, gaugefield);
-        tmp.dump(dest);
-    } else {
-        gaugefield->dump(dest);
-    }
 }
 
 void hardware::code::Gaugefield::convertGaugefieldToSOA_device(const hardware::buffers::SU3* out,

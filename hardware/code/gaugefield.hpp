@@ -102,26 +102,6 @@ namespace hardware {
             void stout_smear_device(const hardware::buffers::SU3* in, const hardware::buffers::SU3* out) const;
 
             /**
-             * Import the gaugefield data into the OpenCL buffer using the device
-             * specific storage format.
-             *
-             * @param[out] gaugefield The OpenCL buffer to writ the gaugefield data to in the device specific format
-             * @param[in]  data       The gaugefield data to import into the OpenCL buffer
-             *
-             * @todo should not be public
-             */
-            void importGaugefield(const hardware::buffers::SU3* gaugefield, const Matrixsu3* const data) const;
-
-            /**
-             * Export the gaugefield from the OpenCL buffer, that uses a device
-             * specific storage format, into the given pointer using the generic
-             * storage format.
-             *
-             * @param[out] dest The array to store the gaugefield in
-             */
-            void exportGaugefield(Matrixsu3* const dest, const hardware::buffers::SU3* gaugefield) const;
-
-            /**
              * Get the code required to use the gaugefield from kernels.
              */
             ClSourcePackage get_sources() const noexcept;

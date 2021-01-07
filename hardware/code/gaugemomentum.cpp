@@ -380,40 +380,6 @@ void hardware::code::Gaugemomentum::saxpy_device(const hardware::buffers::Gaugem
     get_device()->enqueue_kernel(gaugemomentum_saxpy, gs2, ls2);
 }
 
-void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum* dest,
-                                                              const ae* const data) const
-{
-    size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->getLocalLatticeMemoryExtents()) * NDIM;
-    if (dest->get_elements() != REQUIRED_BUFFER_SIZE) {
-        throw std::invalid_argument("Destination buffer is not of proper size");
-    }
-
-    if (dest->is_soa()) {
-        hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, dest->get_device());
-        tmp.load(data);
-        convertGaugemomentumToSOA_device(dest, &tmp);
-    } else {
-        dest->load(data);
-    }
-}
-
-void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae* const dest,
-                                                              const hardware::buffers::Gaugemomentum* buf) const
-{
-    size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->getLocalLatticeMemoryExtents()) * NDIM;
-    if (buf->get_elements() != REQUIRED_BUFFER_SIZE) {
-        throw std::invalid_argument("Source buffer is not of proper size");
-    }
-
-    if (buf->is_soa()) {
-        hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, buf->get_device());
-        convertGaugemomentumFromSOA_device(&tmp, buf);
-        tmp.dump(dest);
-    } else {
-        buf->dump(dest);
-    }
-}
-
 void hardware::code::Gaugemomentum::convertGaugemomentumToSOA_device(const hardware::buffers::Gaugemomentum* out,
                                                                      const hardware::buffers::Plain<ae>* in) const
 {

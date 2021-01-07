@@ -70,25 +70,6 @@ namespace hardware {
                               const hardware::buffers::Plain<hmc_float>* alpha,
                               const hardware::buffers::Gaugemomentum* out) const;
 
-            /**
-             * Import data from the gaugemomenta array into the given buffer.
-             *
-             * The data in the buffer will be stored in the device specific format.
-             *
-             * @param[out] dest The buffer to write to in the device specific format
-             * @param[in] data The data to write to the buffer
-             */
-            void importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum* dest, const ae* const data) const;
-            /**
-             * Export data from the given buffer into a normal gaugemomentum array.
-             *
-             * The data in the buffer is assumed to be in the device specific format.
-             *
-             * @param[out] dest An array that the buffer data can be written to.
-             * @param[in] data A buffer containing the data in the device specific format.
-             */
-            void exportGaugemomentumBuffer(ae* const dest, const hardware::buffers::Gaugemomentum* buf) const;
-
             ClSourcePackage get_sources() const noexcept;
 
             /**
