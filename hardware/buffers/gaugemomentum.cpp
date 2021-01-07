@@ -89,9 +89,11 @@ bool hardware::buffers::Gaugemomentum::is_soa() const noexcept
 void hardware::buffers::Gaugemomentum::load(const ae* ptr, const size_t elems, const size_t offset) const
 {
     if (is_soa()) {
-        auto device  = get_device();
-        auto gm_code = device->getGaugemomentumCode();
-        gm_code->importGaugemomentumBuffer(this, ptr);
+        auto device = get_device();
+        Plain<ae> plain(get_elements(), device);
+        plain.load(ptr, elems * sizeof(ae), offset * sizeof(ae));
+        device->getGaugemomentumCode()->convertGaugemomentumToSOA_device(this, &plain);
+        device->synchronize();
     } else {
         Buffer::load(ptr, elems * sizeof(ae), offset * sizeof(ae));
     }
@@ -100,9 +102,10 @@ void hardware::buffers::Gaugemomentum::load(const ae* ptr, const size_t elems, c
 void hardware::buffers::Gaugemomentum::dump(ae* ptr, const size_t elems, const size_t offset) const
 {
     if (is_soa()) {
-        auto device  = get_device();
-        auto gm_code = device->getGaugemomentumCode();
-        gm_code->exportGaugemomentumBuffer(ptr, this);
+        auto device = get_device();
+        Plain<ae> plain(get_elements(), device);
+        device->getGaugemomentumCode()->convertGaugemomentumFromSOA_device(&plain, this);
+        plain.dump(ptr, elems * sizeof(ae), offset * sizeof(ae));
     } else {
         Buffer::dump(ptr, elems * sizeof(ae), offset * sizeof(ae));
     }
