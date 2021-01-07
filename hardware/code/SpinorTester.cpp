@@ -2,7 +2,7 @@
  * Copyright (c) 2014-2016 Christopher Pinke
  * Copyright (c) 2014-2016 Francesca Cuteri
  * Copyright (c) 2015 Paul Frederik Depta
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -101,13 +101,13 @@ void EvenOddSpinorfieldCreator::fillTwoSpinorBuffers(const hardware::buffers::Sp
 {
     spinor* sf_in1;
     spinor* sf_in2;
-    sf_in1 = new spinor[numberOfElements];
-    sf_in2 = new spinor[numberOfElements];
+    sf_in1 = SpinorfieldCreator::createSpinorfield(fillTypeIn1);
+    sf_in2 = SpinorfieldCreator::createSpinorfield(fillTypeIn2);
     BOOST_REQUIRE(sf_in1);
     BOOST_REQUIRE(sf_in2);
 
-    in1->load(SpinorfieldCreator::createSpinorfield(fillTypeIn1));
-    in2->load(SpinorfieldCreator::createSpinorfield(fillTypeIn2));
+    in1->load(sf_in1);
+    in2->load(sf_in2);
 
     delete sf_in1;
     delete sf_in2;
@@ -319,7 +319,7 @@ void fill_with_one_eo(spinor* in, const int size, const bool fillEvenSites, cons
 
                     parityOfSite = (x + y + z + t) % 2 == 0;
                     content      = (parityOfSite) ? (fillEvenSites ? hmc_complex_one : hmc_complex_zero)
-                                             : (fillEvenSites ? hmc_complex_zero : hmc_complex_one);
+                                                  : (fillEvenSites ? hmc_complex_zero : hmc_complex_one);
 
                     in[global_pos].e0.e0 = content;
                     in[global_pos].e0.e1 = content;
