@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2014-2016 Francesca Cuteri
  * Copyright (c) 2015 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -144,7 +144,7 @@ struct FermionmatrixTester : public KernelTester {
                                                           testParameters.SpinorTestParameters::latticeExtents),
                                                       this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(testParameters.GaugefieldTestParameters::fillType);
-        this->device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
 
         code = this->device->getFermionCode();
@@ -176,7 +176,7 @@ struct StaggeredFermionmatrixTester : public KernelTester {
         gaugefieldBuffer         = new hardware::buffers::SU3(calculateGaugefieldSize(testParameters.latticeExtents),
                                                       this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(testParameters.gaugefieldFillType);
-        this->device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
 
         code = this->device->getFermionStaggeredCode();

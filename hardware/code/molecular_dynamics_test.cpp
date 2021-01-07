@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012,2014,2015 Christopher Pinke
- * Copyright (c) 2013,2014,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013,2014 Matthias Bach
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
@@ -327,7 +327,7 @@ struct MolecularDynamicsTester : public GaugemomentumTester {
         GaugemomentumCreator gm(tP.latticeExtents);
         gaugefieldBuffer         = new hardware::buffers::SU3(calculateGaugefieldSize(tP.latticeExtents), this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(tP.gaugeFillType);
-        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
         gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
         code->importGaugemomentumBuffer(gaugemomentumBuffer,

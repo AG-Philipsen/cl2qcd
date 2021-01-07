@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -71,21 +71,16 @@ void hardware::lattices::Gaugefield::release_buffers(std::vector<const hardware:
 void hardware::lattices::Gaugefield::send_gaugefield_to_buffers(const Matrixsu3* const gf_host)
 {
     logger.trace() << "importing gaugefield";
-    //     if(buffers.size() == 1) {
-    //         auto device = buffers[0]->get_device();
-    //         device->getGaugefieldCode()->importGaugefield(buffers[0], gf_host);
-    //         device->synchronize();
-    //     } else {
     for (auto const buffer : buffers) {
         auto device = buffer->get_device();
         TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(),
                                                 sizeof(Matrixsu3), device->getHaloExtent());
 
         if (buffers.size() == 1)
-            device->getGaugefieldCode()->importGaugefield(buffer, gf_host);
+            buffer->load(gf_host);
         else {
             Matrixsu3* mem_host = new Matrixsu3[buffer->get_elements()];
-            //                //todo: put these calls into own fct.! With smart pointers?
+            // TODO: put these calls into own fct.! With smart pointers?
             memcpy(&mem_host[tmp2.getMainPartIndex_destination()], &gf_host[tmp2.getMainPartIndex_source()],
                    tmp2.getMainPartSizeInBytes());
             memcpy(&mem_host[tmp2.getFirstHaloIndex_destination()], &gf_host[tmp2.getFirstHaloPartIndex_source()],
@@ -93,12 +88,11 @@ void hardware::lattices::Gaugefield::send_gaugefield_to_buffers(const Matrixsu3*
             memcpy(&mem_host[tmp2.getSecondHaloIndex_destination()], &gf_host[tmp2.getSecondHaloPartIndex_source()],
                    tmp2.getHaloPartSizeInBytes());
 
-            device->getGaugefieldCode()->importGaugefield(buffer, mem_host);
+            buffer->load(mem_host);
             delete[] mem_host;
         }
         device->synchronize();
     }
-    //     }
     logger.trace() << "import complete";
 }
 
@@ -106,16 +100,13 @@ void hardware::lattices::Gaugefield::fetch_gaugefield_from_buffers(Matrixsu3* co
 {
     logger.trace() << "fetching gaugefield";
     if (buffers.size() == 1) {
-        auto device = buffers[0]->get_device();
-        device->getGaugefieldCode()->exportGaugefield(gf_host, buffers[0]);
-        device->synchronize();
+        buffers[0]->dump(gf_host);
     } else {
         for (auto const buffer : buffers) {
             // fetch local part for each device
             auto device         = buffer->get_device();
             Matrixsu3* mem_host = new Matrixsu3[buffer->get_elements()];
-
-            device->getGaugefieldCode()->exportGaugefield(mem_host, buffer);
+            buffer->dump(mem_host);
 
             TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(),
                                                     sizeof(Matrixsu3), device->getHaloExtent());
@@ -175,9 +166,7 @@ void hardware::lattices::Gaugefield::set_cold() const
         size_t elems   = buffer->get_elements();
         Matrixsu3* tmp = new Matrixsu3[elems];
         set_cold(tmp, elems);
-        const Device* device = buffer->get_device();
-        device->getGaugefieldCode()->importGaugefield(buffer, tmp);
-        device->synchronize();
+        buffer->load(tmp);
         delete[] tmp;
     }
 }
@@ -197,9 +186,7 @@ void hardware::lattices::Gaugefield::set_hot() const
         size_t elems   = buffer->get_elements();
         Matrixsu3* tmp = new Matrixsu3[elems];
         set_hot(tmp, elems);
-        const Device* device = buffer->get_device();
-        device->getGaugefieldCode()->importGaugefield(buffer, tmp);
-        device->synchronize();
+        buffer->load(tmp);
         delete[] tmp;
     }
 }
