@@ -1563,10 +1563,12 @@ void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_dev
                                                                   kernelParameters->getMdApproxOrd())),
                                  numeqs);
     }
+
     // query work-sizes for kernel
     size_t ls2, gs2;
     cl_uint num_groups;
     this->get_work_sizes(sax_vectorized_and_squarenorm_eoprec, &ls2, &gs2, &num_groups);
+
     // set arguments
     int clerr = clSetKernelArg(sax_vectorized_and_squarenorm_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
     if (clerr != CL_SUCCESS)
@@ -1581,7 +1583,7 @@ void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_dev
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
     hardware::buffers::Plain<hmc_float> tmp(num_groups * numeqs, get_device());
-    clerr = clSetKernelArg(sax_vectorized_and_squarenorm_eoprec, 3, sizeof(cl_mem), tmp);
+    clerr = clSetKernelArg(sax_vectorized_and_squarenorm_eoprec, 3, sizeof(cl_mem), tmp.get_cl_buffer());
     if (clerr != CL_SUCCESS)
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
