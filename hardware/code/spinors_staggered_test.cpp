@@ -1779,6 +1779,19 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+/*
+ * ATTENTION: The following SAX_VEC_AND_SQNORM_* tests turned out to fail on the motherboard integrated GPU
+ *            Intel(R) Gen9 HD Graphics NEO. A long investigation has been done and it turned out that it might
+ *            be due to a GPU compiler bug handling private memory in kernel when dynamic indexing is used.
+ *            The test is let fail as a hint not to use such a device for production. On a real GPGPU (AMD
+ *            Radeon Instinct MI50) the tests pass. Please, note that this kernel is used in the RHMC only if the
+ *            user enables the usage of merged spinors kernels, what has so far never been the case in production.
+ *
+ *            For more information, refer to
+ *              - https://stackoverflow.com/a/65669765/14967071
+ *              - https://gitlab.itp.uni-frankfurt.de/lattice-qcd/ag-philipsen/cl2qcd/-/issues/36
+ */
+
 BOOST_AUTO_TEST_SUITE(SAX_VEC_AND_SQNORM)
 
     BOOST_AUTO_TEST_CASE(SAX_VEC_AND_SQNORM_1)
