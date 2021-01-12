@@ -1591,7 +1591,6 @@ void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_dev
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
     get_device()->enqueue_kernel(sax_vectorized_and_squarenorm_eoprec, gs2, ls2);
-    // get_device()->enqueue_kernel(sax_vectorized_and_squarenorm_eoprec, 1, 1);
 
     sax_vectorized_squarenorm_reduction(out, &tmp, numeqs);
 }

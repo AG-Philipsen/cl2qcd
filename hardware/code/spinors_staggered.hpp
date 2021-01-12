@@ -292,7 +292,7 @@ namespace hardware {
 
             /**
              * This function returns the squarenorms of the input staggered field with even-odd
-             * preconditioning multiplied by a set of differente real constants.
+             * preconditioning multiplied by a set of different real constants.
              * @param x The input staggered field (one su3vec per site even or odd)
              * @param alpha The real constants vector
              * @param numeqs The number of real constants
