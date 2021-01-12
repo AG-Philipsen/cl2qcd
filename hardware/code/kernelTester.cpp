@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2014-2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2018,2020 Alessandro Sciarra
+ * Copyright (c) 2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -36,12 +36,8 @@ KernelTester::KernelTester(std::string kernelNameIn, const hardware::HardwarePar
     , kernelParameters(&kernelParameters)
 {
     printKernelInformation(kernelNameIn);
-    try {
-        system = new hardware::System(hardwareParameters, kernelParameters);
-        device = system->get_devices().at(0);
-    } catch (hardware::OpenclException& exception) {
-        handleExceptionInTest(exception);
-    }
+    system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    device = system->get_devices().at(0);
 }
 
 KernelTester::~KernelTester() noexcept(false)
@@ -76,7 +72,6 @@ KernelTester::~KernelTester() noexcept(false)
             }
         }
 
-        delete system;
         device = nullptr;
     }
 }

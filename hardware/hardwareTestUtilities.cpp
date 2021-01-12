@@ -100,24 +100,37 @@ bool checkIfNoOpenCLDevicesWereFound(const hardware::OpenclException exception)
     return exception.errorCode == -1;
 }
 
-void endTestAsNoDevicesWereFound()
+static void endTestAsNoDevicesWereFound()
 {
     broadcastMessage_warn("System does not seem to contain devices of desired type!");
     broadcastMessage_warn("Exiting...");
     exit(0);
 }
 
-void endTestBecauseOfUnknownError()
+static void endTestBecauseOfUnknownError()
 {
     broadcastMessage_fatal("Got unknown error code. Aborting...");
     failTest();
 }
 
-void handleExceptionInTest(hardware::OpenclException& exception)
+static void handleExceptionInTest(hardware::OpenclException& exception)
 {
     if (checkIfNoOpenCLDevicesWereFound(exception)) {
         endTestAsNoDevicesWereFound();
     } else {
         endTestBecauseOfUnknownError();
     }
+}
+
+std::unique_ptr<hardware::System>
+tryToInstantiateSystemAndHandleExceptions(const hardware::HardwareParametersInterface& hP,
+                                          const hardware::code::OpenClKernelParametersInterface& kP)
+{
+    std::unique_ptr<hardware::System> system;
+    try {
+        system = std::make_unique<hardware::System>(hP, kP);
+    } catch (hardware::OpenclException& exception) {
+        handleExceptionInTest(exception);
+    }
+    return system;
 }

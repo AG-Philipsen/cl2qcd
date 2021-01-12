@@ -41,9 +41,9 @@ BOOST_AUTO_TEST_CASE(initialization)
     LatticeExtents lE(4, 4);
     const hardware::HardwareParametersMockup hardwareParameters(lE);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-    hardware::System system(hardwareParameters, kernelParameters);
-    for (Device* device : system.get_devices()) {
-        Gaugemomentum dummy(system.getHardwareParameters()->getLatticeVolume(), device);
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    for (Device* device : system->get_devices()) {
+        Gaugemomentum dummy(system->getHardwareParameters()->getLatticeVolume(), device);
         const cl_mem* tmp = dummy;
         BOOST_CHECK(tmp);
         BOOST_CHECK(*tmp);
@@ -60,9 +60,9 @@ BOOST_AUTO_TEST_SUITE(import_export)
         LatticeExtents lE(4, 4);
         const hardware::HardwareParametersMockup hardwareParameters(lE);
         const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-        hardware::System system(hardwareParameters, kernelParameters);
-        const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
-        for (Device* device : system.get_devices()) {
+        auto system        = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+        const size_t elems = system->getHardwareParameters()->getLatticeVolume() * NDIM;
+        for (Device* device : system->get_devices()) {
             ae* buf  = new ae[elems];
             ae* buf2 = new ae[elems];
             fill(buf, elems, 1);
@@ -83,9 +83,9 @@ BOOST_AUTO_TEST_SUITE(import_export)
         LatticeExtents lE(4, 4);
         const hardware::HardwareParametersMockup hardwareParameters(lE);
         const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-        hardware::System system(hardwareParameters, kernelParameters);
-        const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
-        for (Device* device : system.get_devices()) {
+        auto system        = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+        const size_t elems = system->getHardwareParameters()->getLatticeVolume() * NDIM;
+        for (Device* device : system->get_devices()) {
             ae* buf  = new ae[elems];
             ae* buf2 = new ae[elems];
             fill(buf, elems, 1);
@@ -108,9 +108,9 @@ BOOST_AUTO_TEST_CASE(copy)
     LatticeExtents lE(4, 4);
     const hardware::HardwareParametersMockup hardwareParameters(lE);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
-    for (Device* device : system.get_devices()) {
+    auto system        = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    const size_t elems = system->getHardwareParameters()->getLatticeVolume() * NDIM;
+    for (Device* device : system->get_devices()) {
         ae* buf  = new ae[elems];
         ae* buf2 = new ae[elems];
         fill(buf, elems, 1);

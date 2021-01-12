@@ -33,4 +33,6 @@ bool checkIfNoOpenCLDevicesWereFound(const hardware::OpenclException exception);
 bool checkBoostRuntimeArgumentsForCpuUsage();
 bool checkBoostRuntimeArgumentsForGpuUsage();
 bool checkBoostRuntimeArgumentsForRec12Usage();
-void handleExceptionInTest(hardware::OpenclException& exception);
+std::unique_ptr<hardware::System>
+tryToInstantiateSystemAndHandleExceptions(const hardware::HardwareParametersInterface&,
+                                          const hardware::code::OpenClKernelParametersInterface&);

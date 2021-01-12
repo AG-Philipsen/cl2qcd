@@ -43,8 +43,8 @@ BOOST_AUTO_TEST_CASE(initialization)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const std::vector<Device*>& devices = system.get_devices();
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    const std::vector<Device*>& devices = system->get_devices();
     for (Device* device : devices) {
         Buffer dummy(sizeof(float), device);
         BOOST_REQUIRE_EQUAL(dummy.get_bytes(), sizeof(float));
@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE(copy)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const std::vector<Device*>& devices = system.get_devices();
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    const std::vector<Device*>& devices = system->get_devices();
     for (Device* device : devices) {
         Buffer dummy(sizeof(float), device);
         BOOST_REQUIRE_EQUAL(dummy.get_bytes(), sizeof(float));
@@ -87,8 +87,8 @@ BOOST_AUTO_TEST_CASE(clear)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const std::vector<Device*>& devices = system.get_devices();
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    const std::vector<Device*>& devices = system->get_devices();
     for (Device* device : devices) {
         {
             const size_t SIZE = 1024;

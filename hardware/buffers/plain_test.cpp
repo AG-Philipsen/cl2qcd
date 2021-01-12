@@ -50,15 +50,13 @@ void test(size_t elems, hardware::Device* device)
     T* in  = new T[elems];
     T* out = new T[elems];
     fill(in, elems, 1);
-    fill(out, elems, 2);
 
     dummy.load(in);
     dummy.dump(out);
     BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
 
     Plain<T> dummy2(elems, device);
-    fill(in, elems, 3);
-    fill(out, elems, 4);
+    fill(in, elems, 2);
     dummy.load(in);
     copyData(&dummy2, &dummy);
     dummy2.dump(out);
@@ -80,8 +78,8 @@ void test(bool requireDouble = false)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const std::vector<Device*>& devices = system.get_devices();
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    const std::vector<Device*>& devices = system->get_devices();
     for (Device* device : devices) {
         if (!requireDouble || device->is_double_supported()) {
             test<T>(1, device);

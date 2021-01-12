@@ -43,9 +43,9 @@ BOOST_AUTO_TEST_CASE(initialization)
     LatticeExtents lE(4, 4);
     const hardware::HardwareParametersMockup hardwareParameters(lE);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
-    hardware::System system(hardwareParameters, kernelParameters);
-    for (Device* device : system.get_devices()) {
-        SU3vec dummy(system.getHardwareParameters()->getLatticeVolume(), device);
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    for (Device* device : system->get_devices()) {
+        SU3vec dummy(system->getHardwareParameters()->getLatticeVolume(), device);
         const cl_mem* tmp = dummy;
         BOOST_CHECK(tmp);
         BOOST_CHECK(*tmp);
@@ -62,9 +62,9 @@ BOOST_AUTO_TEST_SUITE(import_export)
         LatticeExtents lE(4, 4);
         const hardware::HardwareParametersMockup hardwareParameters(lE);
         const hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(lE, true);
-        hardware::System system(hardwareParameters, kernelParameters);
-        const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
-        for (Device* device : system.get_devices()) {
+        auto system        = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+        const size_t elems = system->getHardwareParameters()->getLatticeVolume() / 2;
+        for (Device* device : system->get_devices()) {
             su3vec* buf  = new su3vec[elems];
             su3vec* buf2 = new su3vec[elems];
             fill(buf, elems, 1);
@@ -85,9 +85,9 @@ BOOST_AUTO_TEST_SUITE(import_export)
         LatticeExtents lE(4, 4);
         const hardware::HardwareParametersMockup hardwareParameters(lE);
         const hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(lE, false);
-        hardware::System system(hardwareParameters, kernelParameters);
-        const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
-        for (Device* device : system.get_devices()) {
+        auto system        = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+        const size_t elems = system->getHardwareParameters()->getLatticeVolume() / 2;
+        for (Device* device : system->get_devices()) {
             su3vec* buf  = new su3vec[elems];
             su3vec* buf2 = new su3vec[elems];
             fill(buf, elems, 1);
@@ -112,9 +112,9 @@ BOOST_AUTO_TEST_CASE(copy)
     LatticeExtents lE(4, 4);
     const hardware::HardwareParametersMockup hardwareParameters(lE);
     const hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(lE, true);
-    hardware::System system(hardwareParameters, kernelParameters);
-    const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
-    for (Device* device : system.get_devices()) {
+    auto system        = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    const size_t elems = system->getHardwareParameters()->getLatticeVolume() / 2;
+    for (Device* device : system->get_devices()) {
         su3vec* buf  = new su3vec[elems];
         su3vec* buf2 = new su3vec[elems];
         fill(buf, elems, 1);
