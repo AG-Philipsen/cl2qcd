@@ -106,21 +106,15 @@ struct SaxpyTester : public GaugemomentumTester {
     hardware::buffers::Gaugemomentum* gaugemomentumBuffer;
 };
 
-struct PrngGaugemomentumTestParameters : public GaugemomentumTestParameters {
-    PrngGaugemomentumTestParameters(const LatticeExtents lE, const int iterationsIn)
-        : GaugemomentumTestParameters(lE, 10e-4), iterations(iterationsIn){};
-    const unsigned int iterations;
-};
-
 struct PrngGaugemomentumTester : public GaugemomentumTester {
     PrngGaugemomentumTester(const std::string kernelName, const ParameterCollection pC,
-                            const PrngGaugemomentumTestParameters& tP, const int numberOfElements)
+                            const GaugemomentumTestParameters& tP, const int numberOfElements)
         : GaugemomentumTester(kernelName, pC, calculateReferenceValues_gaussian(), tP)
         , numberOfElements(numberOfElements)
         , mean(0.)
         , variance(0.)
-        , hostOutput(std::vector<ae>(numberOfElements * tP.iterations))
-        , testParameters(tP)
+        , iterations(tP.iterations)
+        , hostOutput(std::vector<ae>(numberOfElements * iterations))
         , hostSeed(pC.kernelParameters.getHostSeed())
         , useSameRandomNumbers(pC.hardwareParameters.useSameRandomNumbers())
 
@@ -133,6 +127,7 @@ struct PrngGaugemomentumTester : public GaugemomentumTester {
 
     ~PrngGaugemomentumTester()
     {
+        logger.info() << "In dtor of " << __FUNCTION__;
         calculateMean();
         calculateVariance();
 
@@ -142,11 +137,11 @@ struct PrngGaugemomentumTester : public GaugemomentumTester {
         delete prngStates;
     }
 
-    double normalize(double valueIn) { return valueIn /= testParameters.iterations * numberOfElements * 8.; }
+    double normalize(double valueIn) { return valueIn /= iterations * numberOfElements * 8.; }
 
     void calculateMean()
     {
-        for (unsigned int i = 0; i < testParameters.iterations; i++) {
+        for (unsigned int i = 0; i < iterations; i++) {
             mean += count_gm(&hostOutput[i * numberOfElements], numberOfElements);
         }
         mean = normalize(mean);
@@ -154,7 +149,7 @@ struct PrngGaugemomentumTester : public GaugemomentumTester {
 
     void calculateVariance()
     {
-        for (unsigned int i = 0; i < testParameters.iterations; i++) {
+        for (unsigned int i = 0; i < iterations; i++) {
             variance += calc_var_gm(&hostOutput[i * numberOfElements], numberOfElements, mean);
         }
         variance = normalize(variance);
@@ -163,8 +158,8 @@ struct PrngGaugemomentumTester : public GaugemomentumTester {
   protected:
     const int numberOfElements;
     double mean, variance;
+    const unsigned int iterations;
     std::vector<ae> hostOutput;
-    const PrngGaugemomentumTestParameters& testParameters;
     const hardware::buffers::PRNGBuffer* prngStates;
 
   private:
@@ -173,14 +168,14 @@ struct PrngGaugemomentumTester : public GaugemomentumTester {
 };
 
 struct GaussianTester : public PrngGaugemomentumTester {
-    GaussianTester(const ParameterCollection pC, const PrngGaugemomentumTestParameters& tP)
+    GaussianTester(const ParameterCollection pC, const GaugemomentumTestParameters tP)
         : PrngGaugemomentumTester("gaussian gaugemomentum", pC, tP, calculateGaugemomentumSize(tP.latticeExtents))
     {
     }
     ~GaussianTester()
     {
         const hardware::buffers::Gaugemomentum gm_out(numberOfElements, device);
-        for (unsigned int i = 0; i < testParameters.iterations; i++) {
+        for (unsigned int i = 0; i < iterations; i++) {
             code->generate_gaussian_gaugemomenta_device(&gm_out, prngStates);
             gm_out.dump(&hostOutput[i * numberOfElements]);
         }
@@ -198,9 +193,9 @@ void callTest(const LatticeExtents lE)
 }
 
 template<class TesterClass>
-void performTest(const LatticeExtents lE, const int iterations)
+void performTest(const LatticeExtents lE, const unsigned int iterations)
 {
-    PrngGaugemomentumTestParameters parametersForThisTest(lE, iterations);
+    GaugemomentumTestParameters parametersForThisTest(lE, iterations);
     hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents);
     hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents);
     ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
