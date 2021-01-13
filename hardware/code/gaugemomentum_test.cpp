@@ -98,7 +98,7 @@ struct SaxpyTester : public GaugemomentumTester {
         doubleBuffer->load(&tP.coefficient);
 
         hardware::buffers::Gaugemomentum out(tP.latticeExtents, device);
-        code->saxpy_device(gaugemomentumBuffer, &out, doubleBuffer, &out);
+        code->saxpy_device(gaugemomentumBuffer, gaugemomentumBuffer, doubleBuffer, &out);
         calcSquarenormAndStoreAsKernelResult(&out);
     }
 
