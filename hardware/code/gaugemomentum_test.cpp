@@ -173,7 +173,7 @@ struct PrngGaugemomentumTester : public GaugemomentumTester {
 };
 
 struct GaussianTester : public PrngGaugemomentumTester {
-    GaussianTester(const ParameterCollection pC, const PrngGaugemomentumTestParameters tP)
+    GaussianTester(const ParameterCollection pC, const PrngGaugemomentumTestParameters& tP)
         : PrngGaugemomentumTester("gaussian gaugemomentum", pC, tP, calculateGaugemomentumSize(tP.latticeExtents))
     {
     }
