@@ -45,9 +45,21 @@ ReferenceValues calculateReferenceValues_set_zero()
     return ReferenceValues{0.};
 }
 
-ReferenceValues calculateReferenceValues_saxpy(const LatticeExtents lE, double alphaIn)
+ReferenceValues
+calculateReferenceValues_saxpy(const LatticeExtents lE, double alphaIn, const GaugeMomentumFilltype fillTypesIn)
 {
-    return ReferenceValues{(1. + alphaIn) * (1. + alphaIn) * lE.getLatticeVolume() * NDIM * sumOfIntegersSquared(8)};
+    switch (fillTypesIn) {
+        case GaugeMomentumFilltype::One: {
+            return ReferenceValues{(1. + alphaIn) * (1. + alphaIn) * lE.getLatticeVolume() * NDIM * 8.};
+        }
+        case GaugeMomentumFilltype::Ascending: {
+            return ReferenceValues{(1. + alphaIn) * (1. + alphaIn) * lE.getLatticeVolume() * NDIM *
+                                   sumOfIntegersSquared(8)};
+        }
+        default: {
+            throw Print_Error_Message("Reference value calculation not implemented for given filling type!");
+        }
+    }
 }
 
 ReferenceValues calculateReferenceValues_gaussian()
@@ -88,7 +100,8 @@ struct SetZeroTester : public GaugemomentumTester {
 
 struct SaxpyTester : public GaugemomentumTester {
     SaxpyTester(const ParameterCollection pC, const GaugemomentumTestParameters tP)
-        : GaugemomentumTester("saxpy", pC, calculateReferenceValues_saxpy(tP.latticeExtents, tP.coefficient), tP)
+        : GaugemomentumTester("saxpy", pC,
+                              calculateReferenceValues_saxpy(tP.latticeExtents, tP.coefficient, tP.fillType), tP)
     {
         GaugemomentumCreator gm(tP.latticeExtents);
         gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
@@ -247,6 +260,7 @@ BOOST_AUTO_TEST_SUITE(SQUARENORM)
     BOOST_AUTO_TEST_CASE(SQUARENORM_1) { testSquarenorm(LatticeExtents{ns4, nt4}, GaugeMomentumFilltype::One); }
 
     BOOST_AUTO_TEST_CASE(SQUARENORM_2) { testSquarenorm(LatticeExtents{ns4, nt4}, GaugeMomentumFilltype::Ascending); }
+
     BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_1)
     {
         testSquarenorm(LatticeExtents{ns16, nt8}, GaugeMomentumFilltype::One);
@@ -267,12 +281,18 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY)
 
-    BOOST_AUTO_TEST_CASE(SAXPY_1)
+    BOOST_AUTO_TEST_CASE(SAXPY_1) { testSaxpy(LatticeExtents{ns4, nt4}, GaugeMomentumFilltype::One, 0.0); }
+
+    BOOST_AUTO_TEST_CASE(SAXPY_2) { testSaxpy(LatticeExtents{ns4, nt4}, GaugeMomentumFilltype::One, 1.0); }
+
+    BOOST_AUTO_TEST_CASE(SAXPY_3) { testSaxpy(LatticeExtents{ns4, nt4}, GaugeMomentumFilltype::Ascending, -1.0); }
+
+    BOOST_AUTO_TEST_CASE(SAXPY_4)
     {
         testSaxpy(LatticeExtents{ns4, nt8}, GaugeMomentumFilltype::Ascending, nonTrivialParameter);
     }
 
-    BOOST_AUTO_TEST_CASE(SAXPY_2)
+    BOOST_AUTO_TEST_CASE(SAXPY_5)
     {
         testSaxpy(LatticeExtents{ns8, nt4}, GaugeMomentumFilltype::Ascending, -nonTrivialParameter);
     }
