@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011,2013 Matthias Bach
  * Copyright (c) 2013 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -22,9 +22,10 @@
 // complex (!!!) scalarproduct, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
 /// NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
-__kernel void scalar_product_eoprec(__global const spinorStorageType* const x,
-                                    __global const spinorStorageType* const y, __global hmc_complex* const result,
-                                    __local hmc_complex* const result_local)
+__kernel void scalar_product_eoprec(__global const spinorStorageType* const restrict x,
+                                    __global const spinorStorageType* const restrict y,
+                                    __global hmc_complex* const restrict result,
+                                    __local hmc_complex* const restrict result_local)
 {
     int local_size  = get_local_size(0);
     int global_size = get_global_size(0);

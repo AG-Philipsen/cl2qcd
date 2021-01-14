@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012,2013 Christopher Pinke
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -26,8 +26,8 @@
  *  Rectangles = \sum_{sites} \sum_{mu \neq nu} local_rectangles (i, mu, nu)
  * NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
  */
-__kernel void
-rectangles(__global Matrixsu3StorageType* field, __global hmc_float* rect_out, __local hmc_float* rect_loc)
+__kernel void rectangles(__global Matrixsu3StorageType* restrict field, __global hmc_float* restrict rect_out,
+                         __local hmc_float* restrict rect_loc)
 {
     int id_local;
     int local_size  = get_local_size(0);
@@ -87,7 +87,8 @@ rectangles(__global Matrixsu3StorageType* field, __global hmc_float* rect_out, _
     return;
 }
 
-__kernel void rectangles_reduction(__global hmc_float* rect_buf, __global hmc_float* rect, const uint bufElems)
+__kernel void
+rectangles_reduction(__global hmc_float* restrict rect_buf, __global hmc_float* restrict rect, const uint bufElems)
 {
     int id = get_global_id(0);
     if (id == 0) {

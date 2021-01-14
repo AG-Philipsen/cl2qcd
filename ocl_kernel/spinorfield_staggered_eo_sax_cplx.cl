@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Christopher Pinke
  * Copyright (c) 2013 Matthias Bach
  *
@@ -25,9 +25,9 @@
 //  - aplha: The complex number by which x has to be multiplied
 //  - out: The output staggered field: alpha*x (site by site)
 
-__kernel void sax_cplx_staggered_eoprec(__global const staggeredStorageType* const x,
-                                        __global const hmc_complex* const alpha,
-                                        __global staggeredStorageType* const out)
+__kernel void sax_cplx_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                        __global const hmc_complex* const restrict alpha,
+                                        __global staggeredStorageType* const restrict out)
 {
     int id          = get_global_id(0);
     int global_size = get_global_size(0);
@@ -40,8 +40,9 @@ __kernel void sax_cplx_staggered_eoprec(__global const staggeredStorageType* con
     }
 }
 
-__kernel void sax_cplx_arg_staggered_eoprec(__global const staggeredStorageType* const x, const hmc_float alpha_re,
-                                            const hmc_float alpha_im, __global staggeredStorageType* const out)
+__kernel void sax_cplx_arg_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                            const hmc_float alpha_re, const hmc_float alpha_im,
+                                            __global staggeredStorageType* const restrict out)
 {
     const int id          = get_global_id(0);
     const int global_size = get_global_size(0);

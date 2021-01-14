@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -38,10 +38,10 @@
 //                  Observe that some components of result_local can include
 //                  the sum of squarenorms of several fields (if EOPREC_SPINORFIELDSIZE_LOCAL>global_size).
 
-__kernel void scalar_product_staggered_eoprec(__global const staggeredStorageType* const x,
-                                              __global const staggeredStorageType* const y,
-                                              __global hmc_complex* const result,
-                                              __local hmc_complex* const result_local)
+__kernel void scalar_product_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                              __global const staggeredStorageType* const restrict y,
+                                              __global hmc_complex* const restrict result,
+                                              __local hmc_complex* const restrict result_local)
 {
     int local_size  = get_local_size(0);
     int global_size = get_global_size(0);

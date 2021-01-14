@@ -3,7 +3,7 @@
  * Copyright (c) 2011 Christian Schäfer
  * Copyright (c) 2011 Lars Zeidlewicz
  * Copyright (c) 2012,2013 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -27,9 +27,10 @@
  *  Plaquette = \sum_{sites} \sum_{mu > nu} local_plaquette (i, mu, nu)
  * NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
  */
-__kernel void plaquette(__global Matrixsu3StorageType* field, __global hmc_float* plaq_out,
-                        __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float* plaq_loc,
-                        __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
+__kernel void plaquette(__global Matrixsu3StorageType* restrict field, __global hmc_float* restrict plaq_out,
+                        __global hmc_float* restrict tplaq_out, __global hmc_float* restrict splaq_out,
+                        __local hmc_float* restrict plaq_loc, __local hmc_float* restrict tplaq_loc,
+                        __local hmc_float* restrict splaq_loc)
 {
     int id_local;
     int local_size  = get_local_size(0);
@@ -109,9 +110,10 @@ __kernel void plaquette(__global Matrixsu3StorageType* field, __global hmc_float
     return;
 }
 
-__kernel void plaquette_reduction(__global hmc_float* plaq_buf, __global hmc_float* tplaq_buf,
-                                  __global hmc_float* splaq_buf, __global hmc_float* plaq, __global hmc_float* tplaq,
-                                  __global hmc_float* splaq, const uint bufElems)
+__kernel void plaquette_reduction(__global hmc_float* restrict plaq_buf, __global hmc_float* restrict tplaq_buf,
+                                  __global hmc_float* restrict splaq_buf, __global hmc_float* restrict plaq,
+                                  __global hmc_float* restrict tplaq, __global hmc_float* restrict splaq,
+                                  const uint bufElems)
 {
     int id = get_global_id(0);
     if (id == 0) {

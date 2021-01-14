@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -26,8 +26,9 @@
  *  @param alpha The REAL number which x has to be multiplied by
  *  @param out The output gaugemomentum field: alpha*x+y (site by site)
  */
-__kernel void gaugemomentum_saxpy(__global const aeStorageType* const x, __global const aeStorageType* const y,
-                                  __global const hmc_float* const alpha, __global aeStorageType* const out)
+__kernel void
+gaugemomentum_saxpy(__global const aeStorageType* const restrict x, __global const aeStorageType* const restrict y,
+                    __global const hmc_float* const restrict alpha, __global aeStorageType* const restrict out)
 {
     int id          = get_global_id(0);
     int global_size = get_global_size(0);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,7 +21,7 @@
  * Device code implementing real numbers algebra functionalities
  */
 
-__kernel void real_sum(__global hmc_float* a, __global hmc_float* b, __global hmc_float* out)
+__kernel void real_sum(__global hmc_float* restrict a, __global hmc_float* restrict b, __global hmc_float* restrict out)
 {
     if (get_global_id(0) == 0)
         (*out) = (*a) + (*b);

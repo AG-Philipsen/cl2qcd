@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,8 +21,9 @@
  * Device code implementing real numbers algebra functionalities
  */
 
-__kernel void update_beta_cgm(__global const hmc_float* sbeta_pres, __global const hmc_float* zeta_pres,
-                              __global const hmc_float* zeta_prev, const int numeq, __global hmc_float* out)
+__kernel void
+update_beta_cgm(__global const hmc_float* restrict sbeta_pres, __global const hmc_float* restrict zeta_pres,
+                __global const hmc_float* restrict zeta_prev, const int numeq, __global hmc_float* restrict out)
 {
     int global_size = get_global_size(0);
     int id          = get_global_id(0);

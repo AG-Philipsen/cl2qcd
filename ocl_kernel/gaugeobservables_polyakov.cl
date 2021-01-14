@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2013 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -24,7 +24,8 @@
  * NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
  */
 
-__kernel void polyakov_reduction(__global hmc_complex* poly_buf, __global hmc_complex* poly, const uint bufElems)
+__kernel void
+polyakov_reduction(__global hmc_complex* restrict poly_buf, __global hmc_complex* restrict poly, const uint bufElems)
 {
     int id = get_global_id(0);
     if (id == 0) {
@@ -45,7 +46,8 @@ __kernel void polyakov_reduction(__global hmc_complex* poly_buf, __global hmc_co
  *
  * This method cannot be used in multi-device mode. In that case an alternative approach is required.
  */
-__kernel void polyakov(__global Matrixsu3StorageType* field, __global hmc_complex* out, __local hmc_complex* out_loc)
+__kernel void polyakov(__global Matrixsu3StorageType* restrict field, __global hmc_complex* restrict out,
+                       __local hmc_complex* restrict out_loc)
 {
     int id;
     int local_size  = get_local_size(0);
@@ -110,7 +112,7 @@ __kernel void polyakov(__global Matrixsu3StorageType* field, __global hmc_comple
  * Perform the local part of the polyakov calculation.
  */
 __kernel void
-polyakov_md_local(__global Matrixsu3* local_res_buf, __global const Matrixsu3StorageType* const restrict field)
+polyakov_md_local(__global Matrixsu3* restrict local_res_buf, __global const Matrixsu3StorageType* const restrict field)
 {
     PARALLEL_FOR (id, VOLSPACE) {
         local_res_buf[id] = local_polyakov(field, id);
@@ -122,7 +124,7 @@ polyakov_md_local(__global Matrixsu3* local_res_buf, __global const Matrixsu3Sto
  */
 __kernel void polyakov_md_merge(__global hmc_complex* const restrict out,
                                 __global const Matrixsu3* const restrict local_res_bufs, const unsigned num_slices,
-                                __local hmc_complex* out_loc)
+                                __local hmc_complex* restrict out_loc)
 {
     const size_t local_size = get_local_size(0);
     const size_t idx        = get_local_id(0);

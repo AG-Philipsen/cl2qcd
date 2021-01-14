@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christian Schäfer
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -29,8 +29,8 @@
 #    error these kernels don't support multi-gpu
 #endif
 
-__kernel void
-kappa_karsch_gpu(__global Matrixsu3StorageType* gaugefield, const hmc_float beta, __global hmc_float* kappa_karsch_val)
+__kernel void kappa_karsch_gpu(__global Matrixsu3StorageType* restrict gaugefield, const hmc_float beta,
+                               __global hmc_float* restrict kappa_karsch_val)
 {
     // Compute diagonal spatial components of the energy-momentum-tensor
     hmc_float tdiag_11[VOL4D_GLOBAL];
@@ -113,8 +113,8 @@ kappa_karsch_gpu(__global Matrixsu3StorageType* gaugefield, const hmc_float beta
     *kappa_karsch_val = norm * result;
 }
 
-__kernel void
-kappa_clover_gpu(__global Matrixsu3StorageType* gaugefield, const hmc_float beta, __global hmc_float* kappa_clover_val)
+__kernel void kappa_clover_gpu(__global Matrixsu3StorageType* restrict gaugefield, const hmc_float beta,
+                               __global hmc_float* restrict kappa_clover_val)
 {
     // Energy-momentum-tensor in clover-discretization
     hmc_float t_12[VOL4D_GLOBAL];

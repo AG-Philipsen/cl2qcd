@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011,2013 Matthias Bach
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -18,7 +18,8 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-__kernel void complex_ratio(__global hmc_complex* a, __global hmc_complex* b, __global hmc_complex* out)
+__kernel void
+complex_ratio(__global hmc_complex* restrict a, __global hmc_complex* restrict b, __global hmc_complex* restrict out)
 {
     //!!CP: complexdivide cannot handle __global
     if (get_global_id(0) == 0) {
