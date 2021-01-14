@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(scalar_product)
     const hmc_complex gaussian_scalar_prod = physics::lattices::scalar_product(gaussian, gaussian);
     const hmc_float gaussian_squarenorm    = physics::lattices::squarenorm(gaussian);
     BOOST_CHECK_CLOSE(gaussian_scalar_prod.re, gaussian_squarenorm, .1);
-    BOOST_CHECK_CLOSE(gaussian_scalar_prod.im, 0., .1);
+    BOOST_CHECK_SMALL(gaussian_scalar_prod.im, 1.e-8);
     const hmc_complex gaussian_scalar_cold = physics::lattices::scalar_product(gaussian, cold);
     const hmc_complex cold_scalar_gaussian = physics::lattices::scalar_product(cold, gaussian);
     BOOST_CHECK_CLOSE(std::abs(gaussian_scalar_cold.re), std::abs(cold_scalar_gaussian.re), .1);
