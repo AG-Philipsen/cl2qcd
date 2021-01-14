@@ -225,20 +225,20 @@ BOOST_AUTO_TEST_SUITE(PLAQUETTE)
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_TEMPORAL_2)
     {
-        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{LatticeExtents{ns4, nt4}},
-                      GaugefieldFillType::nonTrivial, TypeOfPlaquette::temporalPlaquette);
+        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial,
+                      TypeOfPlaquette::temporalPlaquette);
     }
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_SPATIAL_1)
     {
-        testPlaquette(ReferenceValues{768.}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold,
+        testPlaquette(ReferenceValues{768.}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold,
                       TypeOfPlaquette::temporalPlaquette);
     }
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_SPATIAL_2)
     {
-        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{LatticeExtents{ns4, nt4}},
-                      GaugefieldFillType::nonTrivial, TypeOfPlaquette::spatialPlaquette);
+        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial,
+                      TypeOfPlaquette::spatialPlaquette);
     }
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_REDUCTION_1)
@@ -265,12 +265,12 @@ BOOST_AUTO_TEST_SUITE(POLYAKOV)
 
     BOOST_AUTO_TEST_CASE(POLYAKOV_1)
     {
-        testPolyakov(ReferenceValues{64., 0.}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold);
+        testPolyakov(ReferenceValues{64., 0.}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
     }
 
     BOOST_AUTO_TEST_CASE(POLYAKOV_2)
     {
-        testPolyakov(ReferenceValues{-17.1117721375, -31.0747993518}, LatticeExtents{LatticeExtents{ns4, nt4}},
+        testPolyakov(ReferenceValues{-17.1117721375, -31.0747993518}, LatticeExtents{ns4, nt4},
                      GaugefieldFillType::nonTrivial);
     }
 
@@ -309,35 +309,31 @@ BOOST_AUTO_TEST_SUITE(STOUT_SMEAR)
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_1)
     {
-        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial,
-                       0.001);
+        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, 0.001);
     }
 
     BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(STOUT_SMEAR_2, 1)
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_2)
     {
-        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial,
-                       0.);
+        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, 0.);
     }
 
     BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(STOUT_SMEAR_3, 1)
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_3)
     {
-        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial,
-                       0.001538);
+        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, 0.001538);
     }
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_4)
     {
-        testStoutSmear(ReferenceValues{1536}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold, 0.);
+        testStoutSmear(ReferenceValues{1536}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, 0.);
     }
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_5)
     {
-        testStoutSmear(ReferenceValues{1536}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold,
-                       0.001);
+        testStoutSmear(ReferenceValues{1536}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, 0.001);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
