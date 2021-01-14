@@ -200,6 +200,7 @@ void hardware::System::initOpenCLDevices()
     }
 
     LatticeGrid lG(device_infos.size(), LatticeExtents(hardwareParameters->getNs(), hardwareParameters->getNt()));
+    logger.info() << "Device selection done. Using " << device_infos.size() << " device(s).";
     logger.info() << "Device grid layout: " << lG;
 
     devices = init_devices(device_infos, context, lG, *hardwareParameters, *kernelBuilder);
