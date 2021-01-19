@@ -25,7 +25,7 @@
 
 // local twisted-mass Diagonalmatrix:
 //    (1+i*mubar*gamma_5)psi = (1, mubar)psi.0,1 (1,-mubar)psi.2,3
-inline spinor M_diag_tm_local(spinor in, hmc_complex factor1, hmc_complex factor2)
+static inline spinor M_diag_tm_local(spinor in, hmc_complex factor1, hmc_complex factor2)
 {
     spinor tmp;
     tmp.e0 = su3vec_times_complex(in.e0, factor1);
@@ -38,7 +38,7 @@ inline spinor M_diag_tm_local(spinor in, hmc_complex factor1, hmc_complex factor
 /** @todo this can be optimized... */
 // local gamma5:
 //    (gamma_5)psi = (1)psi.0,1 (-1)psi.2,3
-inline spinor gamma5_local(spinor in)
+static inline spinor gamma5_local(spinor in)
 {
     spinor tmp;
     tmp.e0 = in.e0;

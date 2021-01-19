@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -24,7 +24,7 @@
  */
 
 // TODO document
-inline spinor getSpinor_eo(__global const spinorStorageType* const restrict in, const uint idx)
+static inline spinor getSpinor_eo(__global const spinorStorageType* const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
     return (spinor){{// su3vec = 3 * cplx
@@ -45,7 +45,7 @@ inline spinor getSpinor_eo(__global const spinorStorageType* const restrict in, 
 }
 
 // TODO document
-inline void putSpinor_eo(__global spinorStorageType* const restrict out, const uint idx, const spinor val)
+static inline void putSpinor_eo(__global spinorStorageType* const restrict out, const uint idx, const spinor val)
 {
 #ifdef _USE_SOA_
     // su3vec = 3 * cplx

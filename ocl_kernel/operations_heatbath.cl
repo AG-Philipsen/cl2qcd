@@ -26,7 +26,7 @@
 
 // operations_heatbath.cl
 
-inline Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state* const restrict rnd)
+static inline Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state* const restrict rnd)
 {
     Matrixsu2_pauli out;
 
@@ -61,8 +61,8 @@ inline Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state* const restri
     return out;
 }
 
-inline void perform_heatbath(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
-                             prng_state* const restrict rnd, const int pos, const int t)
+static inline void perform_heatbath(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
+                                    prng_state* const restrict rnd, const int pos, const int t)
 {
     Matrix3x3 staplematrix;
 
@@ -147,8 +147,8 @@ inline void perform_heatbath(__global Matrixsu3StorageType* const restrict gauge
     put_matrixsu3(gaugefield, U, pos, t, mu);
 }
 
-inline void perform_overrelaxing(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
-                                 prng_state* const restrict rnd, const int pos, const int t)
+static inline void perform_overrelaxing(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
+                                        prng_state* const restrict rnd, const int pos, const int t)
 {
     Matrix3x3 staplematrix;
 #ifdef _ANISO_

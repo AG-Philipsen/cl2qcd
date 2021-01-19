@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011,2012 Christopher Pinke
  * Copyright (c) 2011-2013 Matthias Bach
- * Copyright (c) 2013,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -71,8 +71,9 @@
  *
  */
 
-inline void gauge_force_per_link(__global const Matrixsu3StorageType* const restrict field,
-                                 __global aeStorageType* const restrict out, const st_index pos, const dir_idx dir)
+static inline void gauge_force_per_link(__global const Matrixsu3StorageType* const restrict field,
+                                        __global aeStorageType* const restrict out, const st_index pos,
+                                        const dir_idx dir)
 {
     Matrix3x3 V = calc_staple(field, pos.space, pos.time, dir);
     Matrixsu3 U = get_matrixsu3(field, pos.space, pos.time, dir);
@@ -100,7 +101,7 @@ gauge_force(__global const Matrixsu3StorageType* const restrict field, __global 
         const int pos_local = id_local % VOL4D_LOCAL;
         const int dir       = id_local / VOL4D_LOCAL;
         const st_index pos  = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                             : get_odd_st_idx_local(pos_local);
 
         gauge_force_per_link(field, out, pos, dir);
     }

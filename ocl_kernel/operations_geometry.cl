@@ -155,11 +155,11 @@ coord_spatial get_coord_spatial(const spatial_idx nspace)
  * <=>t = site_idx / VOLSPACE
  * site_idx_spatial = site_idx%VOLSPACE
  */
-inline site_idx get_site_idx(const st_idx in)
+static inline site_idx get_site_idx(const st_idx in)
 {
     return in.space + VOLSPACE * in.time;
 }
-inline st_idx get_st_idx_from_site_idx(const site_idx in)
+static inline st_idx get_st_idx_from_site_idx(const site_idx in)
 {
     st_idx tmp;
     tmp.space = in % VOLSPACE;
@@ -189,7 +189,7 @@ st_idx get_even_st_idx_local(const site_idx idx)
  *using the convention:
  *link_idx = mu + NDIM * site_idx
  */
-inline link_idx get_link_idx_SOA(const dir_idx mu, const st_idx in)
+static inline link_idx get_link_idx_SOA(const dir_idx mu, const st_idx in)
 {
     const uint3 space = get_coord_spatial(in.space);
     // check if the site is odd (either spacepos or t odd)
@@ -197,11 +197,11 @@ inline link_idx get_link_idx_SOA(const dir_idx mu, const st_idx in)
     site_idx odd = (space.x ^ space.y ^ space.z ^ in.time) & 0x1 ? (VOL4D_MEM / 2) : 0;
     return mu * VOL4D_MEM + odd + get_eo_site_idx_from_st_idx(in);
 }
-inline link_idx get_link_idx_AOS(const dir_idx mu, const st_idx in)
+static inline link_idx get_link_idx_AOS(const dir_idx mu, const st_idx in)
 {
     return mu + NDIM * get_site_idx(in);
 }
-inline link_idx get_link_idx(const dir_idx mu, const st_idx in)
+static inline link_idx get_link_idx(const dir_idx mu, const st_idx in)
 {
 #ifdef _USE_SOA_
     return get_link_idx_SOA(mu, in);
@@ -210,7 +210,7 @@ inline link_idx get_link_idx(const dir_idx mu, const st_idx in)
 #endif
 }
 
-inline dir_idx get_dir_idx_from_link_idx(const link_idx in)
+static inline dir_idx get_dir_idx_from_link_idx(const link_idx in)
 {
 #ifdef _USE_SOA_
     return in / NDIM;
@@ -493,13 +493,13 @@ uint spinor_element(uint alpha, uint color)
 // CP: I simply directed them back to the newer functions
 //////////////////////////////////////////////////////////////////
 
-inline int get_pos(int spacepos, int t)
+static inline int get_pos(int spacepos, int t)
 {
     st_idx tmp = {spacepos, t};
     return get_site_idx(tmp);
 }
 
-inline int get_link_pos(int mu, int spacepos, int t)
+static inline int get_link_pos(int mu, int spacepos, int t)
 {
     st_idx tmp = {spacepos, t};
     return get_link_idx(mu, tmp);
@@ -512,37 +512,37 @@ inline int get_link_pos(int mu, int spacepos, int t)
  */
 typedef st_idx st_index;
 
-inline st_index get_even_site(const size_t idx)
+static inline st_index get_even_site(const size_t idx)
 {
     return get_even_st_idx(idx);
 }
 
-inline st_index get_odd_site(const size_t idx)
+static inline st_index get_odd_site(const size_t idx)
 {
     return get_odd_st_idx(idx);
 }
 
-inline size_t get_nspace(const uint3 coord)
+static inline size_t get_nspace(const uint3 coord)
 {
     return (size_t)get_spatial_idx(coord);
 }
 
-inline uint3 get_allspacecoord(const size_t nspace)
+static inline uint3 get_allspacecoord(const size_t nspace)
 {
     return get_coord_spatial(nspace);
 }
 
-inline size_t get_neighbor(const size_t nspace, const uint dir)
+static inline size_t get_neighbor(const size_t nspace, const uint dir)
 {
     return get_neighbor_spatial(nspace, dir);
 }
 
-inline size_t get_lower_neighbor(const size_t nspace, const uint dir)
+static inline size_t get_lower_neighbor(const size_t nspace, const uint dir)
 {
     return get_lower_neighbor_spatial(nspace, dir);
 }
 
-inline int get_n_eoprec(int spacepos, int timepos)
+static inline int get_n_eoprec(int spacepos, int timepos)
 {
     st_idx tmp = {spacepos, timepos};
     return get_eo_site_idx_from_st_idx(tmp);

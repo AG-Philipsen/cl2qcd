@@ -203,7 +203,7 @@ int3 prng_123(prng_state* const restrict state)
 /**
  * Get a normal distributed complex number
  */
-inline hmc_complex gaussianNormalPair(prng_state* const restrict rnd)
+static inline hmc_complex gaussianNormalPair(prng_state* const restrict rnd)
 {
 #ifdef USE_PRNG_RANLUX
     // TODO update to current ranluxcl!
@@ -237,7 +237,7 @@ inline hmc_complex gaussianNormalPair(prng_state* const restrict rnd)
  * Get a Z(4) distributed complex random number
  * Meaning it has entries +-1 in real and imaginary part
  */
-inline hmc_complex Z4_complex_number(prng_state* const restrict rnd)
+static inline hmc_complex Z4_complex_number(prng_state* const restrict rnd)
 {
     hmc_float norm = 1. / sqrt(2.);
 #ifdef USE_PRNG_RANLUX
@@ -267,7 +267,7 @@ inline hmc_complex Z4_complex_number(prng_state* const restrict rnd)
  * Get a Z(2) distributed complex random number
  * Meaning it has entries +-1 ONLY in real part (immaginary part set to 0)
  */
-inline hmc_complex Z2_complex_number(prng_state* const restrict rnd)
+static inline hmc_complex Z2_complex_number(prng_state* const restrict rnd)
 {
 #ifdef USE_PRNG_RANLUX
     // TODO update to current ranluxcl!

@@ -2,7 +2,7 @@
  * Copyright (c) 2011,2012 Christopher Pinke
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christian Schäfer
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -27,7 +27,7 @@
 // operations_gaugefield.cl
 
 // TODO document
-inline Matrixsu3 getSU3(__global const Matrixsu3StorageType* const restrict in, const uint idx)
+static inline Matrixsu3 getSU3(__global const Matrixsu3StorageType* const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
 #    ifdef _USE_REC12_
@@ -44,20 +44,20 @@ inline Matrixsu3 getSU3(__global const Matrixsu3StorageType* const restrict in, 
                                        complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[5 * GAUGEFIELD_STRIDE + idx])),
                        complexsubtract(complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[4 * GAUGEFIELD_STRIDE + idx]),
                                        complexmult(in[1 * GAUGEFIELD_STRIDE + idx], in[3 * GAUGEFIELD_STRIDE + idx]))};
-#    else   // _USE_REC12_
+#    else  // _USE_REC12_
     return (
         Matrixsu3){in[0 * GAUGEFIELD_STRIDE + idx], in[1 * GAUGEFIELD_STRIDE + idx], in[2 * GAUGEFIELD_STRIDE + idx],
                    in[3 * GAUGEFIELD_STRIDE + idx], in[4 * GAUGEFIELD_STRIDE + idx], in[5 * GAUGEFIELD_STRIDE + idx],
                    in[6 * GAUGEFIELD_STRIDE + idx], in[7 * GAUGEFIELD_STRIDE + idx], in[8 * GAUGEFIELD_STRIDE + idx]};
 #    endif  // _USE_REC12_
-#else       // _USE_SOA_
+#else  // _USE_SOA_
     // printf("%i\n", idx);
     return in[idx];
 #endif
 }
 
 // TODO document
-inline void putSU3(__global Matrixsu3StorageType* const restrict out, const uint idx, const Matrixsu3 val)
+static inline void putSU3(__global Matrixsu3StorageType* const restrict out, const uint idx, const Matrixsu3 val)
 {
 #ifdef _USE_SOA_
     out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;
@@ -74,21 +74,21 @@ inline void putSU3(__global Matrixsu3StorageType* const restrict out, const uint
 #endif
 }
 
-inline Matrixsu3 get_matrixsu3(__global const Matrixsu3StorageType* const restrict field, const int spacepos,
-                               const int timepos, const int mu)
+static inline Matrixsu3 get_matrixsu3(__global const Matrixsu3StorageType* const restrict field, const int spacepos,
+                                      const int timepos, const int mu)
 {
     uint idx = get_link_pos(mu, spacepos, timepos);
     return getSU3(field, idx);
 }
 
-inline void put_matrixsu3(__global Matrixsu3StorageType* const restrict field, const Matrixsu3 in, const int spacepos,
-                          const int timepos, const int mu)
+static inline void put_matrixsu3(__global Matrixsu3StorageType* const restrict field, const Matrixsu3 in,
+                                 const int spacepos, const int timepos, const int mu)
 {
     uint idx = get_link_pos(mu, spacepos, timepos);
     putSU3(field, idx, in);
 }
 
-inline Matrix3x3 get3x3(__global const Matrix3x3StorageType* const restrict in, const uint idx)
+static inline Matrix3x3 get3x3(__global const Matrix3x3StorageType* const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
     return (Matrix3x3){in[0 * GAUGEFIELD_3X3_STRIDE + idx], in[1 * GAUGEFIELD_3X3_STRIDE + idx],
@@ -102,7 +102,7 @@ inline Matrix3x3 get3x3(__global const Matrix3x3StorageType* const restrict in, 
 #endif
 }
 
-inline void put3x3(__global Matrix3x3StorageType* const restrict out, const uint idx, const Matrix3x3 val)
+static inline void put3x3(__global Matrix3x3StorageType* const restrict out, const uint idx, const Matrix3x3 val)
 {
 #ifdef _USE_SOA_
     out[0 * GAUGEFIELD_3X3_STRIDE + idx] = val.e00;
@@ -119,20 +119,20 @@ inline void put3x3(__global Matrix3x3StorageType* const restrict out, const uint
 #endif
 }
 
-inline Matrix3x3 get_matrix3x3(__global const Matrix3x3StorageType* const restrict field, const int spacepos,
-                               const int timepos, const int mu)
+static inline Matrix3x3 get_matrix3x3(__global const Matrix3x3StorageType* const restrict field, const int spacepos,
+                                      const int timepos, const int mu)
 {
     uint idx = get_link_pos(mu, spacepos, timepos);
     return get3x3(field, idx);
 }
 
-inline void put_matrix3x3(__global Matrix3x3StorageType* const restrict field, const Matrix3x3 in, const int spacepos,
-                          const int timepos, const int mu)
+static inline void put_matrix3x3(__global Matrix3x3StorageType* const restrict field, const Matrix3x3 in,
+                                 const int spacepos, const int timepos, const int mu)
 {
     uint idx = get_link_pos(mu, spacepos, timepos);
     put3x3(field, idx, in);
 }
-inline Matrixsu3 project_su3(const Matrixsu3 U)
+static inline Matrixsu3 project_su3(const Matrixsu3 U)
 {
     Matrixsu3 out;
 
@@ -243,7 +243,7 @@ inline Matrixsu3 project_su3(const Matrixsu3 U)
     return out;
 }
 
-inline Matrixsu2 reduction(const Matrix3x3 src, const int rand)
+static inline Matrixsu2 reduction(const Matrix3x3 src, const int rand)
 {
     Matrixsu2 out;
     if (rand == 1) {
@@ -265,7 +265,7 @@ inline Matrixsu2 reduction(const Matrix3x3 src, const int rand)
     return out;
 }
 
-inline Matrixsu3 extend(const int random, Matrixsu2 src)
+static inline Matrixsu3 extend(const int random, Matrixsu2 src)
 {
 // Yes, it is poor madness having two different variants for CPU and GPU at this place.
 // However, on Catalyst 12.3 the default value of the switch statement messes up the GPU
@@ -313,7 +313,7 @@ inline Matrixsu3 extend(const int random, Matrixsu2 src)
                            {nan((uint)0), nan((uint)0)}, {nan((uint)0), nan((uint)0)}, {nan((uint)0), nan((uint)0)},
                            {nan((uint)0), nan((uint)0)}, {nan((uint)0), nan((uint)0)}, {nan((uint)0), nan((uint)0)}};
     }
-#else   // _USEGPU_
+#else  // _USEGPU_
     Matrixsu3 out;
 
     switch (random) {
@@ -359,7 +359,7 @@ inline Matrixsu3 extend(const int random, Matrixsu2 src)
 }
 
 // calculate polyakov-loop matrix at spatial site n in time-direction
-inline Matrixsu3 local_polyakov(__global const Matrixsu3StorageType* const restrict field, const int n)
+static inline Matrixsu3 local_polyakov(__global const Matrixsu3StorageType* const restrict field, const int n)
 {
     Matrixsu3 out;
     out = unit_matrixsu3();
@@ -372,8 +372,8 @@ inline Matrixsu3 local_polyakov(__global const Matrixsu3StorageType* const restr
 }
 
 // calculate plaquette-matrix at site n,t in direction mu and nu
-inline Matrixsu3 local_plaquette(__global const Matrixsu3StorageType* const restrict field, const int n, const int t,
-                                 const int mu, const int nu)
+static inline Matrixsu3 local_plaquette(__global const Matrixsu3StorageType* const restrict field, const int n,
+                                        const int t, const int mu, const int nu)
 {
     Matrixsu3 out;
     int4 pos;
@@ -401,8 +401,8 @@ inline Matrixsu3 local_plaquette(__global const Matrixsu3StorageType* const rest
 // calculate rectangle-matrix at site i = (n,t) in direction mu and nu
 //    The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger *
 // U_nu(i)dagger
-inline Matrixsu3 local_rectangles(__global const Matrixsu3StorageType* const restrict field, const int n, const int t,
-                                  const int mu, const int nu)
+static inline Matrixsu3 local_rectangles(__global const Matrixsu3StorageType* const restrict field, const int n,
+                                         const int t, const int mu, const int nu)
 {
     Matrixsu3 out;
     int4 pos;
@@ -449,8 +449,8 @@ inline Matrixsu3 local_rectangles(__global const Matrixsu3StorageType* const res
     return out;
 }
 
-inline Matrix3x3 local_Q_plaquette(__global const Matrixsu3StorageType* const restrict field, const int n, const int t,
-                                   const int mu, const int nu)
+static inline Matrix3x3 local_Q_plaquette(__global const Matrixsu3StorageType* const restrict field, const int n,
+                                          const int t, const int mu, const int nu)
 {
     // the Q-plaquette is a sum over four normal plaquettes
     Matrix3x3 qplaq = zero_matrix3x3();
@@ -494,8 +494,9 @@ inline Matrix3x3 local_Q_plaquette(__global const Matrixsu3StorageType* const re
 // this calculates the staple in nu direction given a direction mu of the link
 //     under consideration:
 //     s = U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_nu(x) + Udagger_nu(x+mu - nu) * Udagger_mu(x-nu) * U_nu(x - nu)
-inline void local_staple(Matrix3x3* const restrict aggregate, __global const Matrixsu3StorageType* const restrict field,
-                         const int n, const int t, const int mu, const int nu)
+static inline void local_staple(Matrix3x3* const restrict aggregate,
+                                __global const Matrixsu3StorageType* const restrict field, const int n, const int t,
+                                const int mu, const int nu)
 {
     int4 pos;
 
@@ -564,8 +565,8 @@ inline void local_staple(Matrix3x3* const restrict aggregate, __global const Mat
  *  6.  U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
  *  ^+  U_mu(x + mu)  U_nu(x + mu + mu) Udagger_mu(x + nu + mu) Udagger_mu(x + nu) Udagger_nu(x)
  */
-inline Matrix3x3 local_rectangles_staple_1(__global const Matrixsu3StorageType* const restrict field, const int n,
-                                           const int t, const int mu, const int nu)
+static inline Matrix3x3 local_rectangles_staple_1(__global const Matrixsu3StorageType* const restrict field,
+                                                  const int n, const int t, const int mu, const int nu)
 {
     int4 pos;
     int4 pos2;
@@ -615,8 +616,8 @@ inline Matrix3x3 local_rectangles_staple_1(__global const Matrixsu3StorageType* 
     return matrix_su3to3x3(tmp);
 }
 
-inline Matrix3x3 local_rectangles_staple_2(__global const Matrixsu3StorageType* const restrict field, const int n,
-                                           const int t, const int mu, const int nu)
+static inline Matrix3x3 local_rectangles_staple_2(__global const Matrixsu3StorageType* const restrict field,
+                                                  const int n, const int t, const int mu, const int nu)
 {
     int4 pos;
     int4 pos2;
@@ -666,8 +667,8 @@ inline Matrix3x3 local_rectangles_staple_2(__global const Matrixsu3StorageType* 
     return matrix_su3to3x3(tmp);
 }
 
-inline Matrix3x3 local_rectangles_staple_3(__global const Matrixsu3StorageType* const restrict field, const int n,
-                                           const int t, const int mu, const int nu)
+static inline Matrix3x3 local_rectangles_staple_3(__global const Matrixsu3StorageType* const restrict field,
+                                                  const int n, const int t, const int mu, const int nu)
 {
     int4 pos;
     int4 pos2;
@@ -716,8 +717,8 @@ inline Matrix3x3 local_rectangles_staple_3(__global const Matrixsu3StorageType* 
     return matrix_su3to3x3(tmp);
 }
 
-inline Matrix3x3 local_rectangles_staple_4(__global const Matrixsu3StorageType* const restrict field, const int n,
-                                           const int t, const int mu, const int nu)
+static inline Matrix3x3 local_rectangles_staple_4(__global const Matrixsu3StorageType* const restrict field,
+                                                  const int n, const int t, const int mu, const int nu)
 {
     int4 pos;
     int4 pos2;
@@ -766,8 +767,8 @@ inline Matrix3x3 local_rectangles_staple_4(__global const Matrixsu3StorageType* 
     return matrix_su3to3x3(tmp);
 }
 
-inline Matrix3x3 local_rectangles_staple_5(__global const Matrixsu3StorageType* const restrict field, const int n,
-                                           const int t, const int mu, const int nu)
+static inline Matrix3x3 local_rectangles_staple_5(__global const Matrixsu3StorageType* const restrict field,
+                                                  const int n, const int t, const int mu, const int nu)
 {
     int4 pos;
     int4 pos2;
@@ -815,8 +816,8 @@ inline Matrix3x3 local_rectangles_staple_5(__global const Matrixsu3StorageType* 
     return matrix_su3to3x3(tmp);
 }
 
-inline Matrix3x3 local_rectangles_staple_6(__global const Matrixsu3StorageType* const restrict field, const int n,
-                                           const int t, const int mu, const int nu)
+static inline Matrix3x3 local_rectangles_staple_6(__global const Matrixsu3StorageType* const restrict field,
+                                                  const int n, const int t, const int mu, const int nu)
 {
     int4 pos;
     int4 pos2;
@@ -864,7 +865,7 @@ inline Matrix3x3 local_rectangles_staple_6(__global const Matrixsu3StorageType* 
     return matrix_su3to3x3(tmp);
 }
 
-inline Matrix3x3
+static inline Matrix3x3
 calc_staple(__global const Matrixsu3StorageType* const restrict field, const int pos, const int t, const int mu_in)
 {
     Matrix3x3 staple = zero_matrix3x3();
@@ -880,8 +881,8 @@ calc_staple(__global const Matrixsu3StorageType* const restrict field, const int
 }
 
 // this is the staple only in the spatial directions only
-inline Matrix3x3 calc_staple_sigma(__global const Matrixsu3StorageType* const restrict field, const int pos,
-                                   const int t, const int mu_in)
+static inline Matrix3x3 calc_staple_sigma(__global const Matrixsu3StorageType* const restrict field, const int pos,
+                                          const int t, const int mu_in)
 {
     Matrix3x3 staple = zero_matrix3x3();
     // iterate through the three directions other than mu
@@ -898,7 +899,7 @@ inline Matrix3x3 calc_staple_sigma(__global const Matrixsu3StorageType* const re
 }
 
 // this is the staple only in temporal direction only
-inline Matrix3x3
+static inline Matrix3x3
 calc_staple_tau(__global const Matrixsu3StorageType* const restrict field, const int pos, const int t, const int mu_in)
 {
     int nu           = 0;
@@ -908,8 +909,8 @@ calc_staple_tau(__global const Matrixsu3StorageType* const restrict field, const
 }
 
 // this is the rectangles staple
-inline Matrix3x3 calc_rectangles_staple(__global const Matrixsu3StorageType* const restrict field, const int pos,
-                                        const int t, const int mu_in)
+static inline Matrix3x3 calc_rectangles_staple(__global const Matrixsu3StorageType* const restrict field, const int pos,
+                                               const int t, const int mu_in)
 {
     Matrix3x3 staple = zero_matrix3x3();
     // iterate through the three directions other than mu

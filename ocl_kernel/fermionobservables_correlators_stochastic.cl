@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -52,7 +52,7 @@
  *      = Sum_{x,y,t,a,b,r} 1/R <| Phi^r(x)_(a) * ( Xi^r(y)_(b) )^dagger  |^2>
  */
 
-inline hmc_float complex_squarenorm(const hmc_complex a)
+static inline hmc_float complex_squarenorm(const hmc_complex a)
 {
     hmc_float res;
     res = a.re * a.re + a.im * a.im;
