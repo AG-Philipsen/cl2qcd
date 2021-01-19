@@ -2,7 +2,7 @@
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christian Schäfer
  * Copyright (c) 2011 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -61,7 +61,7 @@ inline Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state* const restri
     return out;
 }
 
-void inline perform_heatbath(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
+inline void perform_heatbath(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
                              prng_state* const restrict rnd, const int pos, const int t)
 {
     Matrix3x3 staplematrix;
@@ -147,7 +147,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType* const restrict gauge
     put_matrixsu3(gaugefield, U, pos, t, mu);
 }
 
-void inline perform_overrelaxing(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
+inline void perform_overrelaxing(__global Matrixsu3StorageType* const restrict gaugefield, const int mu,
                                  prng_state* const restrict rnd, const int pos, const int t)
 {
     Matrix3x3 staplematrix;

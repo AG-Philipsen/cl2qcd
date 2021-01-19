@@ -2,7 +2,7 @@
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christian Schäfer
  * Copyright (c) 2011 Christopher Pinke
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -155,11 +155,11 @@ coord_spatial get_coord_spatial(const spatial_idx nspace)
  * <=>t = site_idx / VOLSPACE
  * site_idx_spatial = site_idx%VOLSPACE
  */
-site_idx inline get_site_idx(const st_idx in)
+inline site_idx get_site_idx(const st_idx in)
 {
     return in.space + VOLSPACE * in.time;
 }
-st_idx inline get_st_idx_from_site_idx(const site_idx in)
+inline st_idx get_st_idx_from_site_idx(const site_idx in)
 {
     st_idx tmp;
     tmp.space = in % VOLSPACE;
@@ -189,7 +189,7 @@ st_idx get_even_st_idx_local(const site_idx idx)
  *using the convention:
  *link_idx = mu + NDIM * site_idx
  */
-link_idx inline get_link_idx_SOA(const dir_idx mu, const st_idx in)
+inline link_idx get_link_idx_SOA(const dir_idx mu, const st_idx in)
 {
     const uint3 space = get_coord_spatial(in.space);
     // check if the site is odd (either spacepos or t odd)
@@ -197,11 +197,11 @@ link_idx inline get_link_idx_SOA(const dir_idx mu, const st_idx in)
     site_idx odd = (space.x ^ space.y ^ space.z ^ in.time) & 0x1 ? (VOL4D_MEM / 2) : 0;
     return mu * VOL4D_MEM + odd + get_eo_site_idx_from_st_idx(in);
 }
-link_idx inline get_link_idx_AOS(const dir_idx mu, const st_idx in)
+inline link_idx get_link_idx_AOS(const dir_idx mu, const st_idx in)
 {
     return mu + NDIM * get_site_idx(in);
 }
-link_idx inline get_link_idx(const dir_idx mu, const st_idx in)
+inline link_idx get_link_idx(const dir_idx mu, const st_idx in)
 {
 #ifdef _USE_SOA_
     return get_link_idx_SOA(mu, in);
@@ -210,7 +210,7 @@ link_idx inline get_link_idx(const dir_idx mu, const st_idx in)
 #endif
 }
 
-dir_idx inline get_dir_idx_from_link_idx(const link_idx in)
+inline dir_idx get_dir_idx_from_link_idx(const link_idx in)
 {
 #ifdef _USE_SOA_
     return in / NDIM;
@@ -493,13 +493,13 @@ uint spinor_element(uint alpha, uint color)
 // CP: I simply directed them back to the newer functions
 //////////////////////////////////////////////////////////////////
 
-int inline get_pos(int spacepos, int t)
+inline int get_pos(int spacepos, int t)
 {
     st_idx tmp = {spacepos, t};
     return get_site_idx(tmp);
 }
 
-int inline get_link_pos(int mu, int spacepos, int t)
+inline int get_link_pos(int mu, int spacepos, int t)
 {
     st_idx tmp = {spacepos, t};
     return get_link_idx(mu, tmp);
@@ -512,37 +512,37 @@ int inline get_link_pos(int mu, int spacepos, int t)
  */
 typedef st_idx st_index;
 
-st_index inline get_even_site(const size_t idx)
+inline st_index get_even_site(const size_t idx)
 {
     return get_even_st_idx(idx);
 }
 
-st_index inline get_odd_site(const size_t idx)
+inline st_index get_odd_site(const size_t idx)
 {
     return get_odd_st_idx(idx);
 }
 
-size_t inline get_nspace(const uint3 coord)
+inline size_t get_nspace(const uint3 coord)
 {
     return (size_t)get_spatial_idx(coord);
 }
 
-uint3 inline get_allspacecoord(const size_t nspace)
+inline uint3 get_allspacecoord(const size_t nspace)
 {
     return get_coord_spatial(nspace);
 }
 
-size_t inline get_neighbor(const size_t nspace, const uint dir)
+inline size_t get_neighbor(const size_t nspace, const uint dir)
 {
     return get_neighbor_spatial(nspace, dir);
 }
 
-size_t inline get_lower_neighbor(const size_t nspace, const uint dir)
+inline size_t get_lower_neighbor(const size_t nspace, const uint dir)
 {
     return get_lower_neighbor_spatial(nspace, dir);
 }
 
-int inline get_n_eoprec(int spacepos, int timepos)
+inline int get_n_eoprec(int spacepos, int timepos)
 {
     st_idx tmp = {spacepos, timepos};
     return get_eo_site_idx_from_st_idx(tmp);

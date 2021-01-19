@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011,2012 Christopher Pinke
  * Copyright (c) 2011-2013 Matthias Bach
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -25,7 +25,7 @@
 
 // local twisted-mass Diagonalmatrix:
 //    (1+i*mubar*gamma_5)psi = (1, mubar)psi.0,1 (1,-mubar)psi.2,3
-spinor inline M_diag_tm_local(spinor in, hmc_complex factor1, hmc_complex factor2)
+inline spinor M_diag_tm_local(spinor in, hmc_complex factor1, hmc_complex factor2)
 {
     spinor tmp;
     tmp.e0 = su3vec_times_complex(in.e0, factor1);
@@ -38,7 +38,7 @@ spinor inline M_diag_tm_local(spinor in, hmc_complex factor1, hmc_complex factor
 /** @todo this can be optimized... */
 // local gamma5:
 //    (gamma_5)psi = (1)psi.0,1 (-1)psi.2,3
-spinor inline gamma5_local(spinor in)
+inline spinor gamma5_local(spinor in)
 {
     spinor tmp;
     tmp.e0 = in.e0;
@@ -62,7 +62,7 @@ spinor dslash_unified_local(__global const spinor* const restrict in,
     // this is used to save the BC-conditions...
     hmc_complex bc_tmp = (dir == TDIR) ? (hmc_complex){kappa_in * TEMPORAL_RE, kappa_in * TEMPORAL_IM}
                                        : (hmc_complex){kappa_in * SPATIAL_RE, kappa_in * SPATIAL_IM};
-    out_tmp = set_spinor_zero();
+    out_tmp            = set_spinor_zero();
 
     ///////////////////////////////////
     // mu = +dir
