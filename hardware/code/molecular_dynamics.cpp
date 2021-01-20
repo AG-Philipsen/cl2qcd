@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2014,2015 Christopher Pinke
  * Copyright (c) 2012-2014 Matthias Bach
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -556,7 +556,8 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
     else
         kappa_tmp = kappa;
 
-    if (logger.beDebug()) {
+    // todo: work over this! 'tExtent' should be something like "parallelized direction"
+    if (logger.beDebug() && get_device()->getGridSize().tExtent == 1) {
         Plain<hmc_float> tmp(1, get_device());
         auto spinor_code = get_device()->getSpinorCode();
         hmc_float resid;

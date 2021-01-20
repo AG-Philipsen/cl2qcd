@@ -49,8 +49,8 @@ void hardware::code::Gaugefield::fill_kernels()
         rectangles_reduction = createKernel("rectangles_reduction")
                                << basic_opencl_code << "gaugeobservables_rectangles.cl";
     }
-    if (get_device()->getGridSize().tExtent ==
-        1) {  // todo: work over this! should be something like "parallelized direction"
+    // todo: work over this! 'tExtent' should be something like "parallelized direction"
+    if (get_device()->getGridSize().tExtent == 1) {
         polyakov          = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
         polyakov_md_local = nullptr;
         polyakov_md_merge = nullptr;
