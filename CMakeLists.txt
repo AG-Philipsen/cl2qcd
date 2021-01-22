@@ -77,20 +77,31 @@ else()
     message(STATUS "Little endian architecture!")
 endif()
 
-# Make sure we can compile agains opencl
+# Make sure we can compile against OpenCL
 find_package( OpenCL REQUIRED )
-include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
+find_OpenCL_cpp_bindings()
+include_directories( SYSTEM ${OpenCL_INCLUDE_DIRS} )
 # Work around OpenCL implementations not shipping c++ bindings
-if( NOT OPENCL_HAS_CPP_BINDINGS )
+if( NOT OpenCL_HAS_CPP_BINDINGS )
     message(STATUS "No OpenCL CPP bindings found, using hack" )
     include_directories( SYSTEM hacks/cl_hpp )
-elseif( OPENCL_HAS_CPP_BINDINGS )
+elseif( OpenCL_HAS_CPP_BINDINGS )
     message (STATUS "OpenCL CPP bindings found" )
-endif( NOT OPENCL_HAS_CPP_BINDINGS )
-# Make OpenCL 1.2 target version -> in include/CL/cl_version.h macros for older deprecated features are
-# automatically defined depending on the CL_TARGET_OPENCL_VERSION macro value
-add_definitions(-DCL_TARGET_OPENCL_VERSION=120)
+endif( NOT OpenCL_HAS_CPP_BINDINGS )
+# Make OpenCL 1.2 target version -> in include/CL/cl_version.h macros for older deprecated
+# features are automatically defined depending on the CL_TARGET_OPENCL_VERSION macro value
+if(OpenCL_VERSION_STRING VERSION_LESS "1.2")
+    message(WARNING "Usage of CL2QCD with OpenCL prior to 1.2 is discouraged!")
+    if(OpenCL_VERSION_STRING VERSION_EQUAL "1.1")
+        add_definitions(-DCL_TARGET_OPENCL_VERSION=110)
+    elseif(OpenCL_VERSION_STRING VERSION_EQUAL "1.0")
+        add_definitions(-DCL_TARGET_OPENCL_VERSION=100)
+    endif()
+else(OpenCL_VERSION_STRING VERSION_LESS "1.2")
+    add_definitions(-DCL_TARGET_OPENCL_VERSION=120)
+endif(OpenCL_VERSION_STRING VERSION_LESS "1.2")
 
+# Look for other required dependencies
 find_package( LIME REQUIRED )
 include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
 
@@ -179,7 +190,7 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 
 
 set(OPTIMAL_USED_LIBS
-    ${OPENCL_LIBRARIES}
+    ${OpenCL_LIBRARIES}
 #${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
     ${MPFR_LIBRARIES}
     ${LIME_LIBRARIES}

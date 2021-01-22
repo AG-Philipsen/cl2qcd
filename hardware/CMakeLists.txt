@@ -43,7 +43,7 @@ add_modules(hardware
 add_subdirectory(lattices)
 set_property(GLOBAL APPEND PROPERTY DOC_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/lattices")
 target_link_libraries(hardware
-     ${OPENCL_LIBRARIES}
+     ${OpenCL_LIBRARIES}
      exceptions
      crypto
      geometry
@@ -63,4 +63,4 @@ add_unit_test(   ADD_ONLY   NAME hardware/system                COMMAND_LINE_OPT
 add_unit_test(              NAME hardware/device                LIBRARIES hardware crypto)
 add_unit_test(              NAME hardware/profiling_data        LIBRARIES hardware crypto)
 add_unit_test(              NAME hardware/synchronization_event LIBRARIES hardware crypto)
-add_unit_test(              NAME hardware/opencl_compiler       LIBRARIES crypto host_functionality ${OPENCL_LIBRARIES} SOURCE_FILES opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
+add_unit_test(              NAME hardware/opencl_compiler       LIBRARIES crypto host_functionality ${OpenCL_LIBRARIES} SOURCE_FILES opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)

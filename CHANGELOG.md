@@ -23,6 +23,7 @@ Refer also to the [TODO](TODO.md) file to get more information of the changes oc
 
 ## [Unreleased]
 
+ * :heavy_check_mark: The installation procedure and in particular the steps needed to locate OpenCL have been simplified.
  * :boom: Version `1.60` of Boost is now required, so that unit tests command line options are better handled (user needs to separate boost and user options via `--`).
  * :heavy_check_mark: The codebase has been revised on modern architectures and code has been improved following compiler warnings and hints.
 

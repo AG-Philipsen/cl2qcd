@@ -1,7 +1,7 @@
 # Utility functions for specifying the build of OpTiMaL
 #
 # Copyright (c) 2012,2013 Matthias Bach
-# Copyright (c) 2013,2015,2018 Alessandro Sciarra
+# Copyright (c) 2013,2015,2018,2021 Alessandro Sciarra
 # Copyright (c) 2014 Christopher Pinke
 #
 # This file is part of CL2QCD.
@@ -18,6 +18,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
+
+
+# Look for OpenCL cpp bindings in OpenCL_INCLUDE_DIRS and relatively to
+# libraries (in case the user uses AMD SDK which places its headers in
+# a non-standard way).
+function(find_OpenCL_cpp_bindings)
+    if(OpenCL_HAS_CPP_BINDINGS)
+        message(STATUS "Bindings already found, no further research")
+        return()
+    endif(OpenCL_HAS_CPP_BINDINGS)
+    get_filename_component(OpenCL_LIB_DIRECTORY ${OpenCL_LIBRARIES} PATH)
+    get_filename_component(OpenCL_CPP_BINDINGS_CANDIDATE ${OpenCL_LIB_DIRECTORY}/../../include ABSOLUTE)
+    find_path(OpenCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${OpenCL_INCLUDE_DIRS} ${OpenCL_CPP_BINDINGS_CANDIDATE})
+    if(OpenCL_CPP_INCLUDE_DIRS)
+        set(OpenCL_HAS_CPP_BINDINGS TRUE)
+        list(APPEND OpenCL_INCLUDE_DIRS ${OpenCL_CPP_INCLUDE_DIRS})
+        # This is often the same, so clean up
+        list(REMOVE_DUPLICATES OpenCL_INCLUDE_DIRS)
+    endif(OpenCL_CPP_INCLUDE_DIRS)
+    unset(OpenCL_CPP_INCLUDE_DIRS CACHE)
+endfunction()
 
 # Create a list of files just as you'd use set.
 # Will automatically replace all filenames by absolute ones
