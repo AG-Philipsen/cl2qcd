@@ -1,7 +1,7 @@
 # Build specifications for the contents of the algorithms package
 #
 # Copyright (c) 2012,2013 Matthias Bach
-# Copyright (c) 2013,2014,2018 Alessandro Sciarra
+# Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
 # Copyright (c) 2014 Christopher Pinke
 # Copyright (c) 2017 Francesca Cuteri
 #
@@ -36,7 +36,7 @@ add_library(algorithms
     solver_shifted.cpp
     rhmc.cpp
 )
-add_modules(algorithms
+add_modules(TO algorithms MODULES
     solvers
 )
 
@@ -45,7 +45,7 @@ target_link_libraries(algorithms
     fermionmatrix
     physics
     observables
-    optimal
+    ${MPFR_LIBRARIES}
 )
 
 #

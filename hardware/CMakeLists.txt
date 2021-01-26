@@ -33,7 +33,7 @@ add_library(hardwareTestUtilities
     hardwareTestUtilities.cpp
 )
 
-add_modules(hardware
+add_modules(TO hardware MODULES
     buffers
     code
     transfer

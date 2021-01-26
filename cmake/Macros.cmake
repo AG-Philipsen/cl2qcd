@@ -51,18 +51,40 @@ macro(set_abs_paths DEST)
     endforeach()
 endmacro()
 
-# Add adds one ore more modules to the library
-# The module must declare a library called MODULE in the
-# subdirectory called MODULE
-macro(add_modules DEST MODULE)
-    set(_MODULES "${ARGV}")
-    list(REMOVE_AT _MODULES 0) # get rid of dest value
-    foreach(_MODULE ${_MODULES})
+# Add adds one ore more modules to the library.
+#
+# This function has to be called with the keywords followed by their value(s)
+#   TO followed by the name of the library
+#   MODULES followed by the names of the modules to add to the library
+#   INTERFACE (without value) if the library is an interface one
+#
+# The module must declare a library called MODULE in the subdirectory called MODULE
+# (here MODULE is the name passed after the MODULES keyword)
+function(add_modules)
+    set(options INTERFACE)
+    set(oneValueArgs TO)
+    set(multiValueArgs MODULES)
+    cmake_parse_arguments(add_modules "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    #Abort if this function was incorrectly called
+    if(NOT "${add_modules_UNPARSED_ARGUMENTS}" STREQUAL "")
+        message(FATAL_ERROR "CMake function \"add_modules\" called incorrectly (\"${add_modules_UNPARSED_ARGUMENTS}\" unrecognised), aborting!")
+    endif()
+    if("${add_modules_TO}" STREQUAL "" OR "${add_modules_MODULES}" STREQUAL "")
+        message(FATAL_ERROR "CMake function \"add_modules\" called incorrectly (TO or MODULES missing), aborting!")
+    endif()
+
+    # Add the sub-directories and link as requested
+    foreach(_MODULE ${add_modules_MODULES})
         add_subdirectory(${_MODULE})
         set_property(GLOBAL APPEND PROPERTY DOC_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/${_MODULE}")
     endforeach()
-    target_link_libraries(${DEST} ${_MODULES})
-endmacro()
+    if(add_modules_INTERFACE)
+        target_link_libraries(${add_modules_TO} INTERFACE ${add_modules_MODULES})
+    else()
+        target_link_libraries(${add_modules_TO} ${add_modules_MODULES})
+    endif()
+endfunction()
 
 # According to
 #   https://cmake.org/cmake/help/v3.5/command/cmake_parse_arguments.html#command:cmake_parse_arguments
@@ -75,10 +97,12 @@ endmacro()
 #   EXECUTABLE followed by the name of the executable
 #   SOURCE_FILES followed by the file(s) to be compiled
 #   LIBRARIES followed by the library(ies) needed for the linking
-#   CREATE_ONLY to decide not to add a test case to ctest
-#   ADD_ONLY to decide not to create the executable
 #   NAME followed by the ctest label for the test
 #   COMMAND_LINE_OPTIONS followed by command line options for the test
+
+# Additional mutually-exclusive keywords to be specified without value are
+#   CREATE_ONLY to decide not to add a test case to ctest
+#   ADD_ONLY to decide not to create the executable
 #
 # The idea behind this function, is to use as ctest name the folder path to
 # the _test.cpp file ending with the test file without the '_test.cpp' suffix.

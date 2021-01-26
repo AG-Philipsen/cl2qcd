@@ -191,7 +191,7 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 
 set(OPTIMAL_USED_LIBS
     ${OpenCL_LIBRARIES}
-#${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
+    #${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
     ${MPFR_LIBRARIES}
     ${LIME_LIBRARIES}
     ${LIBXML2_LIBRARIES}
@@ -216,7 +216,7 @@ file(WRITE ${DUMMY_SOURCE} "")
 add_library(optimal ${DUMMY_SOURCE} ${OPTIMAL_FILES})
 
 # Add all modules
-add_modules(optimal
+add_modules(TO optimal MODULES
     hardware
     geometry
     physics

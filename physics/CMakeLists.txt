@@ -3,7 +3,7 @@
 # Copyright (c) 2012,2013 Matthias Bach
 # Copyright (c) 2012,2014,2015 Christopher Pinke
 # Copyright (c) 2016 Francesca Cuteri
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -33,7 +33,7 @@ target_link_libraries(prng
 add_library(physics
     sources.cpp
 )
-add_modules(physics
+add_modules(TO physics MODULES
     lattices
     fermionmatrix
     algorithms
