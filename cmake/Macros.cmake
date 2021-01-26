@@ -1,4 +1,4 @@
-# Utility functions for specifying the build of OpTiMaL
+# Utility functions for specifying the build of CL2QCD
 #
 # Copyright (c) 2012,2013 Matthias Bach
 # Copyright (c) 2013,2015,2018,2021 Alessandro Sciarra

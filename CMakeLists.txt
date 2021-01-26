@@ -21,7 +21,7 @@
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 cmake_minimum_required( VERSION 3.8.0 )
-project( OpTiMaL )
+project( CL2QCD )
 
 # We have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")

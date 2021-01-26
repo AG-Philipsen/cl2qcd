@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2013-2015 Christopher Pinke
- * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -42,9 +42,10 @@ physics::PRNG::~PRNG() {}
 void readFirstLine_checkForTag(std::ifstream& file, const std::string filename)
 {
     std::string test;
-    const std::string tag = "OpTiMaL PRNG State";
+    const std::string tagNew = "CL2QCD PRNG State";
+    const std::string tagOld = "OpTiMaL PRNG State";
     getline(file, test);
-    if (test != tag) {
+    if (test != tagNew && test != tagOld) {
         logger.fatal() << "Did not find correct tag in prng-file, found \"" << test << "\" instead!";
         throw std::invalid_argument("\"" + filename + "\" does not seem to contain a valid prng state");
     }
@@ -180,7 +181,7 @@ void physics::PRNG::store(const std::string filename) const
 
     // TODO this misses a lot of error handling
     std::ofstream file(filename.c_str(), std::ios_base::binary);
-    file << "OpTiMaL PRNG State\n";
+    file << "CL2QCD PRNG State\n";
     file << "Host: ";
     size_t host_state_size = prng_size();
     int* host_state        = new int[host_state_size];
