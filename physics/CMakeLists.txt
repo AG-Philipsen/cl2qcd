@@ -46,6 +46,13 @@ target_link_libraries(physics
     ildg_io
 )
 
+# TODO: Somehow the algorithms library has some cyclic dependencies with physics
+#       and without the following line compilation fails due to linking errors
+#       when linking the executable in the top-level CMakeLists.txt file.
+#       Is it possible to avoid such a dependencies or to better structure
+#       the CMake handling of the physics package?
+set_target_properties(physics PROPERTIES LINK_INTERFACE_MULTIPLICITY 3)
+
 #
 # Definition of tests
 #

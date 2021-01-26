@@ -203,20 +203,9 @@ set(OPTIMAL_USED_LIBS
 )
 
 # Definition of the core application
-set_abs_paths(OPTIMAL_FILES
-    #No file at the moment => DUMMY_SOURCE used below
-)
-
-# Create dummy file since we want an empty shared library before linking (i.e. call to our add_modules macro)
-# NOTE: This is done so here https://github.com/apache/incubator-mxnet/pull/10711
-#       and it is suggested here https://cmake.org/pipermail/cmake/2010-July/038524.html
-#       Maybe in the future CMake will provide a cleaner way to do so.
-set(DUMMY_SOURCE ${CMAKE_BINARY_DIR}/.dummy.cpp)
-file(WRITE ${DUMMY_SOURCE} "")
-add_library(optimal ${DUMMY_SOURCE} ${OPTIMAL_FILES})
-
-# Add all modules
-add_modules(TO optimal MODULES
+# Create an empty shared library before linking (i.e. call to our add_modules macro)
+add_library(optimal INTERFACE)
+add_modules(TO optimal INTERFACE MODULES
     hardware
     geometry
     physics
@@ -226,8 +215,7 @@ add_modules(TO optimal MODULES
     einhard
     executables
 )
-target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
-set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
+target_link_libraries(optimal INTERFACE ${OPTIMAL_USED_LIBS})
 
 # The actual executables (frontends)
 add_executable(gaugeobservables executables/gaugeobservablesMain.cpp)
