@@ -189,7 +189,7 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 )
 
 
-set(OPTIMAL_USED_LIBS
+set(CL2QCD_USED_LIBS
     ${OpenCL_LIBRARIES}
     #${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
     ${MPFR_LIBRARIES}
@@ -204,8 +204,8 @@ set(OPTIMAL_USED_LIBS
 
 # Definition of the core application
 # Create an empty shared library before linking (i.e. call to our add_modules macro)
-add_library(optimal INTERFACE)
-add_modules(TO optimal INTERFACE MODULES
+add_library(cl2qcd INTERFACE)
+add_modules(TO cl2qcd INTERFACE MODULES
     hardware
     geometry
     physics
@@ -215,23 +215,23 @@ add_modules(TO optimal INTERFACE MODULES
     einhard
     executables
 )
-target_link_libraries(optimal INTERFACE ${OPTIMAL_USED_LIBS})
+target_link_libraries(cl2qcd INTERFACE ${CL2QCD_USED_LIBS})
 
 # The actual executables (frontends)
 add_executable(gaugeobservables executables/gaugeobservablesMain.cpp)
-target_link_libraries(gaugeobservables optimal)
+target_link_libraries(gaugeobservables cl2qcd)
 
 add_executable(su3heatbath executables/su3heatbathMain.cpp)
-target_link_libraries(su3heatbath optimal)
+target_link_libraries(su3heatbath cl2qcd)
 
 add_executable(inverter executables/inverterMain.cpp)
-target_link_libraries(inverter optimal)
+target_link_libraries(inverter cl2qcd)
 
 add_executable(hmc executables/hmcMain.cpp)
-target_link_libraries(hmc optimal)
+target_link_libraries(hmc cl2qcd)
 
 add_executable(rhmc executables/rhmcMain.cpp)
-target_link_libraries(rhmc optimal)
+target_link_libraries(rhmc cl2qcd)
 
 # Utilities
 add_library(klepsydra
