@@ -3,7 +3,7 @@
 # Copyright (c) 2012,2013 Matthias Bach
 # Copyright (c) 2012,2014,2015 Christopher Pinke
 # Copyright (c) 2016 Francesca Cuteri
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -33,7 +33,7 @@ target_link_libraries(prng
 add_library(physics
     sources.cpp
 )
-add_modules(physics
+add_modules(TO physics MODULES
     lattices
     fermionmatrix
     algorithms
@@ -45,6 +45,13 @@ target_link_libraries(physics
     host_functionality
     ildg_io
 )
+
+# TODO: Somehow the algorithms library has some cyclic dependencies with physics
+#       and without the following line compilation fails due to linking errors
+#       when linking the executable in the top-level CMakeLists.txt file.
+#       Is it possible to avoid such a dependencies or to better structure
+#       the CMake handling of the physics package?
+set_target_properties(physics PROPERTIES LINK_INTERFACE_MULTIPLICITY 3)
 
 #
 # Definition of tests

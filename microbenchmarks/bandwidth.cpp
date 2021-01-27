@@ -5,7 +5,7 @@
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -29,6 +29,8 @@
 #include "../hardware/device.hpp"
 #include "../hardware/system.hpp"
 #include "../host_functionality/logger.hpp"
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
 #include "../klepsydra/klepsydra.hpp"
 
 #include <boost/program_options.hpp>
@@ -161,7 +163,9 @@ int main(int argc, char** argv)
     }
 
     meta::Inputparameters params(0, 0);
-    hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 
     if (vm.count("stepelements")) {
         logger.info() << "Sweeping element count for fixed thread count.";

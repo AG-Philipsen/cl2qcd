@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2012,2013 Matthias Bach
 # Copyright (c) 2013,2014 Christopher Pinke
-# Copyright (c) 2016,2018 Alessandro Sciarra
+# Copyright (c) 2016,2018,2021 Alessandro Sciarra
 # Copyright (c) 2018 Francesca Cuteri
 #
 # This file is part of CL2QCD.
@@ -38,7 +38,6 @@ add_library(meta
     util_io.cpp
     counter.cpp
     config_file_normalizer.cpp
-    type_ops.cpp
 )
 
 add_dependencies(meta git_commit_id_header)
@@ -57,4 +56,3 @@ configure_file(test_input_aliases test_input_aliases COPYONLY)
 
 add_unit_test(NAME meta/inputparameters        LIBRARIES meta)
 add_unit_test(NAME meta/config_file_normalizer LIBRARIES meta)
-add_unit_test(NAME meta/type_ops               LIBRARIES meta)

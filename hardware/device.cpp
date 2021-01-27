@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2016 Christopher Pinke
- * Copyright (c) 2014,2018,2020 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2020-2021 Alessandro Sciarra
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -579,31 +579,31 @@ unsigned hardware::Device::getHaloExtent() const
 void hardware::Device::markMemReleased(const bool host, const size_t size) const
 {
     logger.trace() << "Released " << size << " bytes on (" << latticeGridIndex.x << "," << latticeGridIndex.y << ","
-                   << latticeGridIndex.z << "," << latticeGridIndex.t << ").";
+                   << latticeGridIndex.z << "," << latticeGridIndex.t << ")";
     if (host) {
         allocated_hostptr_bytes -= size;
     } else {
         allocated_bytes -= size;
     }
-    if (allocated_bytes > max_allocated_bytes)
-        max_allocated_bytes = allocated_bytes;
-    logger.trace() << "Memory usage (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z
-                   << "," << latticeGridIndex.t << "): " << allocated_bytes
+    logger.trace() << "Memory usage on (" << latticeGridIndex.x << "," << latticeGridIndex.y << ","
+                   << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << allocated_bytes
                    << " bytes - Maximum usage: " << max_allocated_bytes
                    << " - Host backed memory: " << allocated_hostptr_bytes;
 }
 
 void hardware::Device::markMemAllocated(const bool host, const size_t size) const
 {
-    logger.trace() << "Allocted " << size << " bytes on (" << latticeGridIndex.x << "," << latticeGridIndex.y << ","
+    logger.trace() << "Allocated " << size << " bytes on (" << latticeGridIndex.x << "," << latticeGridIndex.y << ","
                    << latticeGridIndex.z << "," << latticeGridIndex.t << ").";
     if (host) {
         allocated_hostptr_bytes += size;
     } else {
         allocated_bytes += size;
     }
-    logger.trace() << "Memory usage (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z
-                   << "," << latticeGridIndex.t << "): " << allocated_bytes
+    if (allocated_bytes > max_allocated_bytes)
+        max_allocated_bytes = allocated_bytes;
+    logger.trace() << "Memory usage on (" << latticeGridIndex.x << "," << latticeGridIndex.y << ","
+                   << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << allocated_bytes
                    << " bytes - Maximum usage: " << max_allocated_bytes
                    << " - Host backed memory: " << allocated_hostptr_bytes;
 }

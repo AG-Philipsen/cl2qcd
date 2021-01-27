@@ -3,7 +3,7 @@
 # Copyright (c) 2012-2014 Matthias Bach
 # Copyright (c) 2014,2016 Christopher Pinke
 # Copyright (c) 2016 Francesca Cuteri
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -33,7 +33,7 @@ add_library(hardwareTestUtilities
     hardwareTestUtilities.cpp
 )
 
-add_modules(hardware
+add_modules(TO hardware MODULES
     buffers
     code
     transfer
@@ -43,13 +43,15 @@ add_modules(hardware
 add_subdirectory(lattices)
 set_property(GLOBAL APPEND PROPERTY DOC_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/lattices")
 target_link_libraries(hardware
-     ${OPENCL_LIBRARIES}
+     ${OpenCL_LIBRARIES}
      exceptions
      crypto
-     meta
      geometry
      hardware_lattices
+     ${Boost_LIBRARIES}
 )
+
+target_link_libraries(hardwareTestUtilities ${Boost_LIBRARIES})
 
 #
 # Definition of tests
@@ -61,4 +63,4 @@ add_unit_test(   ADD_ONLY   NAME hardware/system                COMMAND_LINE_OPT
 add_unit_test(              NAME hardware/device                LIBRARIES hardware crypto)
 add_unit_test(              NAME hardware/profiling_data        LIBRARIES hardware crypto)
 add_unit_test(              NAME hardware/synchronization_event LIBRARIES hardware crypto)
-add_unit_test(              NAME hardware/opencl_compiler       LIBRARIES crypto host_functionality ${OPENCL_LIBRARIES} SOURCE_FILES opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
+add_unit_test(              NAME hardware/opencl_compiler       LIBRARIES crypto host_functionality ${OpenCL_LIBRARIES} SOURCE_FILES opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)

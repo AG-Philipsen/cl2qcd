@@ -2,7 +2,7 @@
  * Implementation of the hardware::DeviceInfo class
  *
  * Copyright (c) 2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -129,8 +129,8 @@ static size_t retrieve_preferred_global_thread_num(cl_device_id device_id)
 
 static size_t retrieve_num_compute_units(cl_device_id device_id)
 {
-    size_t num_compute_units;
-    cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &num_compute_units, 0);
+    cl_uint num_compute_units;
+    cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &num_compute_units, 0);
     if (err) {
         throw hardware::OpenclException(err, "clGetDeviceInfo(MAX_COMPUTE_UNITS)", __FILE__, __LINE__);
     }

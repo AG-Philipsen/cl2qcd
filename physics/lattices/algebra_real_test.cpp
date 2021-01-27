@@ -1,7 +1,7 @@
 /** @file
  * Unit test for the real algebra operations in physics::lattices
  *
- * Copyright (c) 2014,2016,2018,2020 Alessandro Sciarra
+ * Copyright (c) 2014,2016,2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -24,7 +24,6 @@
 #include "../../host_functionality/logger.hpp"
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
-#include "../../meta/type_ops.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

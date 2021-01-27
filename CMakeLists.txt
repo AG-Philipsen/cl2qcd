@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2011-2014 Matthias Bach
 # Copyright (c) 2011-2015 Christopher Pinke
-# Copyright (c) 2013-2015,2018,2020 Alessandro Sciarra
+# Copyright (c) 2013-2015,2018,2020-2021 Alessandro Sciarra
 # Copyright (c) 2016 Francesca Cuteri
 #
 # This file is part of CL2QCD.
@@ -20,18 +20,18 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required( VERSION 3.8.0 )
-project( OpTiMaL )
+cmake_minimum_required(VERSION 3.8.0)
+project(CL2QCD)
 
 # We have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
 include(Macros)
 
 # If a user doesn't specify anything he probably isn't interested in debug information
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
+mark_as_advanced(CMAKE_INSTALL_PREFIX)
 
 # Have the user asked for tests
 enable_testing()
@@ -72,52 +72,69 @@ TEST_BIG_ENDIAN(BIG_ENDIAN)
 message(STATUS "Big Endian: ${BIG_ENDIAN}")
 if(BIG_ENDIAN)
     message(STATUS "Big endian architecture!")
-    add_definitions( "BIG_ENDIAN_ARCH=1" )
+    add_definitions("BIG_ENDIAN_ARCH=1")
 else()
     message(STATUS "Little endian architecture!")
 endif()
 
-# Make sure we can compile agains opencl
-find_package( OpenCL REQUIRED )
-include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
+# Make sure we can compile against OpenCL
+find_package(OpenCL REQUIRED)
+find_OpenCL_cpp_bindings()
+include_directories(SYSTEM ${OpenCL_INCLUDE_DIRS})
 # Work around OpenCL implementations not shipping c++ bindings
-if( NOT OPENCL_HAS_CPP_BINDINGS )
-    message(STATUS "No OpenCL CPP bindings found, using hack" )
-    include_directories( SYSTEM hacks/cl_hpp )
-elseif( OPENCL_HAS_CPP_BINDINGS )
-    message (STATUS "OpenCL CPP bindings found" )
-endif( NOT OPENCL_HAS_CPP_BINDINGS )
-# Make OpenCL 1.2 target version -> in include/CL/cl_version.h macros for older deprecated features are
-# automatically defined depending on the CL_TARGET_OPENCL_VERSION macro value
-add_definitions(-DCL_TARGET_OPENCL_VERSION=120)
+if(NOT OpenCL_HAS_CPP_BINDINGS)
+    message(STATUS "No OpenCL CPP bindings found, using hack")
+    include_directories(SYSTEM hacks/cl_hpp)
+elseif(OpenCL_HAS_CPP_BINDINGS)
+    message (STATUS "OpenCL CPP bindings found")
+endif(NOT OpenCL_HAS_CPP_BINDINGS)
+# Make OpenCL 1.2 target version -> in include/CL/cl_version.h macros for older deprecated
+# features are automatically defined depending on the CL_TARGET_OPENCL_VERSION macro value
+if(OpenCL_VERSION_STRING VERSION_LESS "1.2")
+    message(WARNING "Usage of CL2QCD with OpenCL prior to 1.2 is discouraged!")
+    if(OpenCL_VERSION_STRING VERSION_EQUAL "1.1")
+        add_definitions(-DCL_TARGET_OPENCL_VERSION=110)
+    elseif(OpenCL_VERSION_STRING VERSION_EQUAL "1.0")
+        add_definitions(-DCL_TARGET_OPENCL_VERSION=100)
+    endif()
+else(OpenCL_VERSION_STRING VERSION_LESS "1.2")
+    add_definitions(-DCL_TARGET_OPENCL_VERSION=120)
+endif(OpenCL_VERSION_STRING VERSION_LESS "1.2")
 
-find_package( LIME REQUIRED )
-include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
+# Look for other required dependencies
+find_package(LIME REQUIRED)
+include_directories(SYSTEM ${LIME_INCLUDE_DIR})
 
-find_package( GMP REQUIRED )
-include_directories( SYSTEM ${GMP_INCLUDE_DIR} )
+find_package(GMP REQUIRED)
+include_directories(SYSTEM ${GMP_INCLUDE_DIR})
 
-find_package( MPFR REQUIRED )
-include_directories( SYSTEM ${MPFR_INCLUDE_DIR} )
+find_package(MPFR REQUIRED)
+include_directories(SYSTEM ${MPFR_INCLUDE_DIR})
 
-find_package( LibXml2 REQUIRED )
-include_directories( SYSTEM ${LIBXML2_INCLUDE_DIR} )
-if( LIBXML2_DEFINITIONS )
-    add_definitions( ${LIBXML2_DEFINITIONS} )
-endif( LIBXML2_DEFINITIONS )
+find_package(LibXml2 REQUIRED)
+include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
+if(LIBXML2_DEFINITIONS)
+    add_definitions(${LIBXML2_DEFINITIONS})
+endif(LIBXML2_DEFINITIONS)
 
-# Require 1.59 as boost-unit_test of previous versions do not support disabling tests (--run_test='!<test>' syntax)
-find_package(Boost 1.59.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
+# Require 1.60 as boost-unit_test of previous versions do not separate boost arguments and user test command line argumetns.
+set(BOOST_REQUIRED_COMPONENTS regex filesystem system program_options unit_test_framework)
+find_package(Boost 1.60.0 REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+if(CMAKE_VERSION VERSION_LESS "3.17")
+    # Probably because of CMP0102 policy, this must be done by hand
+    # -> https://cmake.org/cmake/help/latest/policy/CMP0102.html#policy:CMP0102
+    mark_boost_variables_as_advanced(BOOST_REQUIRED_COMPONENTS)
+endif(CMAKE_VERSION VERSION_LESS "3.17")
 
 # Define where to find the OpenCL kernels
 # TODO this should also include the installation place
 # maybe even patch this during install step
-add_definitions( -DSOURCEDIR="${CMAKE_SOURCE_DIR}" )
+add_definitions(-DSOURCEDIR="${CMAKE_SOURCE_DIR}")
 
 # Add code version to the code (we need to include the binary dir as the custom target will create a header there)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-add_custom_target(git_commit_id_header ALL DEPENDS git_commit_id )
+add_custom_target(git_commit_id_header ALL DEPENDS git_commit_id)
 add_custom_command(OUTPUT git_commit_id
                    COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GenerateGitVersion.cmake)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/gitcommitid.h
@@ -132,17 +149,17 @@ if(TMP STREQUAL "")
 endif(TMP STREQUAL "")
 add_definitions(-DLOG_LEVEL=${LOG_LEVEL})
 # Don't compile in debug output if compiling for release
-if( CMAKE_BUILD_TYPE STREQUAL "Release" )
-    add_definitions( -DNDEBUG )
-endif( CMAKE_BUILD_TYPE STREQUAL "Release" )
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_definitions(-DNDEBUG)
+endif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
 # Some options for various variants
-option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
-if( USE_DOUBLE_PRECISION )
-    add_definitions( -D_USEDOUBLEPREC_ )
+option(USE_DOUBLE_PRECISION "Use double precision arithmetics" ON)
+if(USE_DOUBLE_PRECISION)
+    add_definitions(-D_USEDOUBLEPREC_)
 else()
     message(SEND_ERROR "Application not ready in SINGLE precision! Please, set USEDOUBLEPREC=ON.")
-endif( USE_DOUBLE_PRECISION )
+endif(USE_DOUBLE_PRECISION)
 
 # Allow to choose a PRNG
 set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default)")
@@ -166,7 +183,7 @@ if(ASYNC_HALO_UPDATES)
 endif()
 
 # Default random number seed
-configure_file( rand_seeds rand_seeds COPYONLY )
+configure_file(rand_seeds rand_seeds COPYONLY)
 
 # Which directories contain documentation relevant stuff
 # (modules will add their files to this list)
@@ -178,9 +195,9 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 )
 
 
-set(OPTIMAL_USED_LIBS
-    ${OPENCL_LIBRARIES}
-#${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
+set(CL2QCD_USED_LIBS
+    ${OpenCL_LIBRARIES}
+    #${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
     ${MPFR_LIBRARIES}
     ${LIME_LIBRARIES}
     ${LIBXML2_LIBRARIES}
@@ -192,20 +209,9 @@ set(OPTIMAL_USED_LIBS
 )
 
 # Definition of the core application
-set_abs_paths(OPTIMAL_FILES
-    #No file at the moment => DUMMY_SOURCE used below
-)
-
-# Create dummy file since we want an empty shared library before linking (i.e. call to our add_modules macro)
-# NOTE: This is done so here https://github.com/apache/incubator-mxnet/pull/10711
-#       and it is suggested here https://cmake.org/pipermail/cmake/2010-July/038524.html
-#       Maybe in the future CMake will provide a cleaner way to do so.
-set(DUMMY_SOURCE ${CMAKE_BINARY_DIR}/.dummy.cpp)
-file(WRITE ${DUMMY_SOURCE} "")
-add_library(optimal ${DUMMY_SOURCE} ${OPTIMAL_FILES})
-
-# Add all modules
-add_modules(optimal
+# Create an empty shared library before linking (i.e. call to our add_modules macro)
+add_library(cl2qcd INTERFACE)
+add_modules(TO cl2qcd INTERFACE MODULES
     hardware
     geometry
     physics
@@ -215,24 +221,23 @@ add_modules(optimal
     einhard
     executables
 )
-target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
-set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
+target_link_libraries(cl2qcd INTERFACE ${CL2QCD_USED_LIBS})
 
 # The actual executables (frontends)
 add_executable(gaugeobservables executables/gaugeobservablesMain.cpp)
-target_link_libraries(gaugeobservables optimal)
+target_link_libraries(gaugeobservables cl2qcd)
 
 add_executable(su3heatbath executables/su3heatbathMain.cpp)
-target_link_libraries(su3heatbath optimal)
+target_link_libraries(su3heatbath cl2qcd)
 
 add_executable(inverter executables/inverterMain.cpp)
-target_link_libraries(inverter optimal)
+target_link_libraries(inverter cl2qcd)
 
 add_executable(hmc executables/hmcMain.cpp)
-target_link_libraries(hmc optimal)
+target_link_libraries(hmc cl2qcd)
 
 add_executable(rhmc executables/rhmcMain.cpp)
-target_link_libraries(rhmc optimal)
+target_link_libraries(rhmc cl2qcd)
 
 # Utilities
 add_library(klepsydra

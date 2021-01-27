@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -26,8 +26,8 @@
 //  - alpha: The complex number by which x has to be multiplied
 //  - out: The output staggered field: alpha*x+y (site by site)
 
-__kernel void
-saxpy_staggered(__global su3vec* x, __global su3vec* y, __global const hmc_complex* alpha_p, __global su3vec* out)
+__kernel void saxpy_staggered(__global su3vec* restrict x, __global su3vec* restrict y,
+                              __global const hmc_complex* restrict alpha_p, __global su3vec* restrict out)
 {
     int id          = get_global_id(0);
     int global_size = get_global_size(0);
@@ -46,8 +46,8 @@ saxpy_staggered(__global su3vec* x, __global su3vec* y, __global const hmc_compl
 // Uncomment out the region and adapt to staggered fermions (i.e. spinors <---> su3vec) if needed.
 /*
 // the arguments have been hacked to work on apple
-__kernel void saxpy_staggered_arg(__global spinor* x, __global spinor* y, const hmc_float alpha_re, const hmc_float
-alpha_im, __global spinor* out)
+__kernel void saxpy_staggered_arg(__global spinor* restrict x, __global spinor* restrict y, const hmc_float alpha_re,
+const hmc_float alpha_im, __global spinor* restrict out)
 {
     const int id = get_global_id(0);
     const int global_size = get_global_size(0);

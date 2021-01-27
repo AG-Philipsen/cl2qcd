@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -28,7 +28,7 @@
  * @NOTE If _USE_SOA_ is true the output vector has to be reconstructed using properly
  * the option EOPREC_SU3VECFIELD_STRIDE.
  */
-inline su3vec get_su3vec_from_field_eo(__global const staggeredStorageType* const restrict in, const uint idx)
+static inline su3vec get_su3vec_from_field_eo(__global const staggeredStorageType* const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
     return (su3vec){// su3vec = 3 * cplx
@@ -45,7 +45,8 @@ inline su3vec get_su3vec_from_field_eo(__global const staggeredStorageType* cons
  * @NOTE If _USE_SOA_ is true, each component of the su3vec _@b val has to be placed into _@b out properly
  * using the option EOPREC_SU3VECFIELD_STRIDE.
  */
-inline void put_su3vec_to_field_eo(__global staggeredStorageType* const restrict out, const uint idx, const su3vec val)
+static inline void
+put_su3vec_to_field_eo(__global staggeredStorageType* const restrict out, const uint idx, const su3vec val)
 {
 #ifdef _USE_SOA_
     // su3vec = 3 * cplx

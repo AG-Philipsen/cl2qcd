@@ -2,7 +2,7 @@
  * Copyright (c) 2011,2012,2015 Christopher Pinke
  * Copyright (c) 2011-2014 Matthias Bach
  * Copyright (c) 2011 Lars Zeidlewicz
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -24,8 +24,6 @@
 #include "opencl_module.hpp"
 
 #include "../size_4.hpp"
-
-using namespace std;
 
 static void print_profile_header(const std::string& filename, int number);
 
@@ -266,7 +264,7 @@ void hardware::code::Opencl_Module::get_work_sizes(const cl_kernel kernel, size_
                                                    cl_uint* num_groups) const
 {
     // Query kernel name
-    string kernelname = get_kernel_name(kernel);
+    std::string kernelname = get_kernel_name(kernel);
 
     size_t local_work_size  = device->get_preferred_local_thread_num();
     size_t global_work_size = device->get_preferred_global_thread_num();
@@ -280,7 +278,7 @@ void hardware::code::Opencl_Module::get_work_sizes(const cl_kernel kernel, size_
     *num_groups = num_groups_tmp;
 }
 
-string hardware::code::Opencl_Module::get_kernel_name(const cl_kernel kernel) const
+std::string hardware::code::Opencl_Module::get_kernel_name(const cl_kernel kernel) const
 {
     int clerr;
     size_t bytesInKernelName;
@@ -292,7 +290,7 @@ string hardware::code::Opencl_Module::get_kernel_name(const cl_kernel kernel) co
     if (clerr != CL_SUCCESS)
         throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
 
-    string kernel_name(kernelName);
+    std::string kernel_name(kernelName);
     delete[] kernelName;
 
     return kernel_name;
@@ -317,7 +315,7 @@ static void print_profiling(const std::string& filename, const std::string& kern
     }
     float mega = 1024 * 1024;
     // write to stream
-    fstream out;
+    std::fstream out;
     out.open(filename.c_str(), std::ios::out | std::ios::app);
     if (!out.is_open())
         File_Exception(filename.c_str());
@@ -332,7 +330,7 @@ static void print_profiling(const std::string& filename, const std::string& kern
 static void print_profile_header(const std::string& filename, int number)
 {
     // write to stream
-    fstream out;
+    std::fstream out;
     out.open(filename.c_str(), std::ios::out | std::ios::app);
     if (!out.is_open())
         File_Exception(filename.c_str());

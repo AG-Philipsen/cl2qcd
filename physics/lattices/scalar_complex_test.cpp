@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2016,2018,2020 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -29,7 +29,6 @@
 #include "../../host_functionality/logger.hpp"
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
-#include "../../meta/type_ops.hpp"
 
 #include <boost/test/unit_test.hpp>
 

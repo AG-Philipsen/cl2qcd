@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2015 Christopher Czaban
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -31,7 +31,6 @@
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
-#include "../../meta/type_ops.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <cmath>
@@ -189,7 +188,7 @@ BOOST_AUTO_TEST_CASE(scalar_product)
     const hmc_complex gaussian_scalar_prod = physics::lattices::scalar_product(gaussian, gaussian);
     const hmc_float gaussian_squarenorm    = physics::lattices::squarenorm(gaussian);
     BOOST_CHECK_CLOSE(gaussian_scalar_prod.re, gaussian_squarenorm, .1);
-    BOOST_CHECK_CLOSE(gaussian_scalar_prod.im, 0., .1);
+    BOOST_CHECK_SMALL(gaussian_scalar_prod.im, 1.e-8);
     const hmc_complex gaussian_scalar_cold = physics::lattices::scalar_product(gaussian, cold);
     const hmc_complex cold_scalar_gaussian = physics::lattices::scalar_product(cold, gaussian);
     BOOST_CHECK_CLOSE(std::abs(gaussian_scalar_cold.re), std::abs(cold_scalar_gaussian.re), .1);

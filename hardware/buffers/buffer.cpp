@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018,2020 Alessandro Sciarra
+ * Copyright (c) 2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -68,7 +68,9 @@ allocateBuffer(const size_t bytes, const cl_context context, const bool place_on
 {
     cl_int err;
     const cl_mem_flags mem_flags = (place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0) | extra_flags;
-    cl_mem cl_buffer             = clCreateBuffer(context, mem_flags, bytes, 0, &err);
+    logger.trace() << "Creating buffer on " << static_cast<std::string>(place_on_host ? "host" : "device")
+                   << " reserving " << bytes << " bytes";
+    cl_mem cl_buffer = clCreateBuffer(context, mem_flags, bytes, 0, &err);
     if (err) {
         throw hardware::OpenclException(err, "clCreateBuffer", __FILE__, __LINE__);
     }

@@ -1,5 +1,5 @@
 # Copyright (c) 2012,2013 Matthias Bach
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-add_unit_test(CREATE_ONLY EXECUTABLE ranluxCL_test SOURCE_FILES ranluxcltest.cpp LIBRARIES ${OPENCL_LIBRARIES})
+add_unit_test(CREATE_ONLY EXECUTABLE ranluxCL_test SOURCE_FILES ranluxcltest.cpp LIBRARIES ${OpenCL_LIBRARIES})
 add_unit_test(   ADD_ONLY NAME ranluxcl/ranluxCL_CPU EXECUTABLE ranluxCL_test COMMAND_LINE_OPTIONS 1 0 1 1)
 add_unit_test(   ADD_ONLY NAME ranluxcl/ranluxCL_GPU EXECUTABLE ranluxCL_test COMMAND_LINE_OPTIONS 1 1 1 1)
 set_tests_properties(ranluxcl/ranluxCL_CPU ranluxcl/ranluxCL_GPU PROPERTIES PASS_REGULAR_EXPRESSION "Correctness check PASSED!")

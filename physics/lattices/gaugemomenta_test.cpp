@@ -1,7 +1,7 @@
 /** @file
  * Unit test for the physics::lattices::Gaugemomenta class
  *
- * Copyright (c) 2013,2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2015,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
@@ -34,13 +34,10 @@
 #include "../../interfaceImplementations/latticesParameters.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../interfaceImplementations/physicsParameters.hpp"
-#include "../../meta/type_ops.hpp"
 #include "../../meta/util.hpp"
 #include "util.hpp"
 
 #include <boost/test/unit_test.hpp>
-
-static void fill_buffer(const hardware::buffers::Gaugemomentum* buf, int seed);
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -73,11 +70,6 @@ BOOST_AUTO_TEST_CASE(zero)
 
     Gaugemomenta gm(system, gaugemomentaParametersInterface);
 
-    // fill all buffers with noise
-    for (auto buffer : gm.get_buffers()) {
-        fill_buffer(buffer, 13);
-    }
-
     // run code
     gm.zero();
 
@@ -85,20 +77,12 @@ BOOST_AUTO_TEST_CASE(zero)
     for (auto buffer : gm.get_buffers()) {
         size_t num_elems = buffer->get_elements();
         ae* host_mem     = new ae[num_elems];
-        buffer->get_device()->getGaugemomentumCode()->exportGaugemomentumBuffer(host_mem, buffer);
+        buffer->dump(host_mem);
         const ae zero = {0, 0, 0, 0, 0, 0, 0, 0};
         for (size_t i = 0; i < num_elems; ++i) {
             BOOST_REQUIRE_EQUAL(host_mem[i], zero);
         }
     }
-}
-
-static void fill_buffer(const hardware::buffers::Gaugemomentum* buf, int seed)
-{
-    size_t num_elems = buf->get_elements();
-    ae* host_mem     = new ae[num_elems];
-    fill(host_mem, num_elems, seed);
-    buf->get_device()->getGaugemomentumCode()->importGaugemomentumBuffer(buf, host_mem);
 }
 
 BOOST_AUTO_TEST_CASE(gaussian)

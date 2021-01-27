@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -35,7 +35,7 @@ namespace hardware {
         virtual int getLatticeVolume() const                    = 0;
         virtual bool useGpu() const                             = 0;
         virtual bool useCpu() const                             = 0;
-        virtual int getMaximalNumberOfDevices() const           = 0;
+        virtual int getNumberOfDevicesToBeUsed() const          = 0;
         virtual std::vector<int> getSelectedDevices() const     = 0;
         virtual bool splitCpu() const                           = 0;
         virtual bool enableProfiling() const                    = 0;

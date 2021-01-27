@@ -2,7 +2,7 @@
  * Copyright (c) 2011-2015 Christopher Pinke
  * Copyright (c) 2011 Lars Zeidlewicz
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -816,6 +816,15 @@ void hardware::code::Spinors::set_zero_spinorfield_eoprec_device(const hardware:
     get_device()->enqueue_kernel(set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
+void hardware::code::Spinors::convertSpinorfieldToSOA(const hardware::buffers::Spinor* out,
+                                                      const hardware::buffers::Plain<spinor>* in) const
+{
+    if (kernelParameters->getUseEo() == false)
+        throw Print_Error_Message("Conversion to SoA not yet implemented without even-odd preconditioning.");
+    else
+        convertSpinorfieldToSOA_eo_device(out, in);
+}
+
 void hardware::code::Spinors::convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor* out,
                                                                 const hardware::buffers::Plain<spinor>* in) const
 {
@@ -833,6 +842,15 @@ void hardware::code::Spinors::convertSpinorfieldToSOA_eo_device(const hardware::
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
     get_device()->enqueue_kernel(convertSpinorfieldToSOA_eo, gs2, ls2);
+}
+
+void hardware::code::Spinors::convertSpinorfieldFromSOA(const hardware::buffers::Plain<spinor>* out,
+                                                        const hardware::buffers::Spinor* in) const
+{
+    if (kernelParameters->getUseEo() == false)
+        throw Print_Error_Message("Conversion to SoA not yet implemented without even-odd preconditioning.");
+    else
+        convertSpinorfieldFromSOA_eo_device(out, in);
 }
 
 void hardware::code::Spinors::convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor>* out,

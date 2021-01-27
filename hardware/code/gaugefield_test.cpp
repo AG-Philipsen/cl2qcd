@@ -2,7 +2,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -53,7 +53,7 @@ struct PlaquetteTester : public GaugefieldTester {
         GaugefieldCreator gf(testParams.latticeExtents);
         gaugefieldBuffer         = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(testParams.fillType);
-        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
 
         code->plaquette_device(gaugefieldBuffer, &plaq, &tplaq, &splaq);
@@ -87,7 +87,7 @@ struct PolyakovloopTester : public GaugefieldTester {
         GaugefieldCreator gf(testParams.latticeExtents);
         gaugefieldBuffer         = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(testParams.fillType);
-        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
 
         code->polyakov_device(gaugefieldBuffer, &pol);
@@ -111,7 +111,7 @@ struct RectanglesTester : public GaugefieldTester {
         GaugefieldCreator gf(testParams.latticeExtents);
         gaugefieldBuffer         = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(testParams.fillType);
-        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
 
         code->rectangles_device(gaugefieldBuffer, &rect);
@@ -134,7 +134,7 @@ struct StoutSmearTester : public GaugefieldTester {
         GaugefieldCreator gf(testParams.latticeExtents);
         gaugefieldBuffer         = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(testParams.fillType);
-        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
         const hardware::buffers::SU3 out(gaugefieldBuffer->get_elements(), device);
 
@@ -225,20 +225,20 @@ BOOST_AUTO_TEST_SUITE(PLAQUETTE)
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_TEMPORAL_2)
     {
-        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{LatticeExtents{ns4, nt4}},
-                      GaugefieldFillType::nonTrivial, TypeOfPlaquette::temporalPlaquette);
+        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial,
+                      TypeOfPlaquette::temporalPlaquette);
     }
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_SPATIAL_1)
     {
-        testPlaquette(ReferenceValues{768.}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold,
+        testPlaquette(ReferenceValues{768.}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold,
                       TypeOfPlaquette::temporalPlaquette);
     }
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_SPATIAL_2)
     {
-        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{LatticeExtents{ns4, nt4}},
-                      GaugefieldFillType::nonTrivial, TypeOfPlaquette::spatialPlaquette);
+        testPlaquette(ReferenceValues{768.00130250240136}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial,
+                      TypeOfPlaquette::spatialPlaquette);
     }
 
     BOOST_AUTO_TEST_CASE(PLAQUETTE_REDUCTION_1)
@@ -265,12 +265,12 @@ BOOST_AUTO_TEST_SUITE(POLYAKOV)
 
     BOOST_AUTO_TEST_CASE(POLYAKOV_1)
     {
-        testPolyakov(ReferenceValues{64., 0.}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold);
+        testPolyakov(ReferenceValues{64., 0.}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
     }
 
     BOOST_AUTO_TEST_CASE(POLYAKOV_2)
     {
-        testPolyakov(ReferenceValues{-17.1117721375, -31.0747993518}, LatticeExtents{LatticeExtents{ns4, nt4}},
+        testPolyakov(ReferenceValues{-17.1117721375, -31.0747993518}, LatticeExtents{ns4, nt4},
                      GaugefieldFillType::nonTrivial);
     }
 
@@ -309,35 +309,31 @@ BOOST_AUTO_TEST_SUITE(STOUT_SMEAR)
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_1)
     {
-        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial,
-                       0.001);
+        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, 0.001);
     }
 
     BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(STOUT_SMEAR_2, 1)
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_2)
     {
-        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial,
-                       0.);
+        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, 0.);
     }
 
     BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(STOUT_SMEAR_3, 1)
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_3)
     {
-        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial,
-                       0.001538);
+        testStoutSmear(ReferenceValues{-1234}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, 0.001538);
     }
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_4)
     {
-        testStoutSmear(ReferenceValues{1536}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold, 0.);
+        testStoutSmear(ReferenceValues{1536}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, 0.);
     }
 
     BOOST_AUTO_TEST_CASE(STOUT_SMEAR_5)
     {
-        testStoutSmear(ReferenceValues{1536}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold,
-                       0.001);
+        testStoutSmear(ReferenceValues{1536}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, 0.001);
     }
 
 BOOST_AUTO_TEST_SUITE_END()

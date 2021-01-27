@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011 Christian Schäfer
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -30,9 +30,10 @@
 #    error the kernel does not support multi-gpu
 #endif
 
-__kernel void T_clover_diag_partial(__global Matrixsu3StorageType* gaugefield, __global hmc_float* v_tau,
-                                    __global hmc_float* v_spatial, __global hmc_float* w_tau,
-                                    __global hmc_float* w_spatial, const int mom_dir)
+__kernel void T_clover_diag_partial(__global Matrixsu3StorageType* restrict gaugefield,
+                                    __global hmc_float* restrict v_tau, __global hmc_float* restrict v_spatial,
+                                    __global hmc_float* restrict w_tau, __global hmc_float* restrict w_spatial,
+                                    const int mom_dir)
 {
     int local_size  = get_local_size(0);
     int global_size = get_global_size(0);

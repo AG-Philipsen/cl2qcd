@@ -3,7 +3,7 @@
  * Copyright (c) 2011 Lars Zeidlewicz
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,9 +21,6 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file
- * Heatbath for OpenCL
- */
 #ifndef _HARDWARE_CODE_SPINORS_
 #define _HARDWARE_CODE_SPINORS_
 
@@ -42,10 +39,6 @@ namespace hardware {
 
         /**
          * An OpenCL device
-         *
-         * Adds random numbers to basic Opencl_Module class
-         *
-         * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
          */
         class Spinors : public Opencl_Module {
           public:
@@ -179,6 +172,10 @@ namespace hardware {
             cl_kernel convertSpinorfieldToSOA_eo;
             cl_kernel convertSpinorfieldFromSOA_eo;
 
+            void convertSpinorfieldToSOA(const hardware::buffers::Spinor* out,
+                                         const hardware::buffers::Plain<spinor>* in) const;
+            void convertSpinorfieldFromSOA(const hardware::buffers::Plain<spinor>* out,
+                                           const hardware::buffers::Spinor* in) const;
             void convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor* out,
                                                    const hardware::buffers::Plain<spinor>* in) const;
             void convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor>* out,

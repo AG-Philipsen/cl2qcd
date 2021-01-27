@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -18,7 +18,8 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-__kernel void complex_sum(__global hmc_complex* a, __global hmc_complex* b, __global hmc_complex* out)
+__kernel void
+complex_sum(__global hmc_complex* restrict a, __global hmc_complex* restrict b, __global hmc_complex* restrict out)
 {
     if (get_global_id(0) == 0) {
         hmc_complex tmp1 = complexLoadHack(a);

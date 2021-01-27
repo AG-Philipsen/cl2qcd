@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Christopher Pinke
  * Copyright (c) 2013 Matthias Bach
- * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2016 Christopher Czaban
  *
  * This file is part of CL2QCD.
@@ -23,6 +23,8 @@
  */
 
 #include "bicgstab.hpp"
+
+#include "../../../common_header_files/types_operations.hpp"
 
 /**
  * A "save" version of the bicgstab algorithm.

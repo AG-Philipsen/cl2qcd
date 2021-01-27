@@ -1,7 +1,7 @@
-# Utility functions for specifying the build of OpTiMaL
+# Utility functions for specifying the build of CL2QCD
 #
 # Copyright (c) 2012,2013 Matthias Bach
-# Copyright (c) 2013,2015,2018 Alessandro Sciarra
+# Copyright (c) 2013,2015,2018,2021 Alessandro Sciarra
 # Copyright (c) 2014 Christopher Pinke
 #
 # This file is part of CL2QCD.
@@ -19,6 +19,27 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
+
+# Look for OpenCL cpp bindings in OpenCL_INCLUDE_DIRS and relatively to
+# libraries (in case the user uses AMD SDK which places its headers in
+# a non-standard way).
+function(find_OpenCL_cpp_bindings)
+    if(OpenCL_HAS_CPP_BINDINGS)
+        message(STATUS "Bindings already found, no further research")
+        return()
+    endif(OpenCL_HAS_CPP_BINDINGS)
+    get_filename_component(OpenCL_LIB_DIRECTORY ${OpenCL_LIBRARIES} PATH)
+    get_filename_component(OpenCL_CPP_BINDINGS_CANDIDATE ${OpenCL_LIB_DIRECTORY}/../../include ABSOLUTE)
+    find_path(OpenCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${OpenCL_INCLUDE_DIRS} ${OpenCL_CPP_BINDINGS_CANDIDATE})
+    if(OpenCL_CPP_INCLUDE_DIRS)
+        set(OpenCL_HAS_CPP_BINDINGS TRUE)
+        list(APPEND OpenCL_INCLUDE_DIRS ${OpenCL_CPP_INCLUDE_DIRS})
+        # This is often the same, so clean up
+        list(REMOVE_DUPLICATES OpenCL_INCLUDE_DIRS)
+    endif(OpenCL_CPP_INCLUDE_DIRS)
+    unset(OpenCL_CPP_INCLUDE_DIRS CACHE)
+endfunction()
+
 # Create a list of files just as you'd use set.
 # Will automatically replace all filenames by absolute ones
 macro(set_abs_paths DEST)
@@ -30,18 +51,55 @@ macro(set_abs_paths DEST)
     endforeach()
 endmacro()
 
-# Add adds one ore more modules to the library
-# The module must declare a library called MODULE in the
-# subdirectory called MODULE
-macro(add_modules DEST MODULE)
-    set(_MODULES "${ARGV}")
-    list(REMOVE_AT _MODULES 0) # get rid of dest value
-    foreach(_MODULE ${_MODULES})
+# For some reason not all variables set by FindBoost.cmake are marked
+# as advanced and this is handled here (pretty patchy, works in cmake 3.16.3)
+macro(mark_boost_variables_as_advanced)
+    foreach(ELEMENT IN LISTS ${ARGV})
+        string(TOUPPER "${ELEMENT}" ELEMENT_UPPER)
+        string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_UPPER)
+        mark_as_advanced(Boost_${ELEMENT_UPPER}_LIBRARY_${BUILD_TYPE_UPPER})
+    endforeach()
+    set(EXTRA_VARS "Boost_INCLUDE_DIR")
+    foreach(ELEMENT IN LISTS EXTRA_VARS)
+        mark_as_advanced(${ELEMENT})
+    endforeach()
+endmacro()
+
+
+# Add adds one ore more modules to the library.
+#
+# This function has to be called with the keywords followed by their value(s)
+#   TO followed by the name of the library
+#   MODULES followed by the names of the modules to add to the library
+#   INTERFACE (without value) if the library is an interface one
+#
+# The module must declare a library called MODULE in the subdirectory called MODULE
+# (here MODULE is the name passed after the MODULES keyword)
+function(add_modules)
+    set(options INTERFACE)
+    set(oneValueArgs TO)
+    set(multiValueArgs MODULES)
+    cmake_parse_arguments(add_modules "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    #Abort if this function was incorrectly called
+    if(NOT "${add_modules_UNPARSED_ARGUMENTS}" STREQUAL "")
+        message(FATAL_ERROR "CMake function \"add_modules\" called incorrectly (\"${add_modules_UNPARSED_ARGUMENTS}\" unrecognised), aborting!")
+    endif()
+    if("${add_modules_TO}" STREQUAL "" OR "${add_modules_MODULES}" STREQUAL "")
+        message(FATAL_ERROR "CMake function \"add_modules\" called incorrectly (TO or MODULES missing), aborting!")
+    endif()
+
+    # Add the sub-directories and link as requested
+    foreach(_MODULE ${add_modules_MODULES})
         add_subdirectory(${_MODULE})
         set_property(GLOBAL APPEND PROPERTY DOC_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/${_MODULE}")
     endforeach()
-    target_link_libraries(${DEST} ${_MODULES})
-endmacro()
+    if(add_modules_INTERFACE)
+        target_link_libraries(${add_modules_TO} INTERFACE ${add_modules_MODULES})
+    else()
+        target_link_libraries(${add_modules_TO} ${add_modules_MODULES})
+    endif()
+endfunction()
 
 # According to
 #   https://cmake.org/cmake/help/v3.5/command/cmake_parse_arguments.html#command:cmake_parse_arguments
@@ -54,10 +112,12 @@ endmacro()
 #   EXECUTABLE followed by the name of the executable
 #   SOURCE_FILES followed by the file(s) to be compiled
 #   LIBRARIES followed by the library(ies) needed for the linking
-#   CREATE_ONLY to decide not to add a test case to ctest
-#   ADD_ONLY to decide not to create the executable
 #   NAME followed by the ctest label for the test
 #   COMMAND_LINE_OPTIONS followed by command line options for the test
+
+# Additional mutually-exclusive keywords to be specified without value are
+#   CREATE_ONLY to decide not to add a test case to ctest
+#   ADD_ONLY to decide not to create the executable
 #
 # The idea behind this function, is to use as ctest name the folder path to
 # the _test.cpp file ending with the test file without the '_test.cpp' suffix.

@@ -1,7 +1,7 @@
 # Build configuration for some microbenchmarks for OpenCL based HMC
 #
 # Copyright (c) 2011,2013 Matthias Bach
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -19,6 +19,4 @@
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 add_executable(bandwidth bandwidth.cpp)
-target_link_libraries(bandwidth
-    optimal
-)
+target_link_libraries(bandwidth cl2qcd)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -28,11 +28,11 @@
 //  - index_beta: Constant beta to be used
 //  - out: The output staggered field: alpha*x+beta*y (site by site)
 
-__kernel void saxpby_real_vec_staggered_eoprec(__global const staggeredStorageType* const x,
-                                               __global const staggeredStorageType* const y,
-                                               __global const hmc_float* const alpha, __global hmc_float* beta,
-                                               const int index_alpha, const int index_beta,
-                                               __global staggeredStorageType* const out)
+__kernel void saxpby_real_vec_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                               __global const staggeredStorageType* const restrict y,
+                                               __global const hmc_float* const restrict alpha,
+                                               __global hmc_float* restrict beta, const int index_alpha,
+                                               const int index_beta, __global staggeredStorageType* const restrict out)
 {
     const int id          = get_global_id(0);
     const int global_size = get_global_size(0);

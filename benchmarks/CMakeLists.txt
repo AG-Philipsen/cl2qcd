@@ -1,7 +1,7 @@
 # Build configuration for OpenCL based HMC
 #
 # Copyright (c) 2011,2014 Christopher Pinke
-# Copyright (c) 2013,2014,2018 Alessandro Sciarra
+# Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
 # Copyright (c) 2013 Matthias Bach
 #
 # This file is part of CL2QCD.
@@ -20,16 +20,16 @@
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 add_executable(su3heatbath_benchmarks su3heatbathBenchmarkMain.cpp)
-target_link_libraries(su3heatbath_benchmarks optimal)
+target_link_libraries(su3heatbath_benchmarks cl2qcd)
 
 add_executable(dslash_benchmark dslashBenchmarkMain.cpp)
-target_link_libraries(dslash_benchmark optimal)
+target_link_libraries(dslash_benchmark cl2qcd)
 
 add_executable(dslash_multidev dslashBenchmarkMultipleDevicesMain.cpp)
-target_link_libraries(dslash_multidev optimal)
+target_link_libraries(dslash_multidev cl2qcd)
 
 add_executable(dks_benchmark dksBenchmarkMain.cpp)
-target_link_libraries(dks_benchmark optimal)
+target_link_libraries(dks_benchmark cl2qcd)
 
 add_executable(dks_multidev dksBenchmarkMultipleDevicesMain.cpp)
-target_link_libraries(dks_multidev optimal)
+target_link_libraries(dks_multidev cl2qcd)

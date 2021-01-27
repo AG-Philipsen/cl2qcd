@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
@@ -257,6 +257,13 @@ struct NonEvenOddLinearCombinationTester : public NonEvenOddSpinorStaggeredTeste
         loadCoefficients(tP);
         loadSpinorfields(tP);
     }
+    ~NonEvenOddLinearCombinationTester()
+    {
+        for (auto field : spinorfields)
+            delete field;
+        for (auto number : complexNums)
+            delete number;
+    }
 
   protected:
     std::vector<const hardware::buffers::Plain<su3vec>*> spinorfields;
@@ -277,9 +284,13 @@ struct NonEvenOddLinearCombinationTester : public NonEvenOddSpinorStaggeredTeste
             NonEvenOddSpinorStaggeredfieldCreator ssf(tP.latticeExtents);
             spinorfields.push_back(
                 new hardware::buffers::Plain<su3vec>(calculateSpinorfieldSize(tP.latticeExtents), device));
-            (tP.fillTypes.size() < tP.numberOfSpinors)
-                ? spinorfields.back()->load(ssf.createSpinorfield(tP.fillTypes.at(0)))
-                : spinorfields.back()->load(ssf.createSpinorfield(tP.fillTypes.at(number)));
+            const su3vec* ssf_host;
+            if (tP.fillTypes.size() < tP.numberOfSpinors)
+                ssf_host = ssf.createSpinorfield(tP.fillTypes.at(0));
+            else
+                ssf_host = ssf.createSpinorfield(tP.fillTypes.at(number));
+            spinorfields.back()->load(ssf_host);
+            delete[] ssf_host;
         }
     }
 };
@@ -346,6 +357,15 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorStaggeredTester {
         loadCoefficients(tP);
         loadSpinorfields(tP);
     }
+    ~EvenOddLinearCombinationTester()
+    {
+        for (auto number : complexNums)
+            delete number;
+        for (auto number : realNums)
+            delete number;
+        for (auto field : spinorfields)
+            delete field;
+    }
 
   protected:
     std::vector<const hardware::buffers::Plain<hmc_complex>*> complexNums;
@@ -370,9 +390,13 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorStaggeredTester {
         for (size_t number = 0; number < tP.numberOfSpinors; number++) {
             EvenOddSpinorStaggeredfieldCreator ssf(tP.latticeExtents);
             spinorfields.push_back(new hardware::buffers::SU3vec(tP.latticeExtents, device));
-            (tP.fillTypes.size() < tP.numberOfSpinors)
-                ? spinorfields.back()->load(ssf.createSpinorfield(tP.fillTypes.at(0)))
-                : spinorfields.back()->load(ssf.createSpinorfield(tP.fillTypes.at(number)));
+            const su3vec* ssf_host;
+            if (tP.fillTypes.size() < tP.numberOfSpinors)
+                ssf_host = ssf.createSpinorfield(tP.fillTypes.at(0));
+            else
+                ssf_host = ssf.createSpinorfield(tP.fillTypes.at(number));
+            spinorfields.back()->load(ssf_host);
+            delete[] ssf_host;
         }
     }
 };
@@ -495,7 +519,9 @@ struct ConvertToEvenOddTester : public SpinorStaggeredTester {
         const hardware::buffers::SU3vec in3(testParameters.latticeExtents, device);
 
         NonEvenOddSpinorStaggeredfieldCreator ssf(testParameters.latticeExtents);
-        in.load(ssf.createSpinorfieldWithOnesAndZerosDependingOnSiteParity(fillEvenSitesIn));
+        const su3vec* ssf_host = ssf.createSpinorfieldWithOnesAndZerosDependingOnSiteParity(fillEvenSitesIn);
+        in.load(ssf_host);
+        delete[] ssf_host;
         code->convert_to_eoprec_device(&in2, &in3, &in);
 
         code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
@@ -517,8 +543,10 @@ struct ConvertFromEvenOddTester : public SpinorStaggeredTester {
         const hardware::buffers::SU3vec in3(testParameters.latticeExtents, device);
 
         EvenOddSpinorStaggeredfieldCreator ssf(testParameters.latticeExtents);
-        in2.load(ssf.createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(fillEvenSitesIn));
-        in3.load(ssf.createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(fillEvenSitesIn));
+        const su3vec* ssf_host = ssf.createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(fillEvenSitesIn);
+        in2.load(ssf_host);
+        in3.load(ssf_host);
+        delete[] ssf_host;
         code->convert_from_eoprec_device(&in2, &in3, &in);
         code->set_float_to_global_squarenorm_device(&in, doubleBuffer);
         doubleBuffer->dump(&kernelResult[0]);
@@ -872,13 +900,14 @@ struct SaxVecAndSqnormEvenOddTester : public EvenOddSpinorStaggeredTester {
         int NUM_EQS = testParameters.numEqs;
         EvenOddSpinorStaggeredfieldCreator ssf(testParameters.latticeExtents);
         const hardware::buffers::SU3vec in(testParameters.latticeExtents, device, NUM_EQS);
-        const hardware::buffers::SU3vec out(testParameters.latticeExtents, device, NUM_EQS);
-        in.load(ssf.createSpinorfield(SpinorFillType::one));
+        const su3vec* ssf_host = ssf.createSpinorfield(SpinorFillType::one);
+        in.load(ssf_host);
+        delete[] ssf_host;
 
         hardware::buffers::Plain<hmc_float> sqnorm(NUM_EQS, device);
         hardware::buffers::Plain<hmc_float> alpha(NUM_EQS, device);
         std::vector<hmc_float> alpha_vec_host(NUM_EQS, testParameters.coefficients.at(0).re);
-        for (uint i = 0; i < alpha_vec_host.size(); i++)
+        for (unsigned int i = 0; i < alpha_vec_host.size(); i++)
             alpha_vec_host[i] += i * testParameters.coefficients.at(0).im;
         alpha.load(&alpha_vec_host[0]);
 
@@ -1749,6 +1778,19 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
     BOOST_AUTO_TEST_CASE(GAUSSIAN_EO_1) { testEvenOddGaussianSpinorfield(LatticeExtents{ns12, nt4}, 3000); }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+/*
+ * ATTENTION: The following SAX_VEC_AND_SQNORM_* tests turned out to fail on the motherboard integrated GPU
+ *            Intel(R) Gen9 HD Graphics NEO. A long investigation has been done and it turned out that it might
+ *            be due to a GPU compiler bug handling private memory in kernel when dynamic indexing is used.
+ *            The test is let fail as a hint not to use such a device for production. On a real GPGPU (AMD
+ *            Radeon Instinct MI50) the tests pass. Please, note that this kernel is used in the RHMC only if the
+ *            user enables the usage of merged spinors kernels, what has so far never been the case in production.
+ *
+ *            For more information, refer to
+ *              - https://stackoverflow.com/a/65669765/14967071
+ *              - https://gitlab.itp.uni-frankfurt.de/lattice-qcd/ag-philipsen/cl2qcd/-/issues/36
+ */
 
 BOOST_AUTO_TEST_SUITE(SAX_VEC_AND_SQNORM)
 

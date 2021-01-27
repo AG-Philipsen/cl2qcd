@@ -2,7 +2,7 @@
  * Input file handling implementation
  *
  * Copyright (c) 2018 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -33,7 +33,7 @@ static unsigned short int getTerminalWidth()
     return w.ws_col;
 }
 
-unsigned short int getHelperWidth()
+static unsigned short int getHelperWidth()
 {
     unsigned short int threshold = getTerminalWidth() / 10 * 9;
     return (threshold > 210) ? 210 : threshold;

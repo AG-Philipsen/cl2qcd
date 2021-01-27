@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -43,6 +43,7 @@ namespace hardware {
         class Gaugefield : public Opencl_Module {
           public:
             friend hardware::Device;
+            friend hardware::buffers::SU3;
 
             /**
              * Destructor.
@@ -99,26 +100,6 @@ namespace hardware {
              * This applies stout smearing to a gaugefield
              */
             void stout_smear_device(const hardware::buffers::SU3* in, const hardware::buffers::SU3* out) const;
-
-            /**
-             * Import the gaugefield data into the OpenCL buffer using the device
-             * specific storage format.
-             *
-             * @param[out] gaugefield The OpenCL buffer to writ the gaugefield data to in the device specific format
-             * @param[in]  data       The gaugefield data to import into the OpenCL buffer
-             *
-             * @todo should not be public
-             */
-            void importGaugefield(const hardware::buffers::SU3* gaugefield, const Matrixsu3* const data) const;
-
-            /**
-             * Export the gaugefield from the OpenCL buffer, that uses a device
-             * specific storage format, into the given pointer using the generic
-             * storage format.
-             *
-             * @param[out] dest The array to store the gaugefield in
-             */
-            void exportGaugefield(Matrixsu3* const dest, const hardware::buffers::SU3* gaugefield) const;
 
             /**
              * Get the code required to use the gaugefield from kernels.

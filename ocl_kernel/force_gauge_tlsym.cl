@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -19,9 +19,9 @@
  * along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-inline void gauge_force_tlsym_per_link(__global const Matrixsu3StorageType* const restrict field,
-                                       __global aeStorageType* const restrict out, const st_index pos,
-                                       const dir_idx dir)
+static inline void gauge_force_tlsym_per_link(__global const Matrixsu3StorageType* const restrict field,
+                                              __global aeStorageType* const restrict out, const st_index pos,
+                                              const dir_idx dir)
 {
     Matrix3x3 V = calc_rectangles_staple(field, pos.space, pos.time, dir);
     Matrixsu3 U = get_matrixsu3(field, pos.space, pos.time, dir);
@@ -51,7 +51,7 @@ gauge_force_tlsym(__global const Matrixsu3StorageType* const restrict field, __g
         const size_t pos_local = id_local % VOL4D_LOCAL;
         const size_t dir       = id_local / VOL4D_LOCAL;
         const st_index pos     = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                                : get_odd_st_idx_local(pos_local);
         gauge_force_tlsym_per_link(field, out, pos, dir);
     }
 }
@@ -71,7 +71,7 @@ __kernel void gauge_force_tlsym_multipass1_tpe(__global const Matrixsu3StorageTy
         const size_t pos_local = id_local % VOL4D_LOCAL;
         const size_t dir       = id_local / VOL4D_LOCAL;
         const st_index pos     = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                                : get_odd_st_idx_local(pos_local);
 
         Matrix3x3 staple = zero_matrix3x3();
 #ifdef _USEGPU_
@@ -96,7 +96,7 @@ __kernel void gauge_force_tlsym_multipass2_tpe(__global const Matrixsu3StorageTy
         const size_t pos_local = id_local % VOL4D_LOCAL;
         const size_t dir       = id_local / VOL4D_LOCAL;
         const st_index pos     = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                                : get_odd_st_idx_local(pos_local);
 
         Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -121,7 +121,7 @@ __kernel void gauge_force_tlsym_multipass3_tpe(__global const Matrixsu3StorageTy
         const size_t pos_local = id_local % VOL4D_LOCAL;
         const size_t dir       = id_local / VOL4D_LOCAL;
         const st_index pos     = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                                : get_odd_st_idx_local(pos_local);
 
         Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -146,7 +146,7 @@ __kernel void gauge_force_tlsym_multipass4_tpe(__global const Matrixsu3StorageTy
         const size_t pos_local = id_local % VOL4D_LOCAL;
         const size_t dir       = id_local / VOL4D_LOCAL;
         const st_index pos     = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                                : get_odd_st_idx_local(pos_local);
 
         Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -171,7 +171,7 @@ __kernel void gauge_force_tlsym_multipass5_tpe(__global const Matrixsu3StorageTy
         const size_t pos_local = id_local % VOL4D_LOCAL;
         const size_t dir       = id_local / VOL4D_LOCAL;
         const st_index pos     = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                                : get_odd_st_idx_local(pos_local);
 
         Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -197,7 +197,7 @@ __kernel void gauge_force_tlsym_multipass6_tpe(__global const Matrixsu3StorageTy
         const size_t pos_local = id_local % VOL4D_LOCAL;
         const size_t dir       = id_local / VOL4D_LOCAL;
         const st_index pos     = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2))
-                                                            : get_odd_st_idx_local(pos_local);
+                                                                : get_odd_st_idx_local(pos_local);
 
         Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_

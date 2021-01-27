@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -38,8 +38,8 @@ hardware::lattices::Gaugemomenta::~Gaugemomenta()
     }
 }
 
-const std::vector<const hardware::buffers::Gaugemomentum*> hardware::lattices::Gaugemomenta::get_buffers() const
-    noexcept
+const std::vector<const hardware::buffers::Gaugemomentum*>
+hardware::lattices::Gaugemomenta::get_buffers() const noexcept
 {
     return buffers;
 }
@@ -103,14 +103,12 @@ void hardware::lattices::Gaugemomenta::import(const ae* const host) const
 {
     logger.trace() << "importing gaugemomenta";
     if (buffers.size() == 1) {
-        auto device = buffers[0]->get_device();
-        device->getGaugemomentumCode()->importGaugemomentumBuffer(buffers[0], host);
+        buffers[0]->load(host);
     } else {
         for (auto const buffer : buffers) {
             auto device  = buffer->get_device();
             ae* mem_host = new ae[buffer->get_elements()];
-
-            //            //todo: put these calls into own fct.! With smart pointers?
+            // TODO: put these calls into own fct.! With smart pointers?
             TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(ae),
                                                     device->getHaloExtent());
             memcpy(&mem_host[tmp2.getMainPartIndex_destination()], &host[tmp2.getMainPartIndex_source()],
@@ -120,8 +118,7 @@ void hardware::lattices::Gaugemomenta::import(const ae* const host) const
             memcpy(&mem_host[tmp2.getSecondHaloIndex_destination()], &host[tmp2.getSecondHaloPartIndex_source()],
                    tmp2.getHaloPartSizeInBytes());
 
-            device->getGaugemomentumCode()->importGaugemomentumBuffer(buffer, mem_host);
-
+            buffer->load(mem_host);
             delete[] mem_host;
         }
     }

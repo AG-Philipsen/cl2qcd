@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -68,15 +68,13 @@ namespace hardware {
          * You should usually only do this once per application.
          */
         System(const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&);
-        System(meta::Inputparameters&);  //@todo: only for compatibility, remove!
 
         ~System();
 
         const std::vector<Device*>& get_devices() const noexcept;
-        const meta::Inputparameters& get_inputparameters() const noexcept;  //@todo: remove
         const hardware::HardwareParametersInterface* getHardwareParameters() const noexcept;
-        const hardware::code::OpenClKernelParametersInterface* getOpenClParameters() const
-            noexcept;  // needed only in microbenchmarks -> remove!?
+        const hardware::code::OpenClKernelParametersInterface* getOpenClParameters() const noexcept;
+        // the getOpenClParameters method is needed only in microbenchmarks -> remove!?
 
         // non-copyable
         System& operator=(const System&) = delete;
@@ -101,9 +99,6 @@ namespace hardware {
         const hardware::HardwareParametersInterface* hardwareParameters;
         const hardware::code::OpenClKernelParametersInterface* kernelParameters;
         const hardware::OpenClCode* kernelBuilder;
-        // Remove when dependence on meta::InputParameters has been removed from physics package, for the moment it is
-        // needed in tests in physics!!!!
-        const meta::Inputparameters& inputparameters;
     };
 
     /**
