@@ -20,8 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required( VERSION 3.8.0 )
-project( CL2QCD )
+cmake_minimum_required(VERSION 3.8.0)
+project(CL2QCD)
 
 # We have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -72,22 +72,22 @@ TEST_BIG_ENDIAN(BIG_ENDIAN)
 message(STATUS "Big Endian: ${BIG_ENDIAN}")
 if(BIG_ENDIAN)
     message(STATUS "Big endian architecture!")
-    add_definitions( "BIG_ENDIAN_ARCH=1" )
+    add_definitions("BIG_ENDIAN_ARCH=1")
 else()
     message(STATUS "Little endian architecture!")
 endif()
 
 # Make sure we can compile against OpenCL
-find_package( OpenCL REQUIRED )
+find_package(OpenCL REQUIRED)
 find_OpenCL_cpp_bindings()
-include_directories( SYSTEM ${OpenCL_INCLUDE_DIRS} )
+include_directories(SYSTEM ${OpenCL_INCLUDE_DIRS})
 # Work around OpenCL implementations not shipping c++ bindings
-if( NOT OpenCL_HAS_CPP_BINDINGS )
-    message(STATUS "No OpenCL CPP bindings found, using hack" )
-    include_directories( SYSTEM hacks/cl_hpp )
-elseif( OpenCL_HAS_CPP_BINDINGS )
-    message (STATUS "OpenCL CPP bindings found" )
-endif( NOT OpenCL_HAS_CPP_BINDINGS )
+if(NOT OpenCL_HAS_CPP_BINDINGS)
+    message(STATUS "No OpenCL CPP bindings found, using hack")
+    include_directories(SYSTEM hacks/cl_hpp)
+elseif(OpenCL_HAS_CPP_BINDINGS)
+    message (STATUS "OpenCL CPP bindings found")
+endif(NOT OpenCL_HAS_CPP_BINDINGS)
 # Make OpenCL 1.2 target version -> in include/CL/cl_version.h macros for older deprecated
 # features are automatically defined depending on the CL_TARGET_OPENCL_VERSION macro value
 if(OpenCL_VERSION_STRING VERSION_LESS "1.2")
@@ -102,20 +102,20 @@ else(OpenCL_VERSION_STRING VERSION_LESS "1.2")
 endif(OpenCL_VERSION_STRING VERSION_LESS "1.2")
 
 # Look for other required dependencies
-find_package( LIME REQUIRED )
-include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
+find_package(LIME REQUIRED)
+include_directories(SYSTEM ${LIME_INCLUDE_DIR})
 
-find_package( GMP REQUIRED )
-include_directories( SYSTEM ${GMP_INCLUDE_DIR} )
+find_package(GMP REQUIRED)
+include_directories(SYSTEM ${GMP_INCLUDE_DIR})
 
-find_package( MPFR REQUIRED )
-include_directories( SYSTEM ${MPFR_INCLUDE_DIR} )
+find_package(MPFR REQUIRED)
+include_directories(SYSTEM ${MPFR_INCLUDE_DIR})
 
-find_package( LibXml2 REQUIRED )
-include_directories( SYSTEM ${LIBXML2_INCLUDE_DIR} )
-if( LIBXML2_DEFINITIONS )
-    add_definitions( ${LIBXML2_DEFINITIONS} )
-endif( LIBXML2_DEFINITIONS )
+find_package(LibXml2 REQUIRED)
+include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
+if(LIBXML2_DEFINITIONS)
+    add_definitions(${LIBXML2_DEFINITIONS})
+endif(LIBXML2_DEFINITIONS)
 
 # Require 1.60 as boost-unit_test of previous versions do not separate boost arguments and user test command line argumetns.
 set(BOOST_REQUIRED_COMPONENTS regex filesystem system program_options unit_test_framework)
@@ -126,11 +126,11 @@ mark_boost_variables_as_advanced(BOOST_REQUIRED_COMPONENTS)
 # Define where to find the OpenCL kernels
 # TODO this should also include the installation place
 # maybe even patch this during install step
-add_definitions( -DSOURCEDIR="${CMAKE_SOURCE_DIR}" )
+add_definitions(-DSOURCEDIR="${CMAKE_SOURCE_DIR}")
 
 # Add code version to the code (we need to include the binary dir as the custom target will create a header there)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-add_custom_target(git_commit_id_header ALL DEPENDS git_commit_id )
+add_custom_target(git_commit_id_header ALL DEPENDS git_commit_id)
 add_custom_command(OUTPUT git_commit_id
                    COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GenerateGitVersion.cmake)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/gitcommitid.h
@@ -145,17 +145,17 @@ if(TMP STREQUAL "")
 endif(TMP STREQUAL "")
 add_definitions(-DLOG_LEVEL=${LOG_LEVEL})
 # Don't compile in debug output if compiling for release
-if( CMAKE_BUILD_TYPE STREQUAL "Release" )
-    add_definitions( -DNDEBUG )
-endif( CMAKE_BUILD_TYPE STREQUAL "Release" )
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_definitions(-DNDEBUG)
+endif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
 # Some options for various variants
-option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
-if( USE_DOUBLE_PRECISION )
-    add_definitions( -D_USEDOUBLEPREC_ )
+option(USE_DOUBLE_PRECISION "Use double precision arithmetics" ON)
+if(USE_DOUBLE_PRECISION)
+    add_definitions(-D_USEDOUBLEPREC_)
 else()
     message(SEND_ERROR "Application not ready in SINGLE precision! Please, set USEDOUBLEPREC=ON.")
-endif( USE_DOUBLE_PRECISION )
+endif(USE_DOUBLE_PRECISION)
 
 # Allow to choose a PRNG
 set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default)")
@@ -179,7 +179,7 @@ if(ASYNC_HALO_UPDATES)
 endif()
 
 # Default random number seed
-configure_file( rand_seeds rand_seeds COPYONLY )
+configure_file(rand_seeds rand_seeds COPYONLY)
 
 # Which directories contain documentation relevant stuff
 # (modules will add their files to this list)
