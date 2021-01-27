@@ -25,13 +25,13 @@ project( CL2QCD )
 
 # We have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
 include(Macros)
 
 # If a user doesn't specify anything he probably isn't interested in debug information
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
+mark_as_advanced(CMAKE_INSTALL_PREFIX)
 
 # Have the user asked for tests
 enable_testing()
@@ -118,8 +118,10 @@ if( LIBXML2_DEFINITIONS )
 endif( LIBXML2_DEFINITIONS )
 
 # Require 1.60 as boost-unit_test of previous versions do not separate boost arguments and user test command line argumetns.
-find_package(Boost 1.60.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
+set(BOOST_REQUIRED_COMPONENTS regex filesystem system program_options unit_test_framework)
+find_package(Boost 1.60.0 REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+mark_boost_variables_as_advanced(BOOST_REQUIRED_COMPONENTS)
 
 # Define where to find the OpenCL kernels
 # TODO this should also include the installation place

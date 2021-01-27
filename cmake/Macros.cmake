@@ -51,6 +51,21 @@ macro(set_abs_paths DEST)
     endforeach()
 endmacro()
 
+# For some reason not all variables set by FindBoost.cmake are marked
+# as advanced and this is handled here (pretty patchy, works in cmake 3.16.3)
+macro(mark_boost_variables_as_advanced)
+    foreach(ELEMENT IN LISTS ${ARGV})
+        string(TOUPPER "${ELEMENT}" ELEMENT_UPPER)
+        string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_UPPER)
+        mark_as_advanced(Boost_${ELEMENT_UPPER}_LIBRARY_${BUILD_TYPE_UPPER})
+    endforeach()
+    set(EXTRA_VARS "Boost_INCLUDE_DIR")
+    foreach(ELEMENT IN LISTS EXTRA_VARS)
+        mark_as_advanced(${ELEMENT})
+    endforeach()
+endmacro()
+
+
 # Add adds one ore more modules to the library.
 #
 # This function has to be called with the keywords followed by their value(s)
