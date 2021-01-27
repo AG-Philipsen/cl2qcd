@@ -1,7 +1,7 @@
 # Script to locate the Nettle library
 #
 # Copyright (c) 2013 Matthias Bach
-# Copyright (c) 2017,2018 Alessandro Sciarra
+# Copyright (c) 2017-2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -18,40 +18,31 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-FIND_PACKAGE( PackageHandleStandardArgs )
+find_package(PackageHandleStandardArgs)
 
-IF (APPLE)
+if(APPLE)
+    find_library(NETTLE_LIBRARIES nettle DOC "Nettle lib for OSX" ENV DYLD_LIBRARY_PATH ENV LIBRARY_PATH)
+else(APPLE)
+    if(WIN32)
+        find_library(NETTLE_LIBRARIES nettle ENV PATH)
+    else(WIN32)
+        # Unix style platforms
+        find_library(NETTLE_LIBRARIES nettle ENV LD_LIBRARY_PATH ENV LIBRARY_PATH)
+    endif(WIN32)
+endif(APPLE)
 
-	FIND_LIBRARY(Nettle_LIBRARIES nettle DOC "Nettle lib for OSX"
-		ENV DYLD_LIBRARY_PATH
-		ENV LIBRARY_PATH )
-ELSE (APPLE)
+find_path(NETTLE_INCLUDE_DIR nettle/nettle-meta.h DOC "Include for Nettle")
 
-	IF (WIN32)
+# Also search relative to lib (git build)
+if(NOT NETTLE_INCLUDE_DIR)
+    get_filename_component(_Nettle_LIB_DIR ${NETTLE_LIBRARIES} PATH)
+    get_filename_component(_Nettle_INC_CAND ${_Nettle_LIB_DIR}/../include ABSOLUTE)
+    find_path(NETTLE_INCLUDE_DIR nettle/nettle-meta.h PATHS ${_Nettle_INC_CAND})
+endif(NOT NETTLE_INCLUDE_DIR)
 
-		FIND_LIBRARY(Nettle_LIBRARIES nettle
-			ENV PATH
-		)
+find_package_handle_standard_args(Nettle DEFAULT_MSG NETTLE_LIBRARIES NETTLE_INCLUDE_DIR)
 
-	ELSE (WIN32)
-
-		# Unix style platforms
-		FIND_LIBRARY(Nettle_LIBRARIES nettle
-			ENV LD_LIBRARY_PATH
-			ENV LIBRARY_PATH
-		)
-
-	ENDIF (WIN32)
-
-ENDIF (APPLE)
-
-FIND_PATH(Nettle_INCLUDE_DIR nettle/nettle-meta.h DOC "Include for Nettle")
-
-# Also search relative to lib ( git build )
-IF ( NOT Nettle_INCLUDE_DIR )
-        GET_FILENAME_COMPONENT(_Nettle_LIB_DIR ${Nettle_LIBRARIES} PATH)
-        GET_FILENAME_COMPONENT(_Nettle_INC_CAND ${_Nettle_LIB_DIR}/../include ABSOLUTE)
-        FIND_PATH(Nettle_INCLUDE_DIR nettle/nettle-meta.h PATHS ${_Nettle_INC_CAND} )
-ENDIF ( NOT Nettle_INCLUDE_DIR )
-
-FIND_PACKAGE_HANDLE_STANDARD_ARGS( Nettle DEFAULT_MSG Nettle_LIBRARIES Nettle_INCLUDE_DIR )
+mark_as_advanced(
+  NETTLE_LIBRARIES
+  NETTLE_INCLUDE_DIR
+)

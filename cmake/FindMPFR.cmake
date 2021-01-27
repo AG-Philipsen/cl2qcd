@@ -1,7 +1,7 @@
 # Script to locate the MPFR library
 #
 # Copyright (c) 2013 Matthias Bach
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -18,33 +18,31 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
-FIND_PACKAGE(PackageHandleStandardArgs)
+find_package(PackageHandleStandardArgs)
 
-IF(APPLE)
-	FIND_LIBRARY(MPFR_LIBRARIES mpfr DOC "MPFR lib for OSX"
-		ENV DYLD_LIBRARY_PATH
-		ENV LIBRARY_PATH )
-ELSE()
-	IF(WIN32)
-		FIND_LIBRARY(MPFR_LIBRARIES mpfr
-			ENV PATH
-		)
-	ELSE()
-		# Unix style platforms
-		FIND_LIBRARY(MPFR_LIBRARIES mpfr
-			ENV LD_LIBRARY_PATH
-			ENV LIBRARY_PATH
-		)
-	ENDIF()
-ENDIF()
+if(APPLE)
+    find_library(MPFR_LIBRARIES mpfr DOC "MPFR lib for OSX" ENV DYLD_LIBRARY_PATH ENV LIBRARY_PATH)
+else(APPLE)
+    if(WIN32)
+        find_library(MPFR_LIBRARIES mpfr ENV PATH)
+    else(WIN32)
+        # Unix style platforms
+        find_library(MPFR_LIBRARIES mpfr ENV LD_LIBRARY_PATH ENV LIBRARY_PATH)
+    endif(WIN32)
+endif(APPLE)
 
-FIND_PATH(MPFR_INCLUDE_DIR mpfr.h DOC "Include for MPFR")
+find_path(MPFR_INCLUDE_DIR mpfr.h DOC "Include for MPFR")
 
-# Also search relative to lib ( git build )
-IF ( NOT MPFR_INCLUDE_DIR )
-	GET_FILENAME_COMPONENT(_MPFR_LIB_DIR ${MPFR_LIBRARIES} PATH)
-	GET_FILENAME_COMPONENT(_MPFR_INC_CAND ${_MPFR_LIB_DIR}/../include ABSOLUTE)
-	FIND_PATH(MPFR_INCLUDE_DIR mpfr.h PATHS ${_MPFR_INC_CAND} )
-ENDIF ( NOT MPFR_INCLUDE_DIR )
+# Also search relative to lib (git build)
+if(NOT MPFR_INCLUDE_DIR)
+    get_filename_component(_MPFR_LIB_DIR ${MPFR_LIBRARIES} PATH)
+    get_filename_component(_MPFR_INC_CAND ${_MPFR_LIB_DIR}/../include ABSOLUTE)
+    find_path(MPFR_INCLUDE_DIR mpfr.h PATHS ${_MPFR_INC_CAND})
+endif(NOT MPFR_INCLUDE_DIR)
 
-FIND_PACKAGE_HANDLE_STANDARD_ARGS( MPFR DEFAULT_MSG MPFR_LIBRARIES MPFR_INCLUDE_DIR )
+find_package_handle_standard_args(MPFR DEFAULT_MSG MPFR_LIBRARIES MPFR_INCLUDE_DIR)
+
+mark_as_advanced(
+  MPFR_LIBRARIES
+  MPFR_INCLUDE_DIR
+)
