@@ -121,7 +121,11 @@ endif(LIBXML2_DEFINITIONS)
 set(BOOST_REQUIRED_COMPONENTS regex filesystem system program_options unit_test_framework)
 find_package(Boost 1.60.0 REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-mark_boost_variables_as_advanced(BOOST_REQUIRED_COMPONENTS)
+if(CMAKE_VERSION VERSION_LESS "3.17")
+    # Probably because of CMP0102 policy, this must be done by hand
+    # -> https://cmake.org/cmake/help/latest/policy/CMP0102.html#policy:CMP0102
+    mark_boost_variables_as_advanced(BOOST_REQUIRED_COMPONENTS)
+endif(CMAKE_VERSION VERSION_LESS "3.17")
 
 # Define where to find the OpenCL kernels
 # TODO this should also include the installation place
