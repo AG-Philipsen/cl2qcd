@@ -25,13 +25,7 @@ target_link_libraries(su3heatbath_benchmarks cl2qcd)
 add_executable(dslash_benchmark dslashBenchmarkMain.cpp)
 target_link_libraries(dslash_benchmark cl2qcd)
 
-add_executable(dslash_multidev dslashBenchmarkMultipleDevicesMain.cpp)
-target_link_libraries(dslash_multidev cl2qcd)
-
 add_executable(dks_benchmark dksBenchmarkMain.cpp)
 target_link_libraries(dks_benchmark cl2qcd)
-
-add_executable(dks_multidev dksBenchmarkMultipleDevicesMain.cpp)
-target_link_libraries(dks_multidev cl2qcd)
 
 configure_file(${CMAKE_SOURCE_DIR}/benchmarks/generic_benchmark.py make_benchmark.py COPYONLY)
