@@ -26,7 +26,7 @@ import re
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Benchmark a kernel performance')
-	parser.add_argument('-k', '--kernel', required=True, choices=['dks', 'dslash'], help='Benchmark kernel, required')
+	parser.add_argument('-k', '--kernel', required=True, choices=['dks', 'dslash', 'su3heatbath'], help='Benchmark kernel, required')
 	parser.add_argument('-p', '--path', default='./', help='Path to benchmark executable (default: ./')
 	parser.add_argument('-n', '--numDevices', default=1, type=int, help='Number of devices to use (default: 1)')
 	parser.add_argument('--ntMax', default=128, type=int, help='Maximal lattice extent in temporal direction (default: 128)')
@@ -38,16 +38,19 @@ if __name__ == '__main__':
 	parser.add_argument('--calls', default=2000, type=int, help='Number of kernel calls (default: 2000)')
 	parser.add_argument('--outFilePrefix', default="benchmark_", help='Prefix for output file (default: benchmark_)')
 	parser.add_argument('--doNotUseGPU', default=False, action='store_true', help='Use CPU instead of GPU')
-	parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Print benchmark output to standard output')
+	parser.add_argument('-q', '--quite', default=False, action='store_true', help='Print benchmark output to standard output')
 	args = parser.parse_args()
 
 	# further setup based on command line options
 	if args.kernel == 'dks':
-		executable = args.path + 'dks_multidev'
-		labelOutput = 'D_KS_eo'
+		executable = args.path + 'dks_benchmark'
+		labelOutput = 'D_KS'
 	elif args.kernel == 'dslash':
-		executable = args.path + 'dslash_multidev'
+		executable = args.path + 'dslash_benchmark'
 		labelOutput = 'Dslash'
+	elif args.kernel == 'su3heatbath':
+		executable = args.path + 'su3heatbath_benchmarks'
+		labelOutput = 'SU3_Heatbath'
 	if args.doNotUseGPU == True:
 		useGPU = 'false'
 		useCPU = 'true'
@@ -56,7 +59,7 @@ if __name__ == '__main__':
 		useCPU = 'false'
 
 	# open file for results
-	f = open(f'{args.outFilePrefix}{args.kernel}_{args.numDevices}_devices.dat', "w" )
+	f = open(f'{args.outFilePrefix}{args.kernel}_{args.numDevices}_devices.dat', "w")
 	f.write("#Ns\tNt\tGFLOPS\t\tGB/s\t\ttime{msec}\n")
 
 	for Ns in range(args.nsMin, args.nsMax+1, args.nsIncr):
@@ -65,13 +68,15 @@ if __name__ == '__main__':
 			if Nt > 32:
 				if not Nt % 32 == 0:
 					continue
-			print(f'\n# Testing D_KS kernel on {Ns}^3*{Nt} lattice with {args.numDevices} device(s)..."')
+			print(f'\n# Testing {labelOutput} kernel on {Ns}^3*{Nt} lattice with {args.numDevices} device(s)..."')
+			if not args.quite:
+				print("# CL2QCD output:\n")
 
 			# call program
 			if not os.path.isfile(executable):
 				raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), executable)
 
-			p = subprocess.Popen([executable, '--logLevel=info', f'--nSpace={Ns}', f'--nTime={Nt}', f'--useGPU={useGPU}', f'--useCPU={useCPU}', f'--nDevices={args.numDevices}', f'--nBenchmarkIterations={args.calls}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			p = subprocess.Popen([executable, f'--nSpace={Ns}', f'--nTime={Nt}', f'--useGPU={useGPU}', f'--useCPU={useCPU}', f'--nDevices={args.numDevices}', f'--nBenchmarkIterations={args.calls}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out, err = p.communicate()
 			out = out.decode('utf8')
 			lines = out.split("\n")
@@ -79,8 +84,7 @@ if __name__ == '__main__':
 			if not err == "":
 				print("# There were errors:\n")
 				print(err)
-				if args.verbose:
-					print("# CL2QCD output:")
+				if not args.quite:
 					for line in lines:
 						print(line)
 				continue
@@ -90,7 +94,7 @@ if __name__ == '__main__':
 			memory = float('nan')
 			time = float('nan')
 			for line in lines:
-				if args.verbose:
+				if not args.quite:
 					print(line)
 				if performance != performance:
 					match = re.search(fr'{labelOutput} performance:\s+\d+.\d+', line)
@@ -101,14 +105,20 @@ if __name__ == '__main__':
 					if match2:
 						memory = float(match2.group().split()[2] )
 				if time != time:
-					match3 = re.search(r'Measured TIME:\s+\d+.\d+', line)
+					if args.numDevices == 1:
+						match3 = re.search(fr'{labelOutput} device time per call:\s+\d+.\d+', line)
+					else:
+						match3 = re.search(fr'{labelOutput} host time per call:\s+\d+.\d+', line)
 					if match3:
-						time = float(match3.group().split()[2] )
+						time = float(match3.group().split()[5] )
 
 			# Report
 			print(f'# Measured performance of {performance} GFLOPS')
 			print(f'# Measured memory of {memory} GB/S')
-			print(f'# Measured time of {time} msec')
+			if args.numDevices == 1:
+				print(f'# Measured device time per call of {time} ms')
+			else:
+				print(f'# Measured hosttime per call of {time} ms')
 			f.write(f'{Ns}\t{Nt}\t{performance}\t\t{memory}\t\t{time}\n')
 
 	print('')
