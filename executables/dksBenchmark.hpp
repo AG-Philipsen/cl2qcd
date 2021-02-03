@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -26,26 +26,18 @@
 #include "../physics/lattices/staggeredfield_eo.hpp"
 #include "benchmarkExecutable.hpp"
 
-class dksBenchmark : public benchmarkExecutable {
+class dksBenchmark final : public benchmarkExecutable {
   public:
     dksBenchmark(int argc, const char* argv[]);
 
   protected:
-    const physics::lattices::Staggeredfield_eo* staggeredfield1;
-    const physics::lattices::Staggeredfield_eo* staggeredfield2;
+    std::unique_ptr<physics::lattices::Staggeredfield_eo> staggeredfield1;
+    std::unique_ptr<physics::lattices::Staggeredfield_eo> staggeredfield2;
 
-    /*
-     * Calls the dks_eo kernel.
-     * Per iteration, the kernel is called with EVEN and ODD parameters.
-     */
-    void performBenchmarkForSpecificKernels() override;
-    /*
-     * Calls dks_eo on all devices in the system.
-     * Per iteration, the kernel is called with EVEN and ODD parameters.
-     */
-    void enqueueSpecificKernelForBenchmarkingMultipleDevices() override;
-
-    void printProfilingDataToScreen() override;
+    void enqueueSpecificKernelForBenchmark() override;
+    std::vector<double> getExecutionTimesOnDevices() override;
+    size_t getFlopsPerKernelCall() override;
+    size_t getMemoryPerKernelCall() override;
 };
 
 #endif /* DSLASHBENCHMARK_H_ */

@@ -3,7 +3,7 @@
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
  * Copyright (c) 2015,2018 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -76,7 +76,7 @@ namespace meta {
         InputparametersOptions options;
         std::string fermactString;
         std::string fermactMPString;
-        common::action fermact;
+        mutable common::action fermact;  // // mutable to change it in const object in benchmarks
         common::action fermactMP;
     };
 

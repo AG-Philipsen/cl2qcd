@@ -5,7 +5,7 @@
  * Copyright (c) 2011 Lars Zeidlewicz
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -29,6 +29,8 @@
 #include "../buffers/su3.hpp"
 #include "opencl_module.hpp"
 
+class su3heatbathBenchmark;
+
 namespace hardware {
 
     namespace code {
@@ -43,6 +45,7 @@ namespace hardware {
         class Heatbath : public hardware::code::Opencl_Module {
           public:
             friend hardware::Device;
+            friend su3heatbathBenchmark;
 
             virtual ~Heatbath();
 
@@ -73,6 +76,21 @@ namespace hardware {
             void virtual print_profiling(const std::string& filename, int number) const override;
 
             /**
+             * Return amount of bytes read and written by a specific kernel per call.
+             *
+             * @param in Name of the kernel under consideration.
+             */
+            virtual size_t get_read_write_size(const std::string& in) const override;
+
+            /**
+             * Return amount of Floating point operations performed by a specific kernel per call.
+             * NOTE: this is meant to be the "netto" amount in order to be comparable.
+             *
+             * @param in Name of the kernel under consideration.
+             */
+            virtual uint64_t get_flop_size(const std::string& in) const override;
+
+            /**
              * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
              *        It may be made private again in the future!
              */
@@ -97,21 +115,6 @@ namespace hardware {
             cl_kernel heatbath_even;
             cl_kernel overrelax_odd;
             cl_kernel overrelax_even;
-
-            /**
-             * Return amount of bytes read and written by a specific kernel per call.
-             *
-             * @param in Name of the kernel under consideration.
-             */
-            virtual size_t get_read_write_size(const std::string& in) const override;
-
-            /**
-             * Return amount of Floating point operations performed by a specific kernel per call.
-             * NOTE: this is meant to be the "netto" amount in order to be comparable.
-             *
-             * @param in Name of the kernel under consideration.
-             */
-            virtual uint64_t get_flop_size(const std::string& in) const override;
         };
 
     }  // namespace code

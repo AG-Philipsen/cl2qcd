@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -30,11 +30,12 @@ class su3heatbathBenchmark : public benchmarkExecutable {
     su3heatbathBenchmark(int argc, const char* argv[]);
 
   protected:
-    /*
-     * Calls the heatbath and overrelax kernels.
-     * Per iteration, the kernel is called with EVEN and ODD parameters.
-     */
-    void performBenchmarkForSpecificKernels() override;
+    const unsigned int overrelaxationSteps;
+
+    void enqueueSpecificKernelForBenchmark() override;
+    std::vector<double> getExecutionTimesOnDevices() override;
+    size_t getFlopsPerKernelCall() override;
+    size_t getMemoryPerKernelCall() override;
 };
 
 #endif /* SU3HEATBATHBENCHMARK_H_ */

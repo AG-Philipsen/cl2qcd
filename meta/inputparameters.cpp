@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2014,2015 Christopher Pinke
- * Copyright (c) 2014,2015,2018-2020 Alessandro Sciarra
+ * Copyright (c) 2014,2015,2018-2021 Alessandro Sciarra
  * Copyright (c) 2015,2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -58,8 +58,9 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
     meta::InputparametersOptions cmd_opts("Generic options");
     // clang-format off
     cmd_opts.add_options()
-    ("help,h", "Produce helper for the specific executable.")
-    ("inputFile", po::value<std::string>(), "The path of the file containing the input parameters.");
+    ("help,h", "Produce helper for the specific executable.");
+    if (parameterSet != "benchmark")
+        cmd_opts.add_options()("inputFile", po::value<std::string>(), "The path of the file containing the input parameters.");
     // clang-format on
     // TODO add log-level etc
     po::positional_options_description pos_opts;
@@ -132,6 +133,10 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
                 {"solver", "solverMP", "solverMaxIterationsMP", "solverRestartEvery", "solverUseAsyncCopy"}))
             .add(ParametersObs::options)
             .add(ParametersSources::options.deleteSome({"placeSourcesOnHost"}));
+
+    } else if (parameterSet == "benchmark") {
+        desc.add(ParametersConfig::options.keepOnlySome(
+            {"deviceId", "nDevices", "useCPU", "useGPU", "nSpace", "nTime", "nBenchmarkIterations"}));
 
     } else  // default: add all options
     {
