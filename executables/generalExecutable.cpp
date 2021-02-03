@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2015 Christopher Pinke
- * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -44,7 +44,7 @@ void generalExecutable::printParametersToScreenAndFile()
 void generalExecutable::printProfilingDataToFile()
 {
     if (parameters.get_enable_profiling()) {
-        logger.info() << "## writing general times to file: \"" << filenameForProfilingData << "\"";
+        logger.info() << "Writing profiling times to file: \"" << filenameForProfilingData << "\"";
         // For benchmarking one might need the lattice sizes
         outputToFile.open(filenameForProfilingData, std::ios::out | std::ios::app);
         if (outputToFile.is_open()) {
@@ -94,26 +94,32 @@ void generalExecutable::printRuntimeInformationToScreenAndFile()
     return;
 }
 
+static void printLineOfTimesToScreen(std::string label, double timeInMus, double totalTimeInMus)
+{
+    using std::fixed;
+    using std::setfill;
+    using std::setprecision;
+    using std::setw;
+    logger.info() << setfill(' ') << setw(15) << label << setw(15) << setprecision(4) << fixed << timeInMus / 1.e6
+                  << setw(15) << setprecision(1) << fixed << percent(timeInMus, totalTimeInMus);
+}
+
 void generalExecutable::printGeneralTimesToScreen()
 {
-    using namespace std;
-    logger.info() << "## *******************************************************************";
-    logger.info() << "## General Times [mus]:";
-    logger.info() << "## *******************************************************************";
-    logger.info() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
-    logger.info() << "## Total:\t" << setfill(' ') << setw(12) << totalRuntimeOfExecutable.getTime();
-    logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << initializationTimer.getTime() << '\t' << fixed
-                  << setw(5) << setprecision(1)
-                  << percent(initializationTimer.getTime(), totalRuntimeOfExecutable.getTime());
-    logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << performanceTimer.getTime() << '\t' << fixed << setw(5)
-                  << setprecision(1) << percent(performanceTimer.getTime(), totalRuntimeOfExecutable.getTime());
-    logger.info() << "## *******************************************************************";
+    auto totalTime = totalRuntimeOfExecutable.getTime();
+    logger.info() << "*******************************************************************";
+    logger.info() << "General Times [s]:";
+    logger.info() << "*******************************************************************";
+    printLineOfTimesToScreen("Total:", totalRuntimeOfExecutable.getTime(), totalTime);
+    printLineOfTimesToScreen("Initialization:", initializationTimer.getTime(), totalTime);
+    printLineOfTimesToScreen("Execution:", performanceTimer.getTime(), totalTime);
+    logger.info() << "*******************************************************************";
     return;
 }
 void generalExecutable::printGeneralTimesToFile()
 {
     using namespace std;
-    logger.info() << "## writing general times to file: \"" << generalTimeOutputFilename << "\"";
+    logger.info() << "Writing general times to file: \"" << generalTimeOutputFilename << "\"";
     outputToFile.open(generalTimeOutputFilename);
     if (outputToFile.is_open()) {
         outputToFile << "## *******************************************************************" << endl;
