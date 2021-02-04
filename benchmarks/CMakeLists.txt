@@ -28,5 +28,5 @@ target_link_libraries(dslash_benchmark cl2qcd)
 add_executable(dks_benchmark dksBenchmarkMain.cpp)
 target_link_libraries(dks_benchmark cl2qcd)
 
-configure_file(${CMAKE_SOURCE_DIR}/benchmarks/generic_benchmark.py make_benchmark.py COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/benchmarks/make_benchmark.py make_benchmark.py COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/benchmarks/plot_benchmark_results.py plot_benchmark_results.py COPYONLY)
