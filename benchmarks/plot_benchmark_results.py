@@ -104,16 +104,20 @@ def make_performance_plot(axis, datafiles, plot_title):
 	axis.set_ylim(top=axis.get_ylim()[1]*1.05)
 	flops_memory_conversion_factor = datafiles[0].runs[0][2]/datafiles[0].runs[0][3]
 	right_axis.set_ylim(top=axis.get_ylim()[1]/flops_memory_conversion_factor)
-	axis.legend()
+
+	legend_ncol = len(datafiles) if len(datafiles)<=7 else 7
+	figure = plt.gcf()
+	figure.legend(ncol=legend_ncol, loc='upper center')
 
 def make_bandwidth_histogram_plot(axis, all_data, bandwidths):
 	from statistics import mean
 	average_bandwidths = [mean(data.runs[:,3]) for data in all_data]
-	xtic_labels = [data.label for data in all_data]
+	x_values = range(len(all_data))
 	y_values = []
 	for average, maximum in zip(average_bandwidths, bandwidths):
 		y_values.append(average/maximum*100)
-	axis.tick_params(axis='x', rotation=60)
+	axis.bar(x_values, y_values, color=plot_colors)
+
 	axis.yaxis.tick_right()
 	axis.set_ylim(bottom=0, top=100)
 	axis.set_yticks([val for val in range(0,101,20)])
@@ -124,8 +128,9 @@ def make_bandwidth_histogram_plot(axis, all_data, bandwidths):
 	else:
 		axis.set_title('<BW>/BW_max')
 		axis.set_yticklabels([f'{val}%' for val in range(0,101,20)])
-
-	axis.bar(xtic_labels, y_values, color=plot_colors)
+		xtic_labels = [data.label for data in all_data]
+	axis.set_xticks(x_values)
+	axis.set_xticklabels(xtic_labels, rotation=20, ha='right', rotation_mode="anchor")
 
 def check_datafiles_existence(datafiles):
 	filenames = []
@@ -140,11 +145,18 @@ def check_datafiles_existence(datafiles):
 def check_provided_BWs(files, bw):
 	if args.maxBWs != None:
 		if len(args.maxBWs) != len(filenames):
-			print(f'Number of BW-values provided mismatch number of files: {len(args.maxBWs)} != {len(filenames)} but ')
+			print(f'Number of BW-values provided mismatch number of files: {len(args.maxBWs)} != {len(filenames)}')
 			raise SystemExit
 
-def read_data_from_all_files(filenames):
+def check_provided_labels(files, labels):
+	if args.labels != None:
+		if len(args.labels) != len(filenames):
+			print(f'Number of labels provided mismatch number of files: {len(args.labels)} != {len(filenames)}')
+			raise SystemExit
+
+def read_data_from_all_files(filenames, labels):
 	read_data = []
+	label_counter = 0
 	for filename in filenames:
 		runs = []
 		with open(filename) as file:
@@ -155,31 +167,33 @@ def read_data_from_all_files(filenames):
 					runs.append([float(x) for x in row])
 
 		runs = np.array(sorted(runs, key=lambda p: p[0]**3 * p[1]))
-		#vols = [run[0]**3 * run[1] for run in runs]
 		xlabels = [get_xtic_label([run[0], run[1]]) for run in runs]
-		read_data.append(FileData(filename, runs, xlabels))
+		read_data.append(FileData(labels[label_counter], runs, xlabels))
+		label_counter += 1
 	return read_data
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Plot benchmark results')
 	parser.add_argument('files', metavar='FILE', nargs='+')
-	parser.add_argument('--title', help='Title to use for the plot')
-	parser.add_argument('--maxBWs', nargs='+', type=float, help='The maximum bandwidth of the device used in each benchmark datafile. It requires as many values as the number of files.')
+	parser.add_argument('--title', default='Benchmark performance', help='Title to use for the plot')
+	parser.add_argument('--maxBWs', nargs='+', type=float, help='The maximum bandwidth of the device used in each benchmark datafile. Specifying this option, a histogram will be produced next to the plot. It requires as many values as the number of files.')
+	parser.add_argument('--labels', nargs='+', type=str, help='The labels to be used in the plot e.g. in the legend. It requires as many values as the number of files.')
 	parser.add_argument('--TeX', default=False, action='store_true', help='Use TeX style in plots. WARNING: Slow but nice.')
 	args = parser.parse_args()
 
 	set_tex_usage(args.TeX)
 	filenames = check_datafiles_existence(args.files)
 	check_provided_BWs(filenames, args.maxBWs)
-	data_read_from_files = read_data_from_all_files(filenames)
+	check_provided_labels(filenames, args.labels)
+	data_read_from_files = read_data_from_all_files(filenames, args.labels if args.labels != None else filenames)
 
 	if args.maxBWs == None:
-		figure, axis = plt.subplots(figsize=(12, 5))
-		figure.subplots_adjust(left=0.1, bottom=0.23, right=0.9, top=0.95, wspace=None, hspace=None)
+		figure, axis = plt.subplots(figsize=(18, 8))
+		figure.subplots_adjust(left=0.1, bottom=0.23, right=0.9, top=0.8, wspace=None, hspace=None)
 		make_performance_plot(axis, data_read_from_files, args.title)
 	else:
-		figure, (axis_left, axis_right) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [4, 1]}, figsize=(12, 5))
-		figure.subplots_adjust(left=0.1, bottom=0.22, right=0.92, top=0.93, wspace=0.22, hspace=None)
+		figure, (axis_left, axis_right) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [4, 1]}, figsize=(18, 8))
+		figure.subplots_adjust(left=0.06, bottom=0.15, right=0.94, top=0.88, wspace=0.22, hspace=None)
 		make_performance_plot(axis_left, data_read_from_files, args.title)
 		make_bandwidth_histogram_plot(axis_right, data_read_from_files, args.maxBWs)
 
