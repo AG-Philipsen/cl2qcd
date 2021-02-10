@@ -124,7 +124,7 @@ def make_bandwidth_histogram_plot(axis, all_data, bandwidths):
 	if use_tex:
 		axis.set_title(r'{\ttfamily <BW>/BW$_\mathtt{max}$}')
 		axis.set_yticklabels([rf'{val}\%' for val in range(0,101,20)])
-		xtic_labels = [rf'\textsc{{{xtic}}}' for xtic in xtic_labels]
+		xtic_labels = [rf'\textsc{{{data.label}}}' for data in all_data]
 	else:
 		axis.set_title('<BW>/BW_max')
 		axis.set_yticklabels([f'{val}%' for val in range(0,101,20)])
@@ -155,8 +155,13 @@ def check_provided_labels(files, labels):
 			raise SystemExit
 
 def read_data_from_all_files(filenames, labels):
+	if use_tex:
+		escaped_labels = [label.replace('_', r'\_') for label in labels]
+	else:
+		escaped_labels = labels
 	read_data = []
 	label_counter = 0
+
 	for filename in filenames:
 		runs = []
 		with open(filename) as file:
@@ -168,7 +173,7 @@ def read_data_from_all_files(filenames, labels):
 
 		runs = np.array(sorted(runs, key=lambda p: p[0]**3 * p[1]))
 		xlabels = [get_xtic_label([run[0], run[1]]) for run in runs]
-		read_data.append(FileData(labels[label_counter], runs, xlabels))
+		read_data.append(FileData(escaped_labels[label_counter], runs, xlabels))
 		label_counter += 1
 	return read_data
 
