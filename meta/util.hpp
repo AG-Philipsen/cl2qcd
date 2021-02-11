@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2014,2015,2018,2020 Alessandro Sciarra
+ * Copyright (c) 2014,2015,2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -51,6 +51,9 @@ namespace meta {
     double get_c0(const Inputparameters& params);
     double get_c1(const Inputparameters& params);
     double get_xi_0(const Inputparameters& params);
+    int getRationalApproximationNumerator(double numTastes, int numTastesDecimalDigits);
+    int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits,
+                                            int numPseudoFermions);
 
     void print_info_global(const meta::Inputparameters& params);
     void print_info_global(std::ostream* os, const meta::Inputparameters& params);
