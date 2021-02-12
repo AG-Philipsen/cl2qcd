@@ -23,17 +23,21 @@ Refer also to the [TODO](TODO.md) file to get more information of the changes oc
 
 ## [Unreleased]
 
+
+
+## [Version 1.1] &nbsp;&nbsp; <sub><sup>12 February 2021</sub></sup>
+
  * :sos: Fix minor bug not considering number of pseudofermions in RHMC executable checks and information output.
  * :heavy_check_mark: Benchmarks functionality has been reviewed and improved, becoming now much more user-friendly.
  * :heavy_check_mark: The installation procedure and in particular the steps needed to locate OpenCL have been simplified.
  * :boom: Version `1.60` of Boost is now required, so that unit tests command line options are better handled (user needs to separate boost and user options via `--`).
  * :heavy_check_mark: The codebase has been revised on modern architectures and code has been improved following compiler warnings and hints.
 
----
 
 ## [Version 1.0] &nbsp;&nbsp; <sub><sup>26 September 2018</sub></sup>
 
 This has been the first release of the repository.
 
-[Unreleased]: https://github.com/AG-Philipsen/cl2qcd/compare/v1.0...HEAD
-[Version 1.0]: https://github.com/AG-Philipsen/cl2qcd/releases/tag/v1.0
+[Unreleased]: https://gitlab.itp.uni-frankfurt.de/lattice-qcd/ag-philipsen/cl2qcd/-/compare/v1.1...develop
+[Version 1.1]: https://gitlab.itp.uni-frankfurt.de/lattice-qcd/ag-philipsen/cl2qcd/-/releases/v1.1
+[Version 1.0]: https://gitlab.itp.uni-frankfurt.de/lattice-qcd/ag-philipsen/cl2qcd/-/releases/v1.0
