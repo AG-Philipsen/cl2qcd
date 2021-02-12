@@ -47,8 +47,8 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
                                                    const hardware::OpenClCode&);
 static void setDebugEnvironmentVariables();
 static cl_uint getNumberOfDevicesToBeUsed(cl_uint, const hardware::HardwareParametersInterface&);
-static void filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>&);
-static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::DeviceInfo>&);
+static size_t filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>&);
+static size_t filterOutCPUs(std::list<hardware::DeviceInfo>&);
 static void abortIfNotEnoughDevicesWereFound(unsigned int, unsigned int);
 
 hardware::System::System(const hardware::HardwareParametersInterface& systemParameters,
@@ -154,8 +154,8 @@ void hardware::System::initOpenCLDevices()
 #endif
             device_infos.push_back(dev);
         }
-        filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
-        abortIfNotEnoughDevicesWereFound(device_infos.size(), devicesToBeUsed);
+        auto excludedDevices = filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
+        abortIfNotEnoughDevicesWereFound(device_infos.size(), devicesToBeUsed - excludedDevices);
 
         // if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA
         // domains (primarily makes testing easier)
@@ -195,8 +195,8 @@ void hardware::System::initOpenCLDevices()
 #endif
             device_infos.push_back(dev);
         }
-        filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
-        abortIfNotEnoughDevicesWereFound(device_infos.size(), selection.size());
+        auto excludedDevices = filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
+        abortIfNotEnoughDevicesWereFound(device_infos.size(), selection.size() - excludedDevices);
     }
 
     LatticeGrid lG(device_infos.size(), LatticeExtents(hardwareParameters->getNs(), hardwareParameters->getNt()));
@@ -337,17 +337,17 @@ static cl_uint getNumberOfDevicesToBeUsed(cl_uint num_devices, const hardware::H
     return devicesToBeUsedCheckedAgainstHaloSize;
 }
 
-static void filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>& gatheredDevices)
+static size_t filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>& gatheredDevices)
 {
     for (auto device : gatheredDevices) {
         if (device.get_device_type() == CL_DEVICE_TYPE_GPU) {
-            gatheredDevices = filterOutCPUs(gatheredDevices);
-            break;
+            return filterOutCPUs(gatheredDevices);
         }
     }
+    return 0;
 }
 
-static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::DeviceInfo>& gatheredDevices)
+static size_t filterOutCPUs(std::list<hardware::DeviceInfo>& gatheredDevices)
 {
     std::list<hardware::DeviceInfo> filteredDevices;
     for (auto device : gatheredDevices) {
@@ -355,10 +355,11 @@ static std::list<hardware::DeviceInfo> filterOutCPUs(const std::list<hardware::D
             filteredDevices.push_back(device);
         }
     }
-    size_t filteredOutDevices = filteredDevices.size() - gatheredDevices.size();
+    size_t filteredOutDevices = gatheredDevices.size() - filteredDevices.size();
     if (filteredOutDevices != 0)
-        logger.warn() << filteredOutDevices << " CPU devices have been filtered out!";
-    return filteredDevices;
+        logger.warn() << filteredOutDevices << " CPU device(s) have been filtered out!";
+    gatheredDevices = filteredDevices;
+    return filteredOutDevices;
 }
 
 static void abortIfNotEnoughDevicesWereFound(unsigned int found, unsigned int expected)
