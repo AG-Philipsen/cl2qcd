@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -67,7 +67,6 @@ namespace meta {
         int device_count;
         bool use_gpu;
         bool use_cpu;
-        bool enable_profiling;
 
         int nspace;
         int ntime;
@@ -101,6 +100,7 @@ namespace meta {
         InputparametersOptions options;
         std::string _startconditionString;
         common::startcondition _startcondition;
+        mutable bool enable_profiling;  // mutable to change it in const object in benchmarks
     };
 
 }  // namespace meta

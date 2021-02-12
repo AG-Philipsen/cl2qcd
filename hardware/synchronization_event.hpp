@@ -2,7 +2,7 @@
  * Declaration of the hardware::SynchronizationEvent class
  *
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -63,7 +63,7 @@ namespace hardware {
         /**
          * Release the event when class is destructed.
          */
-        ~SynchronizationEvent();
+        ~SynchronizationEvent() noexcept(false);
 
         // make sure the event is aquired when copying
         SynchronizationEvent& operator=(const SynchronizationEvent&);

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -20,7 +20,10 @@
 
 #include "su3heatbathBenchmark.hpp"
 
-su3heatbathBenchmark::su3heatbathBenchmark(int argc, const char* argv[]) : benchmarkExecutable(argc, argv)
+#include "../hardware/code/heatbath.hpp"
+
+su3heatbathBenchmark::su3heatbathBenchmark(int argc, const char* argv[])
+    : benchmarkExecutable(argc, argv, "SU3_Heatbath"), overrelaxationSteps(1)
 {
     if (system->get_devices().size() != 1) {
         logger.fatal() << "There must be exactly one device chosen for the heatbath benchmark to be performed.";
@@ -30,7 +33,35 @@ su3heatbathBenchmark::su3heatbathBenchmark(int argc, const char* argv[]) : bench
     }
 }
 
-void su3heatbathBenchmark::performBenchmarkForSpecificKernels()
+void su3heatbathBenchmark::enqueueSpecificKernelForBenchmark()
 {
-    physics::algorithms::su3heatbath(*gaugefield, *prng, 1);
+    physics::algorithms::su3heatbath(*gaugefield, *prng, overrelaxationSteps);
+}
+
+std::vector<double> su3heatbathBenchmark::getExecutionTimesOnDevices()
+{
+    std::vector<double> times(devices.size(), 0.0);
+    for (unsigned int i = 0; i < devices.size(); ++i) {
+        auto code = devices[0]->getHeatbathCode();
+        std::vector<cl_kernel> kernels{code->heatbath_even, code->heatbath_odd, code->overrelax_even,
+                                       code->overrelax_odd};
+        for (auto kernel : kernels)
+            times[i] += devices[i]->getProfilingData(kernel).get_total_time();
+    }
+    return times;
+}
+
+size_t su3heatbathBenchmark::getFlopsPerKernelCall()
+{
+    auto code = devices[0]->getHeatbathCode();
+    return code->get_flop_size("heatbath_even") + code->get_flop_size("heatbath_odd") +
+           overrelaxationSteps * (code->get_flop_size("overrelax_even") + code->get_flop_size("overrelax_odd"));
+    ;
+}
+size_t su3heatbathBenchmark::getMemoryPerKernelCall()
+{
+    auto code = devices[0]->getHeatbathCode();
+    return code->get_read_write_size("heatbath_even") + code->get_read_write_size("heatbath_odd") +
+           overrelaxationSteps *
+               (code->get_read_write_size("overrelax_even") + code->get_read_write_size("overrelax_odd"));
 }

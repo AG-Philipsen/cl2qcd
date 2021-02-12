@@ -79,18 +79,21 @@ fi
 if [ "$userName" = '' ] || [ "$userEmail" = '' ]; then
     AbortCommit "User information not configured!" GiveAdviceAboutUserNameAndEmail
 fi
-if [[ ! $userName =~ ^[A-Z][a-z]+(\ [A-Z][a-z]+)+$ ]]; then
+nameRegex="^[A-Z][a-z]+(\ ([A-Z](')?)?[A-Z][a-z]*)+$"
+emailRegex="^[^@]+@[^@]+$"
+if [[ ! $userName =~ $nameRegex ]]; then
     AbortCommit "User name not allowed." GiveAdviceAboutUserNameFormat
 fi
-if [[ ! $userEmail =~ ^[^@]+@[^@]+$ ]]; then
+if [[ ! $userEmail =~ $emailRegex ]]; then
     AbortCommit "User email not allowed." GiveAdviceAboutUserEmailFormat
 fi
-if [[ ! $committerName =~ ^[A-Z][a-z]+(\ [A-Z][a-z]+)+$ ]]; then
+if [[ ! $committerName =~ $nameRegex ]]; then
     AbortCommit "Committer name not allowed." GiveAdviceAboutCommitterNameFormat
 fi
-if [[ ! $committerEmail =~ ^[^@]+@[^@]+$ ]]; then
+if [[ ! $committerEmail =~ $emailRegex ]]; then
     AbortCommit "Committer email not allowed." GiveAdviceAboutCommitterEmailFormat
 fi
+unset -v 'nameRegex' 'emailRegex'
 
 readarray -t existingUserOrCommitterNamesAndEmails <<< "$(cat <(git log --all --format='%an %ae') <(git log --all --format='%cn %ce') | sort -u)"
 readonly existingUserOrCommitterNamesAndEmails

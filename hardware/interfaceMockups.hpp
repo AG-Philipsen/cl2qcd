@@ -2,7 +2,7 @@
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
  * Copyright (c) 2016 Tim Breitenfelder
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -30,24 +30,30 @@
 namespace hardware {
     class HardwareParametersMockup : public HardwareParametersInterface {
       public:
-        HardwareParametersMockup(const int nsIn, const int ntIn) : ns(nsIn), nt(ntIn), useEvenOdd(false)
-        {
-            setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
-        };
+        HardwareParametersMockup(const int nsIn, const int ntIn)
+            : ns(nsIn)
+            , nt(ntIn)
+            , useEvenOdd(false)
+            , useCpuValue(checkBoostRuntimeArgumentsForCpuUsage())
+            , useGpuValue(checkBoostRuntimeArgumentsForGpuUsage()){};
         HardwareParametersMockup(const int nsIn, const int ntIn, const bool useEvenOddIn)
-            : ns(nsIn), nt(ntIn), useEvenOdd(useEvenOddIn)
-        {
-            setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
-        };
-        HardwareParametersMockup(LatticeExtents lE) : ns(lE.getNs()), nt(lE.getNt()), useEvenOdd(false)
-        {
-            setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
-        };
+            : ns(nsIn)
+            , nt(ntIn)
+            , useEvenOdd(useEvenOddIn)
+            , useCpuValue(checkBoostRuntimeArgumentsForCpuUsage())
+            , useGpuValue(checkBoostRuntimeArgumentsForGpuUsage()){};
+        HardwareParametersMockup(LatticeExtents lE)
+            : ns(lE.getNs())
+            , nt(lE.getNt())
+            , useEvenOdd(false)
+            , useCpuValue(checkBoostRuntimeArgumentsForCpuUsage())
+            , useGpuValue(checkBoostRuntimeArgumentsForGpuUsage()){};
         HardwareParametersMockup(LatticeExtents lE, const bool useEvenOddIn)
-            : ns(lE.getNs()), nt(lE.getNt()), useEvenOdd(useEvenOddIn)
-        {
-            setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
-        };
+            : ns(lE.getNs())
+            , nt(lE.getNt())
+            , useEvenOdd(useEvenOddIn)
+            , useCpuValue(checkBoostRuntimeArgumentsForCpuUsage())
+            , useGpuValue(checkBoostRuntimeArgumentsForGpuUsage()){};
         virtual ~HardwareParametersMockup(){};
 
         virtual int getNs() const override { return ns; }
@@ -55,7 +61,7 @@ namespace hardware {
         virtual bool disableOpenCLCompilerOptimizations() const override { return false; }
         virtual bool useGpu() const override { return useGpuValue; }
         virtual bool useCpu() const override { return useCpuValue; }
-        virtual int getMaximalNumberOfDevices() const override { return 1; }
+        virtual int getNumberOfDevicesToBeUsed() const override { return 1; }
         virtual std::vector<int> getSelectedDevices() const override { return std::vector<int>{0}; }
         virtual bool splitCpu() const override { return false; }
         virtual bool enableProfiling() const override { return false; }
@@ -66,13 +72,7 @@ namespace hardware {
 
       private:
         const int ns, nt;
-        const bool useEvenOdd;
-        bool useGpuValue, useCpuValue;
-        void setGpuAndCpuOptions(const bool value)
-        {
-            useGpuValue = value;
-            useCpuValue = !value;
-        }
+        const bool useEvenOdd, useCpuValue, useGpuValue;
     };
 
     struct HardwareParametersMockupForDeviceSelection final : public HardwareParametersMockup {
@@ -83,7 +83,7 @@ namespace hardware {
             , selectedDevices(selectedDevices)
         {
         }
-        virtual int getMaximalNumberOfDevices() const override { return maximalNumberOfDevices; }
+        virtual int getNumberOfDevicesToBeUsed() const override { return maximalNumberOfDevices; }
         virtual std::vector<int> getSelectedDevices() const override { return selectedDevices; }
 
       private:
@@ -114,7 +114,7 @@ namespace hardware {
 }  // namespace hardware
 
 /*
- * TODO: Here, we create a big mockup as parent from which small extension (childern) are created. Each extension
+ * TODO: Here, we create a big mockup as parent from which small extension (children) are created. Each extension
  * overrides getter(s) to change returned parameter(s) and/or has few more private parameters with getters passed
  * through the constructor. In principle, in each child one should override all getters that should not be called
  * (either returning a meaningless value or throwing), but this is not done here. Probably, a radically different

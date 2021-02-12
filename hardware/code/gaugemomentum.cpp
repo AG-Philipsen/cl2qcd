@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015,2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -249,7 +249,7 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(
 
                 // get buffer from device
                 cout << "copy buffer to host" << endl;
-                exportGaugemomentumBuffer(ae_tmp, in);
+                in->dump(ae_tmp);
 
                 // write out to file
                 ofstream out("clmem_p_at_inf");
@@ -281,7 +281,7 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(
                     sqnorm += ae_tmp[i].e7 * ae_tmp[i].e7;
                 }
                 cout << "sqnrom: " << sqnorm << endl;
-                free(ae_tmp);
+                delete[] ae_tmp;
             }
             throw Print_Error_Message("calculation of gaussian gm gave inf! Aborting...", __FILE__, __LINE__);
         }
@@ -380,61 +380,42 @@ void hardware::code::Gaugemomentum::saxpy_device(const hardware::buffers::Gaugem
     get_device()->enqueue_kernel(gaugemomentum_saxpy, gs2, ls2);
 }
 
-void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum* dest,
-                                                              const ae* const data) const
+void hardware::code::Gaugemomentum::convertGaugemomentumToSOA_device(const hardware::buffers::Gaugemomentum* out,
+                                                                     const hardware::buffers::Plain<ae>* in) const
 {
-    size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->getLocalLatticeMemoryExtents()) * NDIM;
-    if (dest->get_elements() != REQUIRED_BUFFER_SIZE) {
-        throw std::invalid_argument("Destination buffer is not of proper size");
+    if (!out->is_soa()) {
+        throw std::invalid_argument("Destination buffer must be a SOA buffer");
     }
 
-    cl_int clerr;
-    if (dest->is_soa()) {
-        hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, dest->get_device());
-        tmp.load(data);
-
-        size_t ls2, gs2;
-        cl_uint num_groups;
-        this->get_work_sizes(gaugemomentum_convert_to_soa, &ls2, &gs2, &num_groups);
-        clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 0, sizeof(cl_mem), dest->get_cl_buffer());
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 1, sizeof(cl_mem), tmp);
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        get_device()->enqueue_kernel(gaugemomentum_convert_to_soa, gs2, ls2);
-    } else {
-        dest->load(data);
-    }
+    size_t ls2, gs2;
+    cl_uint num_groups;
+    this->get_work_sizes(gaugemomentum_convert_to_soa, &ls2, &gs2, &num_groups);
+    cl_int clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 0, sizeof(cl_mem), out->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 1, sizeof(cl_mem), in->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    get_device()->enqueue_kernel(gaugemomentum_convert_to_soa, gs2, ls2);
 }
 
-void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae* const dest,
-                                                              const hardware::buffers::Gaugemomentum* buf) const
+void hardware::code::Gaugemomentum::convertGaugemomentumFromSOA_device(const hardware::buffers::Plain<ae>* out,
+                                                                       const hardware::buffers::Gaugemomentum* in) const
 {
-    size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->getLocalLatticeMemoryExtents()) * NDIM;
-    if (buf->get_elements() != REQUIRED_BUFFER_SIZE) {
-        throw std::invalid_argument("Source buffer is not of proper size");
+    if (!in->is_soa()) {
+        throw std::invalid_argument("Source buffer must be a SOA buffer");
     }
 
-    cl_int clerr;
-    if (buf->is_soa()) {
-        hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, buf->get_device());
-
-        size_t ls2, gs2;
-        cl_uint num_groups;
-        this->get_work_sizes(gaugemomentum_convert_from_soa, &ls2, &gs2, &num_groups);
-        clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 0, sizeof(cl_mem), tmp);
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 1, sizeof(cl_mem), buf->get_cl_buffer());
-        if (clerr != CL_SUCCESS)
-            throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-        get_device()->enqueue_kernel(gaugemomentum_convert_from_soa, gs2, ls2);
-
-        tmp.dump(dest);
-    } else {
-        buf->dump(dest);
-    }
+    size_t ls2, gs2;
+    cl_uint num_groups;
+    this->get_work_sizes(gaugemomentum_convert_from_soa, &ls2, &gs2, &num_groups);
+    cl_uint clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 0, sizeof(cl_mem), out->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 1, sizeof(cl_mem), in->get_cl_buffer());
+    if (clerr != CL_SUCCESS)
+        throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    get_device()->enqueue_kernel(gaugemomentum_convert_from_soa, gs2, ls2);
 }
 
 ClSourcePackage hardware::code::Gaugemomentum::get_sources() const noexcept

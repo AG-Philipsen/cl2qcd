@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Christopher Pinke
  * Copyright (c) 2013 Matthias Bach
  *
@@ -30,11 +30,12 @@
 //  - beta:  The complex number by which y has to be multiplied
 //  - out: The output staggered field: alpha*x+beta*y+z (site by site)
 
-__kernel void saxpbypz_cplx_staggered_eoprec(__global const staggeredStorageType* const x,
-                                             __global const staggeredStorageType* const y,
-                                             __global const staggeredStorageType* const z,
-                                             __global const hmc_complex* const alpha, __global hmc_complex* beta,
-                                             __global staggeredStorageType* const out)
+__kernel void saxpbypz_cplx_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                             __global const staggeredStorageType* const restrict y,
+                                             __global const staggeredStorageType* const restrict z,
+                                             __global const hmc_complex* const restrict alpha,
+                                             __global const hmc_complex* restrict beta,
+                                             __global staggeredStorageType* const restrict out)
 {
     const int id          = get_global_id(0);
     const int global_size = get_global_size(0);
@@ -55,11 +56,12 @@ __kernel void saxpbypz_cplx_staggered_eoprec(__global const staggeredStorageType
     return;
 }
 
-__kernel void saxpbypz_cplx_arg_staggered_eoprec(__global const spinorStorageType* const x,
-                                                 __global const spinorStorageType* const y,
-                                                 __global const staggeredStorageType* const z, const hmc_float alpha_re,
-                                                 const hmc_float alpha_im, const hmc_float beta_re,
-                                                 const hmc_float beta_im, __global spinorStorageType* const out)
+__kernel void saxpbypz_cplx_arg_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                                 __global const staggeredStorageType* const restrict y,
+                                                 __global const staggeredStorageType* const restrict z,
+                                                 const hmc_float alpha_re, const hmc_float alpha_im,
+                                                 const hmc_float beta_re, const hmc_float beta_im,
+                                                 __global spinorStorageType* const restrict out)
 {
     const int id          = get_global_id(0);
     const int global_size = get_global_size(0);

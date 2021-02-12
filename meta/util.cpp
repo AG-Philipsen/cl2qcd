@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2013-2015,2018 Alessandro Sciarra
+ * Copyright (c) 2013-2015,2018,2020-2021 Alessandro Sciarra
  * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -23,6 +23,8 @@
  */
 
 #include "util.hpp"
+
+#include "../executables/exceptions.hpp"
 
 size_t meta::get_volspace(const Inputparameters& params)
 {
@@ -136,7 +138,7 @@ std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, 
     }
 }
 
-std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_ferm_obs_to_single_file()) {
         return parameters.get_ferm_obs_corr_prefix() + parameters.get_ferm_obs_corr_postfix();
@@ -158,7 +160,7 @@ std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters,
     }
 }
 
-std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_gauge_obs_to_single_file()) {
         return parameters.get_gauge_obs_prefix() + parameters.get_gauge_obs_postfix();
@@ -180,7 +182,7 @@ std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std
     }
 }
 
-std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_hmc_obs_to_single_file()) {
         return parameters.get_hmc_obs_prefix() + parameters.get_hmc_obs_postfix();
@@ -202,7 +204,7 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
     }
 }
 
-std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name)
 {
     if (parameters.get_rhmc_obs_to_single_file()) {
         return parameters.get_rhmc_obs_prefix() + parameters.get_rhmc_obs_postfix();
@@ -263,4 +265,29 @@ meta::addOptionsToArgv(int argc, const char** argv, std::vector<const char*> new
     argv_new.insert(argv_new.end(), new_options.begin(), new_options.end());
 
     return std::make_pair(argc, argv_new);
+}
+
+int meta::getRationalApproximationNumerator(double numTastes, int numTastesDecimalDigits)
+{
+    double tmpNumerator = numTastes * std::pow(10, numTastesDecimalDigits);
+    double intpart;
+    modf(tmpNumerator, &intpart);
+    if ((tmpNumerator - intpart) != 0.0) {
+        logger.error() << "Found option num_tastes=" << numTastes
+                       << " but num_tastes_decimal_digits=" << numTastesDecimalDigits
+                       << " and this will imply a lost of precision!";
+        throw Print_Error_Message("Options num_tastes and num_tastes_decimal_digits are not coherent!");
+    }
+    return (int)(numTastes * std::pow(10, numTastesDecimalDigits));
+}
+
+int meta::getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits,
+                                              int numPseudoFermions)
+{
+    if (whichRationalApproximation == "HB")
+        return 8 * (int)(std::pow(10, numTastesDecimalDigits)) * numPseudoFermions;
+    else if ((whichRationalApproximation == "MD") || (whichRationalApproximation == "MET"))
+        return 4 * (int)(std::pow(10, numTastesDecimalDigits)) * numPseudoFermions;
+    else
+        throw Print_Error_Message("Invalid call to \"getRationalApproximationDenominator\" function!");
 }

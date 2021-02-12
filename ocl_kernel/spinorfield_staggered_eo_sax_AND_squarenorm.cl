@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -30,8 +30,8 @@
 //  - result_local: Vector with local_size components. At the end of the local reduction, its first num_fields
 //                  components will be the sum of all its components.
 
-__kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStorageType* const x,
-                                                   __global const hmc_float* alpha, const int num_fields,
+__kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStorageType* const restrict x,
+                                                   __global const hmc_float* restrict alpha, const int num_fields,
                                                    __global hmc_float* const restrict result,
                                                    __local hmc_float* const restrict result_local)
 {
@@ -135,8 +135,9 @@ __kernel void sax_vectorized_and_squarenorm_eoprec(__global const staggeredStora
 //           sax_vectorized_and_squarenorm_eoprec times num_fields
 //  - num_fields: number of output fields
 
-__kernel void sax_vectorized_and_squarenorm_reduction(__global hmc_float* out, __global hmc_float* result_tmp,
-                                                      const uint elems, const uint num_fields)
+__kernel void sax_vectorized_and_squarenorm_reduction(__global hmc_float* restrict out,
+                                                      __global hmc_float* restrict result_tmp, const uint elems,
+                                                      const uint num_fields)
 {
     const uint id = get_global_id(0);
     for (uint i = 0; i < num_fields; i++)

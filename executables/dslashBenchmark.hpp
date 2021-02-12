@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2014 Christopher Pinke
  *
  * This file is part of CL2QCD.
@@ -35,18 +35,10 @@ class dslashBenchmark : public benchmarkExecutable {
     const physics::lattices::Spinorfield_eo* spinorfield1;
     const physics::lattices::Spinorfield_eo* spinorfield2;
 
-    /*
-     * Calls the dslash_eo kernel.
-     * Per iteration, the kernel is called with EVEN and ODD parameters.
-     */
-    void performBenchmarkForSpecificKernels() override;
-    /*
-     * Calls dslash_eo on all devices in the system.
-     * Per iteration, the kernel is called with EVEN and ODD parameters.
-     */
-    void enqueueSpecificKernelForBenchmarkingMultipleDevices() override;
-
-    void printProfilingDataToScreen() override;
+    void enqueueSpecificKernelForBenchmark() override;
+    std::vector<double> getExecutionTimesOnDevices() override;
+    size_t getFlopsPerKernelCall() override;
+    size_t getMemoryPerKernelCall() override;
 };
 
 #endif /* DSLASHBENCHMARK_H_ */

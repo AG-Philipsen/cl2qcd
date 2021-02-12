@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
- * Copyright (c) 2014-2016,2018 Alessandro Sciarra
+ * Copyright (c) 2014-2016,2018,2020 Alessandro Sciarra
  * Copyright (c) 2015 Christopher Czaban
  * Copyright (c) 2016 Tim Breitenfelder
  *
@@ -55,7 +55,7 @@ static void test_sources(std::string type, int num_sources)
 
     auto sources = create_sources(system, prng, params.get_num_sources(), interfacesHandler);
 
-    BOOST_REQUIRE_EQUAL(params.get_num_sources(), static_cast<const int>(sources.size()));
+    BOOST_REQUIRE_EQUAL(params.get_num_sources(), static_cast<int>(sources.size()));
 
     release_spinorfields(sources);
 }
@@ -80,7 +80,7 @@ static void test_staggered_sources(const std::string type, int num_sources)
 
     auto staggered_sources = create_staggered_sources(system, prng, params.get_num_sources(), interfacesHandler);
 
-    BOOST_REQUIRE_EQUAL(params.get_num_sources(), static_cast<const int>(staggered_sources.size()));
+    BOOST_REQUIRE_EQUAL(params.get_num_sources(), static_cast<int>(staggered_sources.size()));
 
     release_staggeredfields_eo(staggered_sources);
 }

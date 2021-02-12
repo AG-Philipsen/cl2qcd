@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -38,9 +38,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    for (Device* device : system.get_devices()) {
-        hardware::buffers::Matrix3x3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    for (Device* device : system->get_devices()) {
+        hardware::buffers::Matrix3x3 dummy(system->getHardwareParameters()->getLatticeVolume() * NDIM, device);
         const cl_mem* tmp = dummy;
         BOOST_CHECK(tmp);
         BOOST_CHECK(*tmp);

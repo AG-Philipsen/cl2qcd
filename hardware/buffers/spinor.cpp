@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015,2016 Francesca Cuteri
  * Copyright (c) 2015 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -86,7 +86,7 @@ void hardware::buffers::Spinor::load(const spinor* ptr, const size_t elems, cons
         auto device = get_device();
         Plain<spinor> plain(get_elements(), device);
         plain.load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
-        device->getSpinorCode()->convertSpinorfieldToSOA_eo_device(this, &plain);
+        device->getSpinorCode()->convertSpinorfieldToSOA(this, &plain);
         device->synchronize();
     } else {
         Buffer::load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
@@ -98,7 +98,7 @@ void hardware::buffers::Spinor::dump(spinor* ptr, const size_t elems, const size
     if (is_soa()) {
         auto device = get_device();
         Plain<spinor> plain(get_elements(), device);
-        device->getSpinorCode()->convertSpinorfieldFromSOA_eo_device(&plain, this);
+        device->getSpinorCode()->convertSpinorfieldFromSOA(&plain, this);
         plain.dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
     } else {
         Buffer::dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));

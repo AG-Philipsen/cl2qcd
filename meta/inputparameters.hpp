@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2014 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -41,6 +41,10 @@
 
 #include <boost/algorithm/string.hpp>
 
+class benchmarkExecutable;
+class dksBenchmark;
+class dslashBenchmark;
+
 /**
  * This namespace contains generic utility code required by the other packages.
  */
@@ -75,6 +79,10 @@ namespace meta {
                             public ParametersIntegrator,
                             public ParametersRationalApproximation,
                             public ParametersTest {
+        friend benchmarkExecutable;
+        friend dksBenchmark;
+        friend dslashBenchmark;
+
       public:
         /**
          * The parsing of the input parameters aborted for some reason.

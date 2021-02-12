@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011-2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,12 +21,12 @@
 /** @file
  * Device code for operations on the spinor field
  */
-inline spinor getSpinor(__global const spinor* const restrict in, const uint idx)
+static inline spinor getSpinor(__global const spinor* const restrict in, const uint idx)
 {
     return in[idx];
 }
 
-inline void putSpinor(__global spinor* const restrict out, const uint idx, const spinor val)
+static inline void putSpinor(__global spinor* const restrict out, const uint idx, const spinor val)
 {
     out[idx] = val;
 }

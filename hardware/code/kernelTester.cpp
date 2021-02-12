@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2014-2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -36,16 +36,11 @@ KernelTester::KernelTester(std::string kernelNameIn, const hardware::HardwarePar
     , kernelParameters(&kernelParameters)
 {
     printKernelInformation(kernelNameIn);
-    try {
-        system = new hardware::System(hardwareParameters, kernelParameters);
-        device = system->get_devices().at(0);
-    } catch (hardware::OpenclException& exception) {
-        handleExceptionInTest(exception);
-    }
+    system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    device = system->get_devices().at(0);
 }
 
-#include <boost/test/floating_point_comparison.hpp>
-KernelTester::~KernelTester()
+KernelTester::~KernelTester() noexcept(false)
 {
     if (system) {
         for (int iteration = 0; iteration < (int)kernelResult.size(); iteration++) {
@@ -68,11 +63,15 @@ KernelTester::~KernelTester()
                     BOOST_CHECK_CLOSE(any_cast<double>(refValues[iteration]), kernelResult[iteration],
                                       testParameters.testPrecision);
                 }
-            } else
-                throw Print_Error_Message("unexpected type in RefValues vector");
+            } else {
+                if (std::uncaught_exceptions() != 0)
+                    logger.fatal() << "Unexpected type in RefValues vector. Occurred at " << __FILE__ << ":"
+                                   << __LINE__;
+                else
+                    throw Print_Error_Message("Unexpected type in RefValues vector", __FILE__, __LINE__);
+            }
         }
 
-        delete system;
         device = nullptr;
     }
 }

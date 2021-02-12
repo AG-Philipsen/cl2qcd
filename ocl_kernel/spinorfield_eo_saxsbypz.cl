@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011-2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -19,9 +19,10 @@
  */
 
 // alpha*x + beta*y + z
-__kernel void saxsbypz_eoprec(__global const spinorStorageType* const x, __global const spinorStorageType* const y,
-                              __global const spinorStorageType* const z, __global const hmc_complex* const alpha,
-                              __global hmc_complex* beta, __global spinorStorageType* const out)
+__kernel void
+saxsbypz_eoprec(__global const spinorStorageType* const restrict x, __global const spinorStorageType* const restrict y,
+                __global const spinorStorageType* const restrict z, __global const hmc_complex* const restrict alpha,
+                __global hmc_complex* restrict beta, __global spinorStorageType* const restrict out)
 {
     const int id          = get_global_id(0);
     const int global_size = get_global_size(0);

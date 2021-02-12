@@ -1,7 +1,7 @@
 # Build specifications for the contents of the buffers package
 #
 # Copyright (c) 2012,2013 Matthias Bach
-# Copyright (c) 2013,2018 Alessandro Sciarra
+# Copyright (c) 2013,2018,2021 Alessandro Sciarra
 # Copyright (c) 2014 Christopher Pinke
 #
 # This file is part of CL2QCD.
@@ -38,11 +38,28 @@ target_link_libraries(buffers
 #
 # Definition of tests
 #
-add_unit_test(NAME hardware/buffers/buffer        LIBRARIES buffers crypto)
-add_unit_test(NAME hardware/buffers/prng_buffer   LIBRARIES buffers crypto)
-add_unit_test(NAME hardware/buffers/su3           LIBRARIES buffers crypto)
-add_unit_test(NAME hardware/buffers/plain         LIBRARIES buffers crypto)
-add_unit_test(NAME hardware/buffers/spinor        LIBRARIES buffers crypto)
-add_unit_test(NAME hardware/buffers/gaugemomentum LIBRARIES buffers crypto)
-add_unit_test(NAME hardware/buffers/3x3           LIBRARIES buffers crypto)
-add_unit_test(NAME hardware/buffers/su3vec        LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/buffer        LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/prng_buffer   LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/su3           LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/plain         LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/spinor        LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/gaugemomentum LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/3x3           LIBRARIES buffers crypto)
+add_unit_test(CREATE_ONLY NAME hardware/buffers/su3vec        LIBRARIES buffers crypto)
+
+add_unit_test(ADD_ONLY NAME hardware/buffers/buffer_CPU        COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/buffer_GPU        COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)
+add_unit_test(ADD_ONLY NAME hardware/buffers/prng_buffer_CPU   COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/prng_buffer_GPU   COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)
+add_unit_test(ADD_ONLY NAME hardware/buffers/su3_CPU           COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/su3_GPU           COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)
+add_unit_test(ADD_ONLY NAME hardware/buffers/plain_CPU         COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/plain_GPU         COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)
+add_unit_test(ADD_ONLY NAME hardware/buffers/spinor_CPU        COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/spinor_GPU        COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)
+add_unit_test(ADD_ONLY NAME hardware/buffers/gaugemomentum_CPU COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/gaugemomentum_GPU COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)
+add_unit_test(ADD_ONLY NAME hardware/buffers/3x3_CPU           COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/3x3_GPU           COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)
+add_unit_test(ADD_ONLY NAME hardware/buffers/su3vec_CPU        COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(ADD_ONLY NAME hardware/buffers/su3vec_GPU        COMMAND_LINE_OPTIONS -- --useCPU=false  --useGPU=true)

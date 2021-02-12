@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -68,7 +68,9 @@ allocateBuffer(const size_t bytes, const cl_context context, const bool place_on
 {
     cl_int err;
     const cl_mem_flags mem_flags = (place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0) | extra_flags;
-    cl_mem cl_buffer             = clCreateBuffer(context, mem_flags, bytes, 0, &err);
+    logger.trace() << "Creating buffer on " << static_cast<std::string>(place_on_host ? "host" : "device")
+                   << " reserving " << bytes << " bytes";
+    cl_mem cl_buffer = clCreateBuffer(context, mem_flags, bytes, 0, &err);
     if (err) {
         throw hardware::OpenclException(err, "clCreateBuffer", __FILE__, __LINE__);
     }
@@ -392,11 +394,15 @@ hardware::buffers::MappedBufferHandle::MappedBufferHandle(cl_mem buf, cl_command
     : buf(buf), queue(queue), mapped_ptr(mapped_ptr), map_event(map_event)
 {
 }
-hardware::buffers::MappedBufferHandle::~MappedBufferHandle()
+hardware::buffers::MappedBufferHandle::~MappedBufferHandle() noexcept(false)
 {
     cl_int err = clEnqueueUnmapMemObject(queue, buf, mapped_ptr, 0, nullptr, nullptr);
     if (err) {
-        throw hardware::OpenclException(err, "clEnqueueUnmapMemObject", __FILE__, __LINE__);
+        if (std::uncaught_exceptions() != 0)
+            logger.fatal() << "OpenCL failed. Error code " << err << " in clEnqueueUnmapMemObject at " << __FILE__
+                           << ":" << __LINE__;
+        else
+            throw hardware::OpenclException(err, "clEnqueueUnmapMemObject", __FILE__, __LINE__);
     }
 }
 void* hardware::buffers::MappedBufferHandle::get_mapped_ptr() const

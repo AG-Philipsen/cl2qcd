@@ -4,7 +4,7 @@
  * Copyright (c) 2013,2014 Matthias Bach
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -52,7 +52,7 @@ hardware::create_transfer(hardware::Device* const src, hardware::Device* const d
 // required headers for DirectGMA might be missing
 // in that case it is unavailable
 #ifndef CL_MEM_BUS_ADDRESSABLE_AMD
-    return std::move(standard_transfer);
+    return standard_transfer;
 #else
     try {
         std::unique_ptr<hardware::Transfer> dgma_transfer(new transfer::DirectGMA(src, dest, system));

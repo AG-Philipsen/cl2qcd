@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -21,8 +21,8 @@
 //
 // Kernel for summation over blockresults
 //
-__kernel void
-scalar_product_reduction(__global hmc_complex* result_tmp, __global hmc_complex* result, const uint num_values)
+__kernel void scalar_product_reduction(__global hmc_complex* restrict result_tmp, __global hmc_complex* restrict result,
+                                       const uint num_values)
 {
     //!!CP: complex_acc cannot handle __global
     int id = get_global_id(0);

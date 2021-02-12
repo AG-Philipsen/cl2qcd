@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2014 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  * Copyright (c) 2018 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -144,7 +144,6 @@ meta::ParametersConfig::ParametersConfig()
     , device_count(0)
     , use_gpu(true)
     , use_cpu(true)
-    , enable_profiling(false)
     , nspace(4)
     , ntime(8)
     , read_multiple_configs(false)
@@ -165,13 +164,14 @@ meta::ParametersConfig::ParametersConfig()
     , options("Hardware and lattice options")
     , _startconditionString("cold")
     , _startcondition(common::startcondition::cold_start)
+    , enable_profiling(false)
 {
     // clang-format off
     options.add_options()
     ("precision", po::value<size_t>(&precision)->default_value(precision), "The precision in bit of any I/O storage operation and device calculation.")
-    ("deviceId", po::value<std::vector<int>>(&selected_devices), "The ID number of a device to use. Can be specified multiple times to use multiple devices.")
-    ("nDevices", po::value<int>(&device_count)->default_value(device_count), "The maximum number of devices to use. By default all available devices of selected type are used.")
-    ("useGPU", po::value<bool>(&use_gpu)->default_value(use_gpu), "Whether to use GPUs.")
+    ("deviceId", po::value<std::vector<int>>(&selected_devices), "The ID number of a device to use (starting from 0). It can be specified multiple times to use multiple devices and, if given, --nDevices is ignored.")
+    ("nDevices", po::value<int>(&device_count)->default_value(device_count), "Use only the first n devices of selected type. By default, all available devices of selected type are used.")
+    ("useGPU", po::value<bool>(&use_gpu)->default_value(use_gpu), "Whether to use GPUs. If set to true and at least one GPU is found, GPUs only are used.")
     ("useCPU", po::value<bool>(&use_cpu)->default_value(use_cpu), "Whether to use CPUs.")
     ("enableProfiling", po::value<bool>(&enable_profiling)->default_value(enable_profiling), "Whether to profile kernel execution. This option implies slower performance due to synchronization after each kernel call.")
     ("nSpace", po::value<int>(&nspace)->default_value(nspace), "The spatial extent of the lattice.")

@@ -2,7 +2,7 @@
  * Declaration of the hardware::Profiling class
  *
  * Copyright (c) 2012,2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2020 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -40,11 +40,6 @@ namespace hardware {
          * Create an empty profiling data object
          */
         ProfilingData() : ProfilingData(0, 0){};
-
-        /**
-         * Create an empty profiling data object
-         */
-        ProfilingData(const ProfilingData& other) : ProfilingData(other.total_time, other.num_values){};
 
         /**
          * Query the total aggregated time

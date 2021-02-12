@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011,2012 Christopher Pinke
  * Copyright (c) 2011-2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -24,7 +24,7 @@
  */
 
 // this is done after Phys. Rev. D69, 0545501 (Morningstar, Peardon) and the tmlqcd-analogue (stout_smear.c)
-__kernel void stout_smear(__global Matrixsu3StorageType* in, __global Matrixsu3StorageType* out)
+__kernel void stout_smear(__global Matrixsu3StorageType* restrict in, __global Matrixsu3StorageType* restrict out)
 {
     int local_size  = get_local_size(0);
     int global_size = get_global_size(0);

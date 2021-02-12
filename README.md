@@ -1,8 +1,10 @@
-CL2QCD &nbsp;&nbsp; [![version][Release-badge]](https://github.com/AG-Philipsen/cl2qcd/releases/tag/v1.0)
+CL2QCD &nbsp;&nbsp; [![version][Release-badge]](https://gitlab.itp.uni-frankfurt.de/lattice-qcd/ag-philipsen/cl2qcd/-/releases/v1.1)
 ======
 
 CL2QCD is a Lattice QCD application based on OpenCL, applicable to CPUs and GPUs.
 It provides the possibility of producing gauge configurations using different algorithms as well as measuring observables on given configurations.
+
+<div align=center>
 
 |     Executable     | Description |
 | :----------------: | :---------: |
@@ -12,17 +14,11 @@ It provides the possibility of producing gauge configurations using different al
 | `inverter`         | Measurements of fermionic observables on given gauge field configurations             |
 | `gaugeobservables` | Measurements of gauge observables on given gauge field configurations                 |
 
+</div>
+
 Examples of possible input files can be found in the folder [**sample_input**](sample_input) for each executable available.
 
 *CL2QCD has been heavily optimized for AMD GPUs, providing world-class performance, but can also be used on NVIDIA GPUs and x86 CPUs (and, in principle, also on many other devices).*
-
-
-:warning: Note for users :bangbang:
------------------------------------
-
-Unfortunately, due to a migration from a different repository hosting service, the history of CL2QCD had to be fully rewritten.
-Please consider to clone it again, if you did before the **28.09.2017**.
-We apologise for any inconvenience this may cause.
 
 
 Installation
@@ -66,4 +62,4 @@ However, it includes some bundled third-party code licensed under own licenses.
 * The CPP bindings for OpenCL are copyrighted by Khronos and may be [distributed freely](hacks/cl_hpp/CL/cl.hpp).
 
 
-[Release-badge]: https://img.shields.io/badge/Last%20Release-v1.0-orange.svg
+[Release-badge]: https://img.shields.io/badge/Last%20Release-v1.1-orange.svg

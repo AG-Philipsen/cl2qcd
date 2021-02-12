@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -32,35 +32,25 @@
 
 class benchmarkExecutable : public generalExecutable {
   public:
-    benchmarkExecutable(int argc, const char* argv[]);
+    benchmarkExecutable(int argc, const char* argv[], std::string name);
 
-    /**
-     * performs to-be-specified kernels a number of times.
-     * This should be used with profiling enabled.
-     */
-    void benchmark();
-
-    /**
-     * Calls a kernel on possibly multiple devices.
-     * The total execution time is measured after a warm-up run.
-     * Therefore, it should not be used with profiling enabled.
-     */
-    void benchmarkMultipleDevices();
+    void runBenchmark();
 
   protected:
-    hardware::Device* device;
-    int benchmarkSteps;
-    uint64_t executionTime;
-
-    void synchronizeAllDevices();
+    std::vector<hardware::Device*> devices;
+    unsigned int benchmarkSteps;
+    const std::string kernelName;
 
     /**
-     * Functions to call specific kernels.
-     * As this can be done for a single of multiple devices, they are not purely virtual.
+     * This method is to be specified by child classes.
      */
-    virtual void performBenchmarkForSpecificKernels(){};
-    virtual void enqueueSpecificKernelForBenchmarkingMultipleDevices(){};
-    virtual void printProfilingDataToScreen(){};
+    virtual void enqueueSpecificKernelForBenchmark()         = 0;
+    virtual std::vector<double> getExecutionTimesOnDevices() = 0;
+    virtual size_t getFlopsPerKernelCall()                   = 0;
+    virtual size_t getMemoryPerKernelCall()                  = 0;  // in bytes
+
+  private:
+    void printPerformanceToScreen();
 };
 
 #endif /* BENCHMARKEXECUTABLE_H_ */

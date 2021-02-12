@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2015,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -20,39 +20,41 @@
 
 #include "dksBenchmark.hpp"
 
-dksBenchmark::dksBenchmark(int argc, const char* argv[]) : benchmarkExecutable(argc, argv)
+#include <numeric>
+
+dksBenchmark::dksBenchmark(int argc, const char* argv[]) : benchmarkExecutable(argc, argv, "D_KS")
 {
-    staggeredfield1 = new physics::lattices::Staggeredfield_eo(*system, interfacesHandler->getInterface<
-                                                                            physics::lattices::Staggeredfield_eo>());
-    staggeredfield2 = new physics::lattices::Staggeredfield_eo(*system, interfacesHandler->getInterface<
-                                                                            physics::lattices::Staggeredfield_eo>());
+    staggeredfield1 = std::make_unique<
+        physics::lattices::Staggeredfield_eo>(*system,
+                                              interfacesHandler->getInterface<physics::lattices::Staggeredfield_eo>());
+    staggeredfield2 = std::make_unique<
+        physics::lattices::Staggeredfield_eo>(*system,
+                                              interfacesHandler->getInterface<physics::lattices::Staggeredfield_eo>());
+    parameters.fermact = common::action::rooted_stagg;
 }
 
-void dksBenchmark::performBenchmarkForSpecificKernels()
+void dksBenchmark::enqueueSpecificKernelForBenchmark()
 {
-    auto gaugefield_buffer      = gaugefield->get_buffers().at(0);
-    auto staggeredfield1_buffer = staggeredfield1->get_buffers().at(0);
-    auto staggeredfield2_buffer = staggeredfield2->get_buffers().at(0);
-    auto fermion_staggered_code = device->getFermionStaggeredCode();
-    fermion_staggered_code->D_KS_eo_device(staggeredfield1_buffer, staggeredfield2_buffer, gaugefield_buffer, EVEN);
-    fermion_staggered_code->D_KS_eo_device(staggeredfield1_buffer, staggeredfield2_buffer, gaugefield_buffer, ODD);
-    device->synchronize();
+    physics::fermionmatrix::DKS_eo(staggeredfield2.get(), *gaugefield, *staggeredfield1, EVEN);
+    physics::fermionmatrix::DKS_eo(staggeredfield2.get(), *gaugefield, *staggeredfield1, ODD);
 }
 
-void dksBenchmark::enqueueSpecificKernelForBenchmarkingMultipleDevices()
+std::vector<double> dksBenchmark::getExecutionTimesOnDevices()
 {
-    physics::fermionmatrix::DKS_eo(staggeredfield2, *gaugefield, *staggeredfield2, EVEN);
-    physics::fermionmatrix::DKS_eo(staggeredfield2, *gaugefield, *staggeredfield2, ODD);
+    std::vector<double> times(devices.size(), std::numeric_limits<double>::quiet_NaN());
+    for (unsigned int i = 0; i < devices.size(); ++i) {
+        auto kernel = devices[i]->getFermionStaggeredCode()->D_KS_eo;
+        times[i]    = devices[i]->getProfilingData(kernel).get_total_time();
+    }
+    return times;
 }
 
-void dksBenchmark::printProfilingDataToScreen()
+size_t dksBenchmark::getFlopsPerKernelCall()
 {
-    auto fermion_staggered_code = system->get_devices()[0]->getFermionStaggeredCode();
-    size_t flop_count           = fermion_staggered_code->get_flop_size("D_KS_eo");
-    size_t byte_count           = fermion_staggered_code->get_read_write_size("D_KS_eo");
-    double gflops               = static_cast<double>(flop_count) * 2 * benchmarkSteps / executionTime / 1e3;
-    double gbytes               = static_cast<double>(byte_count) * 2 * benchmarkSteps / executionTime / 1e3;
-    logger.info() << "D_KS_eo performance: " << gflops << " GFLOPS";
-    logger.info() << "D_KS_eo memory: " << gbytes << " GB/S";
-    logger.info() << "Measured TIME: " << executionTime / 1.e3 << "msec";
+    return devices[0]->getFermionStaggeredCode()->get_flop_size("D_KS_eo");
+}
+
+size_t dksBenchmark::getMemoryPerKernelCall()
+{
+    return devices[0]->getFermionStaggeredCode()->get_read_write_size("D_KS_eo");
 }

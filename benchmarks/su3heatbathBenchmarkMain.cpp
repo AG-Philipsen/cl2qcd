@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2014 Christopher Pinke
  *
  * This file is part of CL2QCD.
@@ -24,13 +24,11 @@
 int main(int argc, const char* argv[])
 {
     try {
-        std::pair<int, std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv,
-                                                                                        {"--enableProfiling=true"});
-        su3heatbathBenchmark su3heatbathBenchmarkInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
-        su3heatbathBenchmarkInstance.benchmark();
-    }  // try
-    // exceptions from Opencl classes
-    catch (Opencl_Error& e) {
+        su3heatbathBenchmark su3heatbathBenchmarkInstance(argc, argv);
+        su3heatbathBenchmarkInstance.runBenchmark();
+    } catch (meta::Inputparameters::help_required&) {
+        std::cout << "\n";
+    } catch (Opencl_Error& e) {
         logger.fatal() << e.what();
         exit(1);
     } catch (File_Exception& fe) {

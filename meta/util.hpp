@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2014,2015,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2015,2018,2020-2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -51,6 +51,9 @@ namespace meta {
     double get_c0(const Inputparameters& params);
     double get_c1(const Inputparameters& params);
     double get_xi_0(const Inputparameters& params);
+    int getRationalApproximationNumerator(double numTastes, int numTastesDecimalDigits);
+    int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits,
+                                            int numPseudoFermions);
 
     void print_info_global(const meta::Inputparameters& params);
     void print_info_global(std::ostream* os, const meta::Inputparameters& params);
@@ -68,11 +71,11 @@ namespace meta {
     void print_info_hmc(std::ostream* os, const Inputparameters& params);
     void print_info_rhmc(const Inputparameters& params);
     void print_info_rhmc(std::ostream* os, const Inputparameters& params);
-    std::string get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+    std::string get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name);
     std::string get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-    std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-    std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
-    std::string get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+    std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name);
+    std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name);
+    std::string get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name);
     std::string create_prng_name(const Inputparameters& parameters, int number) noexcept;
     std::string create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept;
     std::string create_prng_name(const Inputparameters& parameters) noexcept;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -21,7 +21,8 @@
 //
 // Kernel for summation over blockresults
 //
-__kernel void global_squarenorm_reduction(__global hmc_float* dest, __global hmc_float* result_tmp, const uint elems)
+__kernel void global_squarenorm_reduction(__global hmc_float* restrict dest, __global hmc_float* restrict result_tmp,
+                                          const uint elems)
 {
     uint id       = get_global_id(0);
     hmc_float tmp = 0;

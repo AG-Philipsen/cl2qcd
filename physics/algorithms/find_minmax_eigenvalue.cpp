@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the algorithm to find min and max eigenvalues of an operator
  *
- * Copyright (c) 2013,2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2015,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2014 Christopher Pinke
  * Copyright (c) 2016 Christopher Czaban
@@ -24,6 +24,7 @@
 
 #include "find_minmax_eigenvalue.hpp"
 
+#include "../../common_header_files/types_operations.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../lattices/scalar.hpp"
 #include "../lattices/staggeredfield_eo.hpp"

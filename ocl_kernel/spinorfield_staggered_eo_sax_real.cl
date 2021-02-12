@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -23,8 +23,9 @@
 //  - alpha: The float number by which x has to be multiplied
 //  - out: The output staggered field: alpha*x (site by site)
 
-__kernel void sax_real_staggered_eoprec(__global const staggeredStorageType* const x,
-                                        __global const hmc_float* const alpha, __global staggeredStorageType* const out)
+__kernel void sax_real_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                        __global const hmc_float* const restrict alpha,
+                                        __global staggeredStorageType* const restrict out)
 {
     int id          = get_global_id(0);
     int global_size = get_global_size(0);
@@ -36,8 +37,8 @@ __kernel void sax_real_staggered_eoprec(__global const staggeredStorageType* con
     }
 }
 
-__kernel void sax_real_arg_staggered_eoprec(__global const staggeredStorageType* const x, const hmc_float alpha,
-                                            __global staggeredStorageType* const out)
+__kernel void sax_real_arg_staggered_eoprec(__global const staggeredStorageType* const restrict x,
+                                            const hmc_float alpha, __global staggeredStorageType* const restrict out)
 {
     const int id          = get_global_id(0);
     const int global_size = get_global_size(0);

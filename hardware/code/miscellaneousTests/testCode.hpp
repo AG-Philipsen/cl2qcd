@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015,2016 Christopher Pinke
  * Copyright (c) 2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -56,7 +56,7 @@ struct OtherKernelTester : public GaugefieldTester {
         GaugefieldCreator gf(tP.latticeExtents);
         gaugefieldBuffer         = new hardware::buffers::SU3(calculateGaugefieldSize(tP.latticeExtents), this->device);
         const Matrixsu3* gf_host = gf.createGaugefield(tP.fillType);
-        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        gaugefieldBuffer->load(gf_host);
         delete[] gf_host;
         out = new hardware::buffers::Plain<hmc_float>(LatticeExtents(tP.latticeExtents).getLatticeVolume(), device);
 

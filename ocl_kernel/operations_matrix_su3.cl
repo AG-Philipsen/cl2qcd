@@ -2,7 +2,7 @@
  * Copyright (c) 2011,2012 Christopher Pinke
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christian Schäfer
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -35,7 +35,7 @@ void print_matrixsu3(Matrixsu3 in)
 }
 #endif
 
-inline Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
+static inline Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
 {
     Matrixsu3 out;
 
@@ -63,7 +63,7 @@ inline Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
     return out;
 }
 
-inline Matrixsu3 unit_matrixsu3()
+static inline Matrixsu3 unit_matrixsu3()
 {
     Matrixsu3 out;
     out.e00.re = 1.;
@@ -90,7 +90,7 @@ inline Matrixsu3 unit_matrixsu3()
     return out;
 }
 
-inline Matrixsu3 zero_matrixsu3()
+static inline Matrixsu3 zero_matrixsu3()
 {
     Matrixsu3 out;
     out.e00.re = 0.;
@@ -117,7 +117,7 @@ inline Matrixsu3 zero_matrixsu3()
     return out;
 }
 
-inline Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
+static inline Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 {
     return (Matrixsu3){
 
@@ -169,7 +169,7 @@ inline Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
     };
 }
 
-inline Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
+static inline Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 {
     return (Matrixsu3){
 
@@ -219,7 +219,7 @@ inline Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
              p.e22.im * q.e22.re}};
 }
 
-inline Matrixsu3 multiply_matrixsu3_dagger_dagger(const Matrixsu3 p, const Matrixsu3 q)
+static inline Matrixsu3 multiply_matrixsu3_dagger_dagger(const Matrixsu3 p, const Matrixsu3 q)
 {
     return (Matrixsu3){
 
@@ -271,7 +271,7 @@ inline Matrixsu3 multiply_matrixsu3_dagger_dagger(const Matrixsu3 p, const Matri
     };
 }
 
-inline Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
+static inline Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
 {
     Matrixsu3 out;
     out.e00.re = p.e00.re;
@@ -300,7 +300,7 @@ inline Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
     return out;
 }
 
-inline hmc_complex trace_matrixsu3(const Matrixsu3 p)
+static inline hmc_complex trace_matrixsu3(const Matrixsu3 p)
 {
     hmc_complex out;
     out.re = p.e00.re;
@@ -312,7 +312,7 @@ inline hmc_complex trace_matrixsu3(const Matrixsu3 p)
     return out;
 }
 
-inline hmc_complex det_matrixsu3(const Matrixsu3 p)
+static inline hmc_complex det_matrixsu3(const Matrixsu3 p)
 {
     hmc_complex out;
 
@@ -345,7 +345,7 @@ inline hmc_complex det_matrixsu3(const Matrixsu3 p)
 // where lambda_k are the Gell Mann matrices. Actually, there should be a factor
 // 1/2 to obtain an su(3) matrix, since the generators T_k of the group are 0.5 * \lambda_k.
 // This factor here is not taken into account and it is somehow put in the ae object.
-inline Matrixsu3 build_su3_from_ae_times_i(ae in)
+static inline Matrixsu3 build_su3_from_ae_times_i(ae in)
 {
     Matrixsu3 v;
 
@@ -379,7 +379,7 @@ inline Matrixsu3 build_su3_from_ae_times_i(ae in)
 // NOTE: The factor 1/2 in front of the expression above, is taken into
 //       account in the function below (the generators T_k of the group are 0.5 * \lambda_k).
 // For further details see file ae_from_su3_matrix.pdf in the feature #491
-inline ae build_ae_from_su3(Matrixsu3 in)
+static inline ae build_ae_from_su3(Matrixsu3 in)
 {
     ae v;
 
@@ -397,7 +397,7 @@ inline ae build_ae_from_su3(Matrixsu3 in)
 
 // this build a su3-matrix from an algebraelement, multiplies it by i and in addition
 // multiplies it by a real number!! See documentation build_su3_from_ae_times_i (above).
-inline Matrixsu3 build_su3_from_ae_times_i_times_real(ae in, hmc_float eps)
+static inline Matrixsu3 build_su3_from_ae_times_i_times_real(ae in, hmc_float eps)
 {
     Matrixsu3 v;
 
@@ -425,7 +425,7 @@ inline Matrixsu3 build_su3_from_ae_times_i_times_real(ae in, hmc_float eps)
 
 // CP: I counted a total of 327 + 1 su3*su3 (this can be get centrally from inputparameters) flops for this function
 // NOTE: I inserted intermediate counts for orientation
-inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
+static inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 {
     // this is the method taken from tmqlcd. It is a cut-off series.
     // original in tmlqcd: _make_su3(v,p);
@@ -510,7 +510,7 @@ inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 }
 
 // scale a su3 matrix by a real factor
-inline Matrixsu3 multiply_matrixsu3_by_real(Matrixsu3 in, hmc_float factor)
+static inline Matrixsu3 multiply_matrixsu3_by_real(Matrixsu3 in, hmc_float factor)
 {
     Matrixsu3 out = in;
     out.e00.re *= factor;
@@ -535,7 +535,7 @@ inline Matrixsu3 multiply_matrixsu3_by_real(Matrixsu3 in, hmc_float factor)
     return out;
 }
 
-inline Matrixsu3 multiply_matrixsu3_by_complex(Matrixsu3 in, hmc_complex factor)
+static inline Matrixsu3 multiply_matrixsu3_by_complex(Matrixsu3 in, hmc_complex factor)
 {
     Matrixsu3 out;
     out.e00 = complexmult(in.e00, factor);

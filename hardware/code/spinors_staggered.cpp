@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the hardware::code::Spinors_staggered class
  *
- * Copyright (c) 2013-2015,2018 Alessandro Sciarra
+ * Copyright (c) 2013-2015,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013-2015 Christopher Pinke
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2015,2016 Francesca Cuteri
@@ -620,6 +620,15 @@ void hardware::code::Spinors_staggered::set_gaussian_spinorfield_device(const ha
     }
 }
 
+void hardware::code::Spinors_staggered::convertStaggeredFieldToSOA(const hardware::buffers::SU3vec* out,
+                                                                   const hardware::buffers::Plain<su3vec>* in) const
+{
+    if (kernelParameters->getUseEo() == false)
+        throw Print_Error_Message("Conversion to SoA not yet implemented without even-odd preconditioning.");
+    else
+        convert_staggered_field_to_SoA_eo_device(out, in);
+}
+
 void hardware::code::Spinors_staggered::convert_staggered_field_to_SoA_eo_device(
     const hardware::buffers::SU3vec* out, const hardware::buffers::Plain<su3vec>* in) const
 {
@@ -637,6 +646,15 @@ void hardware::code::Spinors_staggered::convert_staggered_field_to_SoA_eo_device
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
     get_device()->enqueue_kernel(convert_staggered_field_to_SoA_eo, gs2, ls2);
+}
+
+void hardware::code::Spinors_staggered::convertStaggeredFieldFromSOA(const hardware::buffers::Plain<su3vec>* out,
+                                                                     const hardware::buffers::SU3vec* in) const
+{
+    if (kernelParameters->getUseEo() == false)
+        throw Print_Error_Message("Conversion to SoA not yet implemented without even-odd preconditioning.");
+    else
+        convert_staggered_field_from_SoA_eo_device(out, in);
 }
 
 void hardware::code::Spinors_staggered::convert_staggered_field_from_SoA_eo_device(
@@ -1545,10 +1563,12 @@ void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_dev
                                                                   kernelParameters->getMdApproxOrd())),
                                  numeqs);
     }
+
     // query work-sizes for kernel
     size_t ls2, gs2;
     cl_uint num_groups;
     this->get_work_sizes(sax_vectorized_and_squarenorm_eoprec, &ls2, &gs2, &num_groups);
+
     // set arguments
     int clerr = clSetKernelArg(sax_vectorized_and_squarenorm_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
     if (clerr != CL_SUCCESS)
@@ -1563,7 +1583,7 @@ void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_dev
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
     hardware::buffers::Plain<hmc_float> tmp(num_groups * numeqs, get_device());
-    clerr = clSetKernelArg(sax_vectorized_and_squarenorm_eoprec, 3, sizeof(cl_mem), tmp);
+    clerr = clSetKernelArg(sax_vectorized_and_squarenorm_eoprec, 3, sizeof(cl_mem), tmp.get_cl_buffer());
     if (clerr != CL_SUCCESS)
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -1573,7 +1593,6 @@ void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_dev
         throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
     get_device()->enqueue_kernel(sax_vectorized_and_squarenorm_eoprec, gs2, ls2);
-    // get_device()->enqueue_kernel(sax_vectorized_and_squarenorm_eoprec, 1, 1);
 
     sax_vectorized_squarenorm_reduction(out, &tmp, numeqs);
 }

@@ -2,7 +2,7 @@
  * Fermions_staggered OpenCL functionality
  *
  * Copyright (c) 2013,2015 Christopher Pinke
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2015 Francesca Cuteri
  *
@@ -31,6 +31,8 @@
 #include "../buffers/su3vec.hpp"
 #include "opencl_module.hpp"
 
+class dksBenchmark;
+
 namespace hardware {
 
     namespace code {
@@ -46,6 +48,7 @@ namespace hardware {
         class Fermions_staggered : public hardware::code::Opencl_Module {
           public:
             friend hardware::Device;
+            friend dksBenchmark;
 
             virtual ~Fermions_staggered();
 

@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the hardware::buffers::Spinor class
  *
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2015,2016 Francesca Cuteri
  * Copyright (c) 2015 Christopher Pinke
@@ -91,7 +91,7 @@ void hardware::buffers::SU3vec::load(const su3vec* ptr, const size_t elems, cons
         auto device = get_device();
         Plain<su3vec> plain(get_elements(), device);
         plain.load(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
-        device->getSpinorStaggeredCode()->convert_staggered_field_to_SoA_eo_device(this, &plain);
+        device->getSpinorStaggeredCode()->convertStaggeredFieldToSOA(this, &plain);
         device->synchronize();
     } else {
         Buffer::load(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
@@ -103,7 +103,7 @@ void hardware::buffers::SU3vec::dump(su3vec* ptr, const size_t elems, const size
     if (is_soa()) {
         auto device = get_device();
         Plain<su3vec> plain(get_elements(), device);
-        device->getSpinorStaggeredCode()->convert_staggered_field_from_SoA_eo_device(&plain, this);
+        device->getSpinorStaggeredCode()->convertStaggeredFieldFromSOA(&plain, this);
         plain.dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
     } else {
         Buffer::dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));

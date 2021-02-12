@@ -1,7 +1,7 @@
 /** @file
  * Spinors_staggered OpenCL functionality
  *
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013,2015 Christopher Pinke
  * Copyright (c) 2013 Matthias Bach
  * Copyright (c) 2015 Francesca Cuteri
@@ -36,8 +36,6 @@ namespace hardware {
 
         /**
          * An OpenCL device
-         *
-         * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
          */
         class Spinors_staggered : public Opencl_Module {
           public:
@@ -294,7 +292,7 @@ namespace hardware {
 
             /**
              * This function returns the squarenorms of the input staggered field with even-odd
-             * preconditioning multiplied by a set of differente real constants.
+             * preconditioning multiplied by a set of different real constants.
              * @param x The input staggered field (one su3vec per site even or odd)
              * @param alpha The real constants vector
              * @param numeqs The number of real constants
@@ -433,13 +431,17 @@ namespace hardware {
              */
             void clear_kernels();
 
-            // Functionalities to switch from AoS to SoA and viceversa
+            // Functionalities to switch from AoS to SoA and vice-versa
             cl_kernel convert_staggered_field_to_SoA_eo;
             cl_kernel convert_staggered_field_from_SoA_eo;
+            void convertStaggeredFieldToSOA(const hardware::buffers::SU3vec* out,
+                                            const hardware::buffers::Plain<su3vec>* in) const;
+            void convertStaggeredFieldFromSOA(const hardware::buffers::Plain<su3vec>* out,
+                                              const hardware::buffers::SU3vec* in) const;
 
             /**
-             * This function reads a staggered field wrote in the AoS fashion
-             * and returns the same field wrote in the SoA fashion. Of course,
+             * This function reads a staggered field written in the AoS fashion
+             * and returns the same field written in the SoA fashion. Of course,
              * in the SoA way, all first components of the su3vec are before the
              * second, that are before the third.
              * @param out The staggered field wrote in the SoA way

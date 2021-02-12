@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012-2014 Matthias Bach
  * Copyright (c) 2012-2015 Christopher Pinke
- * Copyright (c) 2013,2014,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2016,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015,2018 Francesca Cuteri
  * Copyright (c) 2015 Paul Frederik Depta
  *
@@ -230,6 +230,7 @@ static void print_info_fermion(const meta::Inputparameters& params)
         logger.info() << "## fermion action: staggered standard ";
         logger.info() << "## mass           = " << params.get_mass();
         logger.info() << "## Num. of tastes = " << params.get_num_tastes();
+        logger.info() << "## Num. of pseudofermions = " << params.get_num_pseudofermions();
     }
     logger.info() << "##";
     logger.info() << "## Inverter parameters:";
@@ -310,6 +311,7 @@ static void print_info_fermion(std::ostream* os, const meta::Inputparameters& pa
         *os << "## fermion action: staggered standard " << endl;
         *os << "## mass           = " << params.get_mass() << endl;
         *os << "## Num. of tastes = " << params.get_num_tastes() << endl;
+        *os << "## Num. of pseudofermions = " << params.get_num_pseudofermions();
     }
     *os << "##" << endl;
     *os << "## Inverter parameters:" << endl;
@@ -587,20 +589,27 @@ void meta::print_info_rhmc(const Inputparameters& params)
     print_info_observables_rhmc_io(params);
     print_info_gauge(params);
     print_info_fermion(params);
+    int numerator = getRationalApproximationNumerator(params.get_num_tastes(), params.get_num_tastes_decimal_digits());
+    int denominatorHB  = getRationalApproximationDenominator("HB", params.get_num_tastes_decimal_digits(),
+                                                            params.get_num_pseudofermions());
+    int denominatorMD  = getRationalApproximationDenominator("MD", params.get_num_tastes_decimal_digits(),
+                                                            params.get_num_pseudofermions());
+    int denominatorMET = getRationalApproximationDenominator("MET", params.get_num_tastes_decimal_digits(),
+                                                             params.get_num_pseudofermions());
     logger.info() << "## **********************************************************";
     logger.info() << "## RHMC parameters: ";
     logger.info() << "##  ";
     logger.info() << "## Rational Approximations info:";
     logger.info() << "##   - Generation of phi:";
-    logger.info() << "##       + x^(+" << params.get_num_tastes() << "/8)";
+    logger.info() << "##       + x^(+" << numerator << "/" << denominatorHB << ")";
     logger.info() << "##       + order = " << params.get_metro_approx_ord();
     logger.info() << "##       + range = [" << params.get_approx_lower() << " , " << params.get_approx_upper() << "]";
     logger.info() << "##   - Molecular Dynamics:";
-    logger.info() << "##       + x^(-" << params.get_num_tastes() << "/4)";
+    logger.info() << "##       + x^(-" << numerator << "/" << denominatorMD << ")";
     logger.info() << "##       + order = " << params.get_md_approx_ord();
     logger.info() << "##       + range = [" << params.get_approx_lower() << " , " << params.get_approx_upper() << "]";
     logger.info() << "##   - Evaluation of new action in Metropolis test:";
-    logger.info() << "##       + x^(-" << params.get_num_tastes() << "/4)";
+    logger.info() << "##       + x^(-" << numerator << "/" << denominatorMET << ")";
     logger.info() << "##       + order = " << params.get_metro_approx_ord();
     logger.info() << "##       + range = [" << params.get_approx_lower() << " , " << params.get_approx_upper() << "]";
     logger.info() << "##  ";
@@ -676,20 +685,27 @@ void meta::print_info_rhmc(std::ostream* os, const Inputparameters& params)
     print_info_observables_rhmc_io(os, params);
     print_info_gauge(os, params);
     print_info_fermion(os, params);
+    int numerator = getRationalApproximationNumerator(params.get_num_tastes(), params.get_num_tastes_decimal_digits());
+    int denominatorHB  = getRationalApproximationDenominator("HB", params.get_num_tastes_decimal_digits(),
+                                                            params.get_num_pseudofermions());
+    int denominatorMD  = getRationalApproximationDenominator("MD", params.get_num_tastes_decimal_digits(),
+                                                            params.get_num_pseudofermions());
+    int denominatorMET = getRationalApproximationDenominator("MET", params.get_num_tastes_decimal_digits(),
+                                                             params.get_num_pseudofermions());
     *os << "## **********************************************************" << endl;
     *os << "## RHMC parameters: " << endl;
     *os << "##  " << endl;
     *os << "## Rational Approximations info:" << endl;
     *os << "##   - Generation of phi:" << endl;
-    *os << "##       + x^(+" << params.get_num_tastes() << "/8)" << endl;
+    *os << "##       + x^(+" << numerator << "/" << denominatorHB << ")" << endl;
     *os << "##       + order = " << params.get_metro_approx_ord() << endl;
     *os << "##       + range = [" << params.get_approx_lower() << " , " << params.get_approx_upper() << "]" << endl;
     *os << "##   - Molecular Dynamics:" << endl;
-    *os << "##       + x^(-" << params.get_num_tastes() << "/4)" << endl;
+    *os << "##       + x^(-" << numerator << "/" << denominatorMD << ")" << endl;
     *os << "##       + order = " << params.get_md_approx_ord() << endl;
     *os << "##       + range = [" << params.get_approx_lower() << " , " << params.get_approx_upper() << "]" << endl;
     *os << "##   - Evaluation of new action in Metropolis test:" << endl;
-    *os << "##       + x^(-" << params.get_num_tastes() << "/4)" << endl;
+    *os << "##       + x^(-" << numerator << "/" << denominatorMET << ")" << endl;
     *os << "##       + order = " << params.get_metro_approx_ord() << endl;
     *os << "##       + range = [" << params.get_approx_lower() << " , " << params.get_approx_upper() << "]" << endl;
     *os << "##  " << endl;

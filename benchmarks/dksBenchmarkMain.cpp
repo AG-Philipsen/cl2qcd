@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2018 Alessandro Sciarra
+ * Copyright (c) 2014,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -23,13 +23,11 @@
 int main(int argc, const char* argv[])
 {
     try {
-        std::vector<const char*> optionsToAdd({"--enableProfiling=true", "--fermionAction=rooted_stagg"});
-        std::pair<int, std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv, optionsToAdd);
-        dksBenchmark dksBenchmarkInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
-        dksBenchmarkInstance.benchmark();
-    }  // try
-    // exceptions from Opencl classes
-    catch (Opencl_Error& e) {
+        dksBenchmark dksBenchmarkInstance(argc, argv);
+        dksBenchmarkInstance.runBenchmark();
+    } catch (meta::Inputparameters::help_required&) {
+        std::cout << "\n";
+    } catch (Opencl_Error& e) {
         logger.fatal() << e.what();
         exit(1);
     } catch (File_Exception& fe) {

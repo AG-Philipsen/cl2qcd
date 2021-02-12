@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Lars Zeidlewicz
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2013-2015 Christopher Pinke
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2020 Alessandro Sciarra
  * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -59,13 +59,18 @@ hardware::code::Prng::Prng(const hardware::code::OpenClKernelParametersInterface
 #endif  // USE_PRNG_XXX
 }
 
-hardware::code::Prng::~Prng()
+hardware::code::Prng::~Prng() noexcept(false)
 {
 #ifdef USE_PRNG_RANLUX
     logger.debug() << "Clearing PRNG kernels...";
     cl_int clerr = clReleaseKernel(init_kernel);
-    if (clerr != CL_SUCCESS)
-        throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+    if (clerr != CL_SUCCESS) {
+        if (std::uncaught_exceptions() != 0)
+            logger.fatal() << "OpenCL failed. Error code " << clerr << " in clReleaseKernel at " << __FILE__ << ":"
+                           << __LINE__;
+        else
+            throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+    }
 #else  // USE_PRNG_XXX
 #    error No implemented PRNG selected
 #endif  // USE_PRNG_XXX

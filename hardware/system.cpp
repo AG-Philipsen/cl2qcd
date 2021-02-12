@@ -4,7 +4,7 @@
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2014-2016 Christopher Pinke
  * Copyright (c) 2015,2016 Francesca Cuteri
- * Copyright (c) 2016,2018 Alessandro Sciarra
+ * Copyright (c) 2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -42,14 +42,14 @@
 #include <sstream>
 #include <stdexcept>
 
-static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context,
-                                                   const LatticeGrid lG,
-                                                   const hardware::HardwareParametersInterface& hardwareParameters,
-                                                   const hardware::OpenClCode& openClCodeBuilder);
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>&, cl_context,
+                                                   const LatticeGrid, const hardware::HardwareParametersInterface&,
+                                                   const hardware::OpenClCode&);
 static void setDebugEnvironmentVariables();
-static unsigned int
-checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface& hardwareParameters);
+static cl_uint getNumberOfDevicesToBeUsed(cl_uint, const hardware::HardwareParametersInterface&);
+static size_t filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>&);
+static size_t filterOutCPUs(std::list<hardware::DeviceInfo>&);
+static void abortIfNotEnoughDevicesWereFound(unsigned int, unsigned int);
 
 hardware::System::System(const hardware::HardwareParametersInterface& systemParameters,
                          const hardware::code::OpenClKernelParametersInterface& kernelParameters)
@@ -57,32 +57,8 @@ hardware::System::System(const hardware::HardwareParametersInterface& systemPara
     , transfer_links()
     , hardwareParameters(&systemParameters)
     , kernelParameters(&kernelParameters)
-    , inputparameters(meta::Inputparameters{0, nullptr})  // <- warning at compilation, fine!
-// NOTE: On purpose, we initialize inputparameters with a ref to a temporary object, since it is not used
-//       at all in the System class. This reference is here only for the tests in the physics package and
-//       it will disappear (together with the ctor here below) as soon those tests are refactored!
 {
     kernelBuilder = new hardware::OpenClCode(kernelParameters);
-    setDebugEnvironmentVariables();
-    initOpenCLPlatforms();
-    initOpenCLContext();
-    initOpenCLDevices();
-}
-
-// todo: Remove when this constructor is removed
-#include "../interfaceImplementations/hardwareParameters.hpp"
-#include "../interfaceImplementations/openClKernelParameters.hpp"
-
-hardware::System::System(meta::Inputparameters& parameters)
-    : lG(LatticeGrid(1, LatticeExtents()))
-    , transfer_links()
-    , hardwareParameters(nullptr)
-    , kernelParameters(nullptr)
-    , inputparameters(parameters)
-{
-    hardwareParameters = new hardware::HardwareParametersImplementation(&parameters);
-    kernelParameters   = new hardware::code::OpenClKernelParametersImplementation(parameters);
-    kernelBuilder      = new hardware::OpenClCode(*kernelParameters);
     setDebugEnvironmentVariables();
     initOpenCLPlatforms();
     initOpenCLContext();
@@ -99,7 +75,7 @@ void hardware::System::initOpenCLPlatforms()
     cl_uint numberOfAvailablePlatforms = 0;
     clGetPlatformIDs(0, nullptr, &numberOfAvailablePlatforms);
     if (numberOfAvailablePlatforms > 1) {
-        logger.warn() << "Found " << numberOfAvailablePlatforms << " platforms, take first one...";
+        logger.warn() << "Found " << numberOfAvailablePlatforms << " platforms, take first one!";
     }
 
     std::vector<cl_platform_id> platformIds(numberOfAvailablePlatforms);
@@ -151,7 +127,7 @@ void hardware::System::initOpenCLDevices()
     if (err) {
         throw OpenclException(err, "clGetContextInfo", __FILE__, __LINE__);
     }
-    logger.info() << "Found " << num_devices << " OpenCL devices.";
+    logger.info() << "Found " << num_devices << " OpenCL device(s)";
 
     cl_device_id* device_ids = new cl_device_id[num_devices];
     err = clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_device_id) * num_devices, device_ids, 0);
@@ -164,30 +140,28 @@ void hardware::System::initOpenCLDevices()
     std::list<DeviceInfo> device_infos;
     if (selection.empty()) {
         // use all (or up to max)
-        size_t max_devices = checkMaximalNumberOfDevices(num_devices, *hardwareParameters);
-        for (cl_uint i = 0; i < num_devices && (!max_devices || device_infos.size() < max_devices); ++i) {
+        size_t devicesToBeUsed = getNumberOfDevicesToBeUsed(num_devices, *hardwareParameters);
+        auto someDevicesWereRequestedAndNotYetEnoughWereGathered = [devicesToBeUsed, &device_infos] {
+            return devicesToBeUsed == 0 || device_infos.size() < devicesToBeUsed;
+        };
+        for (cl_uint i = 0; i < num_devices && someDevicesWereRequestedAndNotYetEnoughWereGathered(); ++i) {
             DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
             if (!dev.is_double_supported()) {
-                logger.fatal() << "double not supported on device " << dev.get_name();
+                logger.error() << "Double precision not supported on device " << dev.get_name() << ", skipping it!";
                 continue;
             }
 #endif
             device_infos.push_back(dev);
         }
-        // for now, if a gpu was found then throw out cpus
-        for (auto device : device_infos) {
-            if (device.get_device_type() == CL_DEVICE_TYPE_GPU) {
-                device_infos = filter_cpus(device_infos);
-                break;
-            }
-        }
+        auto excludedDevices = filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
+        abortIfNotEnoughDevicesWereFound(device_infos.size(), devicesToBeUsed - excludedDevices);
 
         // if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA
         // domains (primarily makes testing easier)
 #ifdef CL_VERSION_1_2
         if (hardwareParameters->splitCpu() && device_infos.size() == 1 &&
-            device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
+            device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && devicesToBeUsed == 0) {
             cl_device_id original_device                   = device_infos.front().get_id();
             cl_device_partition_property partition_props[] = {CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN,
                                                               CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE, 0};
@@ -221,13 +195,12 @@ void hardware::System::initOpenCLDevices()
 #endif
             device_infos.push_back(dev);
         }
-    }
-
-    if (device_infos.size() == 0) {
-        throw std::logic_error("Did not find any device! Abort!");
+        auto excludedDevices = filterOutCPUsIfAtLeastOneGPUWasFound(device_infos);
+        abortIfNotEnoughDevicesWereFound(device_infos.size(), selection.size() - excludedDevices);
     }
 
     LatticeGrid lG(device_infos.size(), LatticeExtents(hardwareParameters->getNs(), hardwareParameters->getNt()));
+    logger.info() << "Device selection done. Using " << device_infos.size() << " device(s).";
     logger.info() << "Device grid layout: " << lG;
 
     devices = init_devices(device_infos, context, lG, *hardwareParameters, *kernelBuilder);
@@ -252,13 +225,6 @@ hardware::System::~System()
 const std::vector<hardware::Device*>& hardware::System::get_devices() const noexcept
 {
     return devices;
-}
-
-const meta::Inputparameters& hardware::System::get_inputparameters() const noexcept
-{
-    return inputparameters;
-    // return meta::Inputparameters(0,0); //Note: This returns reference to a temporary object, but this fct. must not
-    // be used anyway and will be removed asap
 }
 
 hardware::OpenclException::OpenclException(int err)
@@ -304,17 +270,6 @@ void hardware::print_profiling(const System& system, const std::string& filename
 void hardware::print_profiling(const System* system, const std::string& filename)
 {
     print_profiling(*system, filename);
-}
-
-static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices)
-{
-    std::list<hardware::DeviceInfo> filtered;
-    for (auto device : devices) {
-        if (device.get_device_type() != CL_DEVICE_TYPE_CPU) {
-            filtered.push_back(device);
-        }
-    }
-    return filtered;
 }
 
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context,
@@ -369,16 +324,51 @@ static void setDebugEnvironmentVariables()
     }
 }
 
-static unsigned int
-checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface& hardwareParameters)
-{  // here a halo_size of 2 is assumed
-    size_t max_devices                           = ((!hardwareParameters.getMaximalNumberOfDevices())
-                              ? num_devices
-                              : hardwareParameters.getMaximalNumberOfDevices());
-    size_t max_devices_checked_against_halo_size = ((max_devices <= (unsigned)hardwareParameters.getNt() / 2)
-                                                        ? max_devices
-                                                        : hardwareParameters.getNt() / 2);
-    return max_devices_checked_against_halo_size;
+static cl_uint getNumberOfDevicesToBeUsed(cl_uint num_devices, const hardware::HardwareParametersInterface& hP)
+{
+    unsigned int requestedDevices = hP.getNumberOfDevicesToBeUsed();
+    unsigned int nTime            = hP.getNt();
+    // here a halo_size of 2 is assumed
+    cl_uint devicesToBeUsed                       = (requestedDevices == 0) ? num_devices : requestedDevices;
+    cl_uint devicesToBeUsedCheckedAgainstHaloSize = (devicesToBeUsed <= nTime / 2) ? devicesToBeUsed : nTime / 2;
+    if (devicesToBeUsed != devicesToBeUsedCheckedAgainstHaloSize)
+        logger.warn() << "Number of devices to be used was reduced to " << devicesToBeUsedCheckedAgainstHaloSize
+                      << " due to lattice temporal extent and halo size equal to 2.";
+    return devicesToBeUsedCheckedAgainstHaloSize;
+}
+
+static size_t filterOutCPUsIfAtLeastOneGPUWasFound(std::list<hardware::DeviceInfo>& gatheredDevices)
+{
+    for (auto device : gatheredDevices) {
+        if (device.get_device_type() == CL_DEVICE_TYPE_GPU) {
+            return filterOutCPUs(gatheredDevices);
+        }
+    }
+    return 0;
+}
+
+static size_t filterOutCPUs(std::list<hardware::DeviceInfo>& gatheredDevices)
+{
+    std::list<hardware::DeviceInfo> filteredDevices;
+    for (auto device : gatheredDevices) {
+        if (device.get_device_type() != CL_DEVICE_TYPE_CPU) {
+            filteredDevices.push_back(device);
+        }
+    }
+    size_t filteredOutDevices = gatheredDevices.size() - filteredDevices.size();
+    if (filteredOutDevices != 0)
+        logger.warn() << filteredOutDevices << " CPU device(s) have been filtered out!";
+    gatheredDevices = filteredDevices;
+    return filteredOutDevices;
+}
+
+static void abortIfNotEnoughDevicesWereFound(unsigned int found, unsigned int expected)
+{
+    if (found == 0)
+        throw std::logic_error("No valid device has been found! Abort!");
+    else if (expected != 0 && found != expected)  // expected == 0 means use all valid ones
+        throw std::logic_error(std::to_string(expected) + " devices were requested, but only " + std::to_string(found) +
+                               " were found!");
 }
 
 const hardware::HardwareParametersInterface* hardware::System::getHardwareParameters() const noexcept

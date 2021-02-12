@@ -2,7 +2,7 @@
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Christian Schäfer
  * Copyright (c) 2011 Christopher Pinke
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -36,17 +36,17 @@ void print_matrix3x3(Matrix3x3 in)
 }
 #endif
 
-inline Matrix3x3 zero_matrix3x3()
+static inline Matrix3x3 zero_matrix3x3()
 {
     return (Matrix3x3){{0., 0.}, {0., 0.}, {0., 0.}, {0., 0.}, {0., 0.}, {0., 0.}, {0., 0.}, {0., 0.}, {0., 0.}};
 }
 
-inline Matrix3x3 identity_matrix3x3()
+static inline Matrix3x3 identity_matrix3x3()
 {
     return (Matrix3x3){{1., 0.}, {0., 0.}, {0., 0.}, {0., 0.}, {1., 0.}, {0., 0.}, {0., 0.}, {0., 0.}, {1., 0.}};
 }
 
-inline Matrix3x3 multiply_matrix3x3_by_real(const Matrix3x3 in, const hmc_float factor)
+static inline Matrix3x3 multiply_matrix3x3_by_real(const Matrix3x3 in, const hmc_float factor)
 {
     Matrix3x3 out = in;
     out.e00.re *= factor;
@@ -71,7 +71,7 @@ inline Matrix3x3 multiply_matrix3x3_by_real(const Matrix3x3 in, const hmc_float 
     return out;
 }
 
-inline void scale_matrix3x3_by_real(Matrix3x3* const restrict inout, const hmc_float factor)
+static inline void scale_matrix3x3_by_real(Matrix3x3* const restrict inout, const hmc_float factor)
 {
     inout->e00.re *= factor;
     inout->e00.im *= factor;
@@ -93,7 +93,7 @@ inline void scale_matrix3x3_by_real(Matrix3x3* const restrict inout, const hmc_f
     inout->e22.im *= factor;
 }
 
-inline Matrix3x3 multiply_matrix3x3_by_complex(Matrix3x3 in, hmc_complex factor)
+static inline Matrix3x3 multiply_matrix3x3_by_complex(Matrix3x3 in, hmc_complex factor)
 {
     Matrix3x3 out;
 
@@ -110,7 +110,7 @@ inline Matrix3x3 multiply_matrix3x3_by_complex(Matrix3x3 in, hmc_complex factor)
     return out;
 }
 
-inline Matrix3x3 multiply_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
+static inline Matrix3x3 multiply_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
 {
     Matrix3x3 out;
     out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q.e20.re - p.e00.im * q.e00.im -
@@ -161,7 +161,7 @@ inline Matrix3x3 multiply_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
     return out;
 }
 
-inline Matrix3x3 multiply_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
+static inline Matrix3x3 multiply_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
 {
     Matrix3x3 out;
 
@@ -213,7 +213,7 @@ inline Matrix3x3 multiply_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
 }
 
 // this returns p^dagger*q^dagger
-inline Matrix3x3 multiply_matrix3x3_dagger_dagger(const Matrix3x3 p, const Matrix3x3 q)
+static inline Matrix3x3 multiply_matrix3x3_dagger_dagger(const Matrix3x3 p, const Matrix3x3 q)
 {
     Matrix3x3 out;
 
@@ -313,7 +313,7 @@ inline Matrix3x3 multiply_matrix3x3_dagger_dagger(const Matrix3x3 p, const Matri
     return out;
 }
 
-inline Matrix3x3 add_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
+static inline Matrix3x3 add_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
 {
     Matrix3x3 out;
     out.e00.re = p.e00.re + q.e00.re;
@@ -340,7 +340,7 @@ inline Matrix3x3 add_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
     return out;
 }
 
-inline void aggregate_matrix3x3(Matrix3x3* const restrict p, const Matrix3x3 q)
+static inline void aggregate_matrix3x3(Matrix3x3* const restrict p, const Matrix3x3 q)
 {
     p->e00.re += q.e00.re;
     p->e00.im += q.e00.im;
@@ -364,7 +364,7 @@ inline void aggregate_matrix3x3(Matrix3x3* const restrict p, const Matrix3x3 q)
     p->e22.im += q.e22.im;
 }
 
-inline Matrix3x3 subtract_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
+static inline Matrix3x3 subtract_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
 {
     Matrix3x3 out;
     out.e00.re = p.e00.re - q.e00.re;
@@ -391,7 +391,7 @@ inline Matrix3x3 subtract_matrix3x3(const Matrix3x3 p, const Matrix3x3 q)
     return out;
 }
 
-inline Matrix3x3 subtract_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
+static inline Matrix3x3 subtract_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
 {
     Matrix3x3 out;
 
@@ -419,7 +419,7 @@ inline Matrix3x3 subtract_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
     return out;
 }
 
-inline Matrix3x3 copy_matrix3x3(const Matrix3x3 p)
+static inline Matrix3x3 copy_matrix3x3(const Matrix3x3 p)
 {
     Matrix3x3 out;
     out.e00.re = p.e00.re;
@@ -446,7 +446,7 @@ inline Matrix3x3 copy_matrix3x3(const Matrix3x3 p)
     return out;
 }
 
-inline hmc_complex trace_matrix3x3(const Matrix3x3 p)
+static inline hmc_complex trace_matrix3x3(const Matrix3x3 p)
 {
     hmc_complex out;
     out.re = p.e00.re;
@@ -459,7 +459,7 @@ inline hmc_complex trace_matrix3x3(const Matrix3x3 p)
     return out;
 }
 
-inline Matrix3x3 adjoint_matrix3x3(const Matrix3x3 p)
+static inline Matrix3x3 adjoint_matrix3x3(const Matrix3x3 p)
 {
     Matrix3x3 out;
     out.e00.re = p.e00.re;
@@ -486,17 +486,17 @@ inline Matrix3x3 adjoint_matrix3x3(const Matrix3x3 p)
     return out;
 }
 
-inline Matrix3x3 matrix_su3to3x3(const Matrixsu3 p)
+static inline Matrix3x3 matrix_su3to3x3(const Matrixsu3 p)
 {
     return (Matrix3x3){p.e00, p.e01, p.e02, p.e10, p.e11, p.e12, p.e20, p.e21, p.e22};
 }
 
-inline Matrixsu3 matrix_3x3tosu3(const Matrix3x3 p)
+static inline Matrixsu3 matrix_3x3tosu3(const Matrix3x3 p)
 {
     return (Matrixsu3){p.e00, p.e01, p.e02, p.e10, p.e11, p.e12, p.e20, p.e21, p.e22};
 }
 
-inline hmc_float absoluteDifference_matrix3x3(Matrix3x3 mat1, Matrix3x3 mat2)
+static inline hmc_float absoluteDifference_matrix3x3(Matrix3x3 mat1, Matrix3x3 mat2)
 {
     hmc_float result = 0.0;
 
@@ -522,7 +522,7 @@ inline hmc_float absoluteDifference_matrix3x3(Matrix3x3 mat1, Matrix3x3 mat2)
     return result;
 }
 
-inline Matrixsu3 project_anti_herm(Matrix3x3 in)
+static inline Matrixsu3 project_anti_herm(Matrix3x3 in)
 {
     Matrixsu3 tmp;
     hmc_float tr_omega;
@@ -579,7 +579,7 @@ inline Matrixsu3 project_anti_herm(Matrix3x3 in)
  *       (I do not think so) that project_anti_herm returns a Matrixsu3 object. In case
  *       substitute it by traceless_antihermitian_part.
  */
-inline Matrix3x3 traceless_antihermitian_part(Matrix3x3 in)
+static inline Matrix3x3 traceless_antihermitian_part(Matrix3x3 in)
 {
     Matrix3x3 out;
     hmc_float trace = (in.e00.im + in.e11.im + in.e22.im) / 3.0;

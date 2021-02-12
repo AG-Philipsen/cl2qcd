@@ -5,7 +5,7 @@
  * Copyright (c) 2011-2013 Matthias Bach
  * Copyright (c) 2011 Lars Zeidlewicz
  * Copyright (c) 2014,2015 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -32,6 +32,8 @@
 #include "../buffers/su3.hpp"
 #include "opencl_module.hpp"
 
+class dslashBenchmark;
+
 namespace hardware {
 
     namespace code {
@@ -47,6 +49,7 @@ namespace hardware {
         class Fermions : public hardware::code::Opencl_Module {
           public:
             friend hardware::Device;
+            friend dslashBenchmark;
 
             virtual ~Fermions();
 

@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2015,2016 Christopher Pinke
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE(get_prng_buffer_size)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    for (Device* device : system.get_devices()) {
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    for (Device* device : system->get_devices()) {
         int elems = hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers());
 
         BOOST_CHECK_GT(elems, 0);
@@ -54,8 +54,8 @@ BOOST_AUTO_TEST_CASE(initialization)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    for (Device* device : system.get_devices()) {
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    for (Device* device : system->get_devices()) {
         PRNGBuffer dummy(device, hardwareParameters.useSameRandomNumbers());
         BOOST_CHECK_EQUAL(dummy.get_elements(),
                           hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers()));
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(import_export)
 
     const hardware::HardwareParametersMockup hardwareParameters(4, 4);
     const hardware::code::OpenClKernelParametersMockup kernelParameters(4, 4);
-    hardware::System system(hardwareParameters, kernelParameters);
-    for (Device* device : system.get_devices()) {
+    auto system = tryToInstantiateSystemAndHandleExceptions(hardwareParameters, kernelParameters);
+    for (Device* device : system->get_devices()) {
         PRNGBuffer buffer(device, hardwareParameters.useSameRandomNumbers());
         int elems                    = buffer.get_elements();
         PRNGBuffer::prng_state_t* in = new PRNGBuffer::prng_state_t[elems];

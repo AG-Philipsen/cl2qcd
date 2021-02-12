@@ -2,7 +2,7 @@
  * Unit test for the physics::gaugeObservables class
  *
  * Copyright (c) 2014,2015 Christopher Pinke
- * Copyright (c) 2015,2016,2018 Alessandro Sciarra
+ * Copyright (c) 2015,2016,2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -30,7 +30,6 @@
 #include "../../interfaceImplementations/observablesParameters.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../interfaceImplementations/physicsParameters.hpp"
-#include "../../meta/type_ops.hpp"
 #include "../lattices/gaugefield.hpp"
 
 #include <boost/test/unit_test.hpp>

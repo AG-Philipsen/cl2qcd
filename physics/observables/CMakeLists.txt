@@ -1,7 +1,7 @@
 # Build specifications for physics::observables
 #
 # Copyright (c) 2014,2015 Christopher Pinke
-# Copyright (c) 2014,2016,2018 Alessandro Sciarra
+# Copyright (c) 2014,2016,2018,2021 Alessandro Sciarra
 # Copyright (c) 2016 Tim Breitenfelder
 #
 # This file is part of CL2QCD.
@@ -49,8 +49,8 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 add_unit_test(            NAME physics/observables/gaugeObservables                      LIBRARIES observables)
 add_unit_test(CREATE_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate      LIBRARIES lattices observables)
-add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_CPU  COMMAND_LINE_OPTIONS -- --useGPU=false)
-add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_GPU  COMMAND_LINE_OPTIONS -- --useGPU=true )
+add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_CPU  COMMAND_LINE_OPTIONS -- --useCPU=true  --useGPU=false)
+add_unit_test(   ADD_ONLY NAME physics/observables/wilsonTwoFlavourChiralCondensate_GPU  COMMAND_LINE_OPTIONS -- --useCPU=false --useGPU=true )
 add_unit_test(            NAME physics/observables/wilsonTwoFlavourCorrelators           LIBRARIES lattices observables)
 add_unit_test(            NAME physics/observables/staggeredChiralCondensate             LIBRARIES lattices observables)
 add_unit_test(            NAME physics/observables/staggeredTwoFlavourCorrelators        LIBRARIES lattices observables)

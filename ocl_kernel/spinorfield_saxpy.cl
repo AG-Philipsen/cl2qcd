@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011,2013 Matthias Bach
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -21,7 +21,8 @@
 // -alpha*x + y
 // CP: defined with a minus!!!
 
-__kernel void saxpy(__global spinor* x, __global spinor* y, __global const hmc_complex* alpha_p, __global spinor* out)
+__kernel void saxpy(__global spinor* restrict x, __global spinor* restrict y,
+                    __global const hmc_complex* restrict alpha_p, __global spinor* restrict out)
 {
     int id          = get_global_id(0);
     int global_size = get_global_size(0);
@@ -37,8 +38,8 @@ __kernel void saxpy(__global spinor* x, __global spinor* y, __global const hmc_c
 }
 
 // the arguments have been hacked to work on apple
-__kernel void saxpy_arg(__global spinor* x, __global spinor* y, const hmc_float alpha_re, const hmc_float alpha_im,
-                        __global spinor* out)
+__kernel void saxpy_arg(__global spinor* restrict x, __global spinor* restrict y, const hmc_float alpha_re,
+                        const hmc_float alpha_im, __global spinor* restrict out)
 {
     const int id          = get_global_id(0);
     const int global_size = get_global_size(0);

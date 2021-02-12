@@ -1,6 +1,6 @@
 # Copyright (c) 2011,2013 Matthias Bach
 # Copyright (c) 2014 Christopher Pinke
-# Copyright (c) 2018 Alessandro Sciarra
+# Copyright (c) 2018,2021 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -18,13 +18,13 @@
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 
 find_package( Nettle REQUIRED )
-include_directories(SYSTEM ${Nettle_INCLUDE_DIR})
+include_directories(SYSTEM ${NETTLE_INCLUDE_DIR})
 
 add_library(crypto
     md5.cpp
 )
 target_link_libraries(crypto
-    ${Nettle_LIBRARIES}
+    ${NETTLE_LIBRARIES}
 )
 
 add_unit_test(NAME crypto/test EXECUTABLE crypto_test SOURCE_FILES test.cpp LIBRARIES crypto)

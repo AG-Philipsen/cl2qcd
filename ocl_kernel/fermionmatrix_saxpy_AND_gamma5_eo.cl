@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -20,9 +20,9 @@
 
 // -alpha*x + y
 // CP: defined with a minus!!!
-__kernel void saxpy_AND_gamma5_eo(__global const spinorStorageType* const x, __global const spinorStorageType* const y,
-                                  const hmc_float alpha_re, const hmc_float alpha_im,
-                                  __global spinorStorageType* const out)
+__kernel void saxpy_AND_gamma5_eo(__global const spinorStorageType* const restrict x,
+                                  __global const spinorStorageType* const restrict y, const hmc_float alpha_re,
+                                  const hmc_float alpha_im, __global spinorStorageType* const restrict out)
 {
     int id                  = get_global_id(0);
     int global_size         = get_global_size(0);

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2014,2015 Christopher Pinke
  * Copyright (c) 2016 Francesca Cuteri
- * Copyright (c) 2018 Alessandro Sciarra
+ * Copyright (c) 2018,2021 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -28,7 +28,7 @@
 #include "kernelTester.hpp"
 #include "prng.hpp"
 
-enum GaugeMomentumFilltype { One, Zero, Ascending };
+enum class GaugeMomentumFilltype { One, Zero, Ascending };
 
 int calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept;
 int calculateAlgebraSize(LatticeExtents latticeExtentsIn) noexcept;
@@ -37,16 +37,22 @@ double count_gm(ae* ae_in, int size);
 double calc_var_gm(ae* ae_in, int size, double sum);
 
 struct GaugemomentumTestParameters : public TestParameters {
-    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const double testPrecisionIn = 10e-8)
-        : TestParameters(latticeExtendsIn, testPrecisionIn), fillType(GaugeMomentumFilltype::One), coefficient(1.){};
-    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn)
-        : TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(1.){};
+    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn)
+        : GaugemomentumTestParameters(latticeExtendsIn, GaugeMomentumFilltype::One, 1.0, 1000){};
     GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn,
-                                const double c)
-        : TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(c){};
+                                const double alpha = 1.0)
+        : GaugemomentumTestParameters(latticeExtendsIn, fillTypesIn, alpha, 1000){};
+    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const unsigned int iter)
+        : GaugemomentumTestParameters(latticeExtendsIn, GaugeMomentumFilltype::One, 1.0, iter){};
 
     const GaugeMomentumFilltype fillType;
-    const double coefficient;
+    const double coefficient;       // Used in saxpy tests
+    const unsigned int iterations;  // Used in gaussian tests
+
+  private:
+    GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn,
+                                const double c, const unsigned int iter)
+        : TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(c), iterations(iter){};
 };
 
 class GaugemomentumTester : public KernelTester {
@@ -63,7 +69,7 @@ class GaugemomentumTester : public KernelTester {
 
 struct GaugemomentumCreator {
     GaugemomentumCreator(const LatticeExtents lE) : numberOfElements(calculateAlgebraSize(lE)){};
-    ae* createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = One);
+    ae* createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = GaugeMomentumFilltype::One);
     void fill_with_one(ae* in);
     void fill_with_zero(ae* in);
     void fill_with_ascending(ae* in);

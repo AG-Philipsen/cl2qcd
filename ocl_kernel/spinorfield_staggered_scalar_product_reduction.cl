@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2014,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2014,2018,2021 Alessandro Sciarra
  * Copyright (c) 2013 Matthias Bach
  *
  * This file is part of CL2QCD.
@@ -23,8 +23,8 @@
 // and num_groups are checked to be corrected and since it is useful
 // to have num_groups variable to allocate buffers, we decided to use here
 // the num_values variable.
-__kernel void
-scalar_product_reduction(__global hmc_complex* result_tmp, __global hmc_complex* result, const uint num_values)
+__kernel void scalar_product_reduction(__global hmc_complex* restrict result_tmp, __global hmc_complex* restrict result,
+                                       const uint num_values)
 {
     //!!CP: complex_acc cannot handle __global
     int id = get_global_id(0);
@@ -40,8 +40,8 @@ scalar_product_reduction(__global hmc_complex* result_tmp, __global hmc_complex*
     }
 }
 
-__kernel void
-scalar_product_real_reduction(__global hmc_float* result_tmp, __global hmc_float* result, const uint num_values)
+__kernel void scalar_product_real_reduction(__global hmc_float* restrict result_tmp,
+                                            __global hmc_float* restrict result, const uint num_values)
 {
     int id = get_global_id(0);
     if (id == 0) {

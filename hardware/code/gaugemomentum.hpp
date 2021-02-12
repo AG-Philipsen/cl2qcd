@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2012,2013 Matthias Bach
  * Copyright (c) 2012,2015 Christopher Pinke
- * Copyright (c) 2013,2018 Alessandro Sciarra
+ * Copyright (c) 2013,2018,2021 Alessandro Sciarra
  * Copyright (c) 2015 Francesca Cuteri
  *
  * This file is part of CL2QCD.
@@ -45,6 +45,7 @@ namespace hardware {
         class Gaugemomentum : public Opencl_Module {
           public:
             friend hardware::Device;
+            friend hardware::buffers::Gaugemomentum;
 
             virtual ~Gaugemomentum();
 
@@ -68,25 +69,6 @@ namespace hardware {
             void saxpy_device(const hardware::buffers::Gaugemomentum* x, const hardware::buffers::Gaugemomentum* y,
                               const hardware::buffers::Plain<hmc_float>* alpha,
                               const hardware::buffers::Gaugemomentum* out) const;
-
-            /**
-             * Import data from the gaugemomenta array into the given buffer.
-             *
-             * The data in the buffer will be stored in the device specific format.
-             *
-             * @param[out] dest The buffer to write to in the device specific format
-             * @param[in] data The data to write to the buffer
-             */
-            void importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum* dest, const ae* const data) const;
-            /**
-             * Export data from the given buffer into a normal gaugemomentum array.
-             *
-             * The data in the buffer is assumed to be in the device specific format.
-             *
-             * @param[out] dest An array that the buffer data can be written to.
-             * @param[in] data A buffer containing the data in the device specific format.
-             */
-            void exportGaugemomentumBuffer(ae* const dest, const hardware::buffers::Gaugemomentum* buf) const;
 
             ClSourcePackage get_sources() const noexcept;
 
@@ -133,15 +115,6 @@ namespace hardware {
                           const hardware::Device* device);
 
           private:
-            /**
-             * Collect the kernels for OpenCL.
-             */
-            void fill_kernels();
-            /**
-             * Clear out the kernels,
-             */
-            void clear_kernels();
-
             ClSourcePackage basic_gaugemomentum_code;
 
             // kernels
@@ -152,6 +125,20 @@ namespace hardware {
             cl_kernel gaugemomentum_convert_to_soa;
             cl_kernel gaugemomentum_convert_from_soa;
             cl_kernel gaugemomentum_saxpy;
+
+            void convertGaugemomentumToSOA_device(const hardware::buffers::Gaugemomentum* out,
+                                                  const hardware::buffers::Plain<ae>* in) const;
+            void convertGaugemomentumFromSOA_device(const hardware::buffers::Plain<ae>* out,
+                                                    const hardware::buffers::Gaugemomentum* in) const;
+
+            /**
+             * Collect the kernels for OpenCL.
+             */
+            void fill_kernels();
+            /**
+             * Clear out the kernels,
+             */
+            void clear_kernels();
         };
 
     }  // namespace code
