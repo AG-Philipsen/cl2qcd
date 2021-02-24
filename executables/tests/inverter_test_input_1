@@ -1,9 +1,0 @@
-nSpace=4
-nTime=4
-precision=64
-
-kappa=.15
-mu=4.
-
-startCondition=cold
-fermionAction=TWISTEDMASS
